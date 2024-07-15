@@ -1,10 +1,17 @@
 ﻿using BepInEx;
+using HarmonyLib;
+
 
 namespace BPX
 {
-    [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
+    [BepInPlugin(pluginGuid, pluginName, pluginVersion)]
     public class Plugin : BaseUnityPlugin
     {
+        public const string pluginGuid = "com.metalted.zeepkist.blueprintsX";
+        public const string pluginName = "Blueprints X";
+        public const string pluginVersion = "2.0";
+        public static Plugin Instance;
+
         private void Awake()
         {
             // Plugin startup logic

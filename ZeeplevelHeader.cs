@@ -1,0 +1,128 @@
+﻿using System;
+using System.Globalization;
+using System.Text;
+
+namespace BPX
+{
+    public class ZeeplevelHeader
+    {
+        public string SceneName { get; private set; }
+        public string PlayerName { get; private set; }
+        public string UUID { get; private set; }
+        public float[] CameraProperties { get; private set; }
+        public float AuthorTime { get; private set; }
+        public string AuthorTimeString { get; private set; }
+        public float GoldTime { get; private set; }
+        public float SilverTime { get; private set; }
+        public float BronzeTime { get; private set; }
+        public int Skybox { get; private set; }
+        public int Ground { get; private set; }
+
+        public ZeeplevelHeader()
+        {
+            SceneName = "LevelEditor2";
+            PlayerName = "Bouwerman";
+            UUID = GenerateUUID(PlayerName, 0);
+            CameraProperties = new float[] { 0, 0, 0, 0, 0, 0, 0, 0 };
+            AuthorTime = 0;
+            AuthorTimeString = "invalid track";
+            GoldTime = 0;
+            SilverTime = 0;
+            BronzeTime = 0;
+            Skybox = 0;
+            Ground = -1;
+        }
+
+        public ZeeplevelHeader(string[] csvData)
+        {
+            CameraProperties = new float[8]; // Ensure initialization
+            ReadCSVData(csvData);
+        }
+
+        private void ReadCSVData(string[] csvData)
+        {
+            if (csvData.Length != 3)
+            {
+                return;
+            }
+
+            for (int i = 0; i < csvData.Length; i++)
+            {
+                string[] values = csvData[i].Split(",");
+                if (i == 0)
+                {
+                    SceneName = values.Length > 0 ? values[0] : "Unknown";
+                    PlayerName = values.Length > 1 ? values[1] : "Unknown";
+                    UUID = values.Length > 2 ? values[2] : GenerateUUID(PlayerName, 0);
+                }
+                else if (i == 1)
+                {
+                    for (int j = 0; j < CameraProperties.Length && j < values.Length; j++)
+                    {
+                        CameraProperties[j] = ParseFloat(values[j]);
+                    }
+                }
+                else if (i == 2)
+                {
+                    AuthorTime = ParseFloat(values.Length > 0 ? values[0] : "0");
+                    AuthorTimeString = AuthorTime == 0 ? "invalid track" : "";
+
+                    GoldTime = ParseFloat(values.Length > 1 ? values[1] : "0");
+                    SilverTime = ParseFloat(values.Length > 2 ? values[2] : "0");
+                    BronzeTime = ParseFloat(values.Length > 3 ? values[3] : "0");
+                    Skybox = ParseInt(values.Length > 4 ? values[4] : "0");
+                    if (Skybox == -1) { Skybox = 0; }
+                    Ground = ParseInt(values.Length > 5 ? values[5] : "-1");
+                }
+            }
+        }
+
+        public void GenerateNewUUID(string playerName, int objectCount)
+        {
+            UUID = GenerateUUID(playerName, objectCount);
+        }
+
+        private string GenerateUUID(string playerName, int objectCount)
+        {
+            // Get the current date and time
+            string date = DateTime.Now.ToString("ddMMyyyy");
+            string time = DateTime.Now.ToString("HHmmssfff");
+
+            // Generate a 12-digit random number that does not start with 0
+            Random random = new Random();
+            string randomNumber = (random.Next(1, 10).ToString() + random.Next(0, 1000000000).ToString("D9"));
+
+            // Combine all parts to form the UUID
+            string uuid = $"{date}-{time}-{playerName}-{randomNumber}-{objectCount}";
+
+            return uuid;
+        }
+
+        private int ParseInt(string value)
+        {
+            return int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out int result) ? result : -1;
+        }
+
+        private float ParseFloat(string value)
+        {
+            return float.TryParse(value, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out float result) ? result : 0.0f;
+        }
+
+        public string ToCSV()
+        {
+            StringBuilder csvBuilder = new StringBuilder();
+
+            // First line: SceneName, PlayerName, UUID
+            csvBuilder.AppendLine($"{SceneName},{PlayerName},{UUID}");
+
+            // Second line: CameraProperties
+            csvBuilder.AppendLine(string.Join(",", CameraProperties));
+
+            // Third line: AuthorTime (or AuthorTimeString), GoldTime, SilverTime, BronzeTime, Skybox, Ground
+            string authorTimeValue = AuthorTimeString == "invalid track" ? AuthorTimeString : AuthorTime.ToString(CultureInfo.InvariantCulture);
+            csvBuilder.AppendLine($"{authorTimeValue},{GoldTime},{SilverTime},{BronzeTime},{Skybox},{Ground}");
+
+            return csvBuilder.ToString();
+        }
+    }
+}
