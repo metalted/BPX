@@ -11,6 +11,7 @@ namespace BPX
     public class BPXFolderPanel
     {
         public BPXPanel panel;
+        public RectTransform Rect;
         public LEV_CustomButton exitButton;
         public LEV_CustomButton createButton;
         public TMP_InputField input;
@@ -18,7 +19,7 @@ namespace BPX
         public BPXFolderPanel(BPXPanel panel, RectTransform rect)
         {
             this.panel = panel;
-
+            Rect = rect;
             RectTransform panelRect = rect.GetChild(0).GetComponent<RectTransform>();
             exitButton = panelRect.GetChild(0).GetComponent<LEV_CustomButton>();
             createButton = panelRect.GetChild(1).GetComponent<LEV_CustomButton>();

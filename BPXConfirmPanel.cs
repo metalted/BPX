@@ -11,6 +11,7 @@ namespace BPX
     public class BPXConfirmPanel
     {
         public BPXPanel panel;
+        public RectTransform Rect;
         public TextMeshProUGUI alreadyExists;
         public LEV_CustomButton saveButton;
         public LEV_CustomButton cancelButton;
@@ -18,6 +19,7 @@ namespace BPX
         public BPXConfirmPanel(BPXPanel panel, RectTransform rect)
         {
             this.panel = panel;
+            Rect = rect;
             alreadyExists = rect.GetChild(2).GetComponent<TextMeshProUGUI>();
             saveButton = rect.GetChild(3).GetComponent<LEV_CustomButton>();
             cancelButton = rect.GetChild(4).GetComponent<LEV_CustomButton>();

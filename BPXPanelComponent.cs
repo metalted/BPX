@@ -22,6 +22,7 @@ namespace BPX
         public TextMeshProUGUI textMesh;
         public ScrollRect ScrollRect;
         public TMP_InputField textInputField;
+        public RectTransform explorerPanel;
 
         public BPXPanelComponent(BPXPanelComponentType componentType, BPXPanelComponentName componentName, RectTransform rect)
         {
@@ -48,21 +49,42 @@ namespace BPX
                     break;
                 case BPXPanelComponentType.ScrollView:
                     ScrollRect = rect.GetComponent<ScrollRect>();
+
+                    // Configuring the ScrollRect as per the standalone code
+                    explorerPanel = ScrollRect.content;
+                    ContentSizeFitter contentSizeFitter = explorerPanel.gameObject.AddComponent<ContentSizeFitter>();
+                    contentSizeFitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
+                    contentSizeFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+                    GridLayoutGroup gridLayoutGroup = explorerPanel.gameObject.AddComponent<GridLayoutGroup>();
+                    gridLayoutGroup.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+                    gridLayoutGroup.constraintCount = 6;
+
+                    Rect viewportRect = ScrollRect.viewport.rect;
+                    int paddingValue = Mathf.RoundToInt(viewportRect.width / 100f);
+                    float cellWidth = (viewportRect.width - paddingValue * 2) / 6.0f;
+                    float cellSpacing = cellWidth * 0.05f;
+
+                    gridLayoutGroup.cellSize = new Vector2(cellWidth - cellSpacing, cellWidth - cellSpacing);
+                    gridLayoutGroup.spacing = new Vector2(cellSpacing, cellSpacing);
+                    gridLayoutGroup.padding = new RectOffset(paddingValue, paddingValue, paddingValue, paddingValue);
                     break;
                 case BPXPanelComponentType.TextInput:
                     textInputField = rect.GetComponent<TMP_InputField>();
 
                     textInputBackground = rect.GetComponent<Image>();
-                    if(textInputBackground != null)
+                    if (textInputBackground != null)
                     {
                         textInputBackground.color = Color.white;
                     }
 
                     Localize loc = textInputField.placeholder.GetComponent<Localize>();
-                    if(loc != null)
+                    if (loc != null)
                     {
                         GameObject.Destroy(loc);
                     }
+
+                    SetPlaceHolderText("");
                     break;
             }
         }
@@ -78,17 +100,17 @@ namespace BPX
         public void SetRectAnchors(float anchorMinX, float anchorMinY, float anchorMaxX, float anchorMaxY)
         {
             Rect.anchorMin = new Vector2(anchorMinX, anchorMinY);
-            Rect.anchorMax = new Vector2(anchorMaxY, anchorMaxX);
+            Rect.anchorMax = new Vector2(anchorMaxX, anchorMaxY);
         }
 
         public void SetButtonImageRectAnchors(float anchorMinX, float anchorMinY, float anchorMaxX, float anchorMaxY)
         {
-            if(ComponentType == BPXPanelComponentType.Button)
+            if (ComponentType == BPXPanelComponentType.Button)
             {
                 RectTransform imageChild = Rect.GetChild(0).GetComponent<RectTransform>();
                 imageChild.anchorMin = new Vector2(anchorMinX, anchorMinY);
                 imageChild.anchorMax = new Vector2(anchorMaxX, anchorMaxY);
-            }            
+            }
         }
 
         public void ColorImage(Color color)
@@ -113,7 +135,7 @@ namespace BPX
 
         public void SetPlaceHolderText(string text)
         {
-            if(ComponentType == BPXPanelComponentType.TextInput)
+            if (ComponentType == BPXPanelComponentType.TextInput)
             {
                 textInputField.placeholder.GetComponent<TMP_Text>().text = text;
             }
@@ -127,6 +149,18 @@ namespace BPX
         public void SetButtonImage(Sprite sprite)
         {
             Rect.GetChild(0).GetComponent<Image>().sprite = sprite;
+        }
+
+        public void HideButtonText()
+        {
+            if (ComponentType == BPXPanelComponentType.Button)
+            {
+                TextMeshProUGUI textGUI = Button.GetComponentInChildren<TextMeshProUGUI>();
+                if (textGUI != null)
+                {
+                    textGUI.gameObject.SetActive(false);
+                }
+            }
         }
     }
 }
