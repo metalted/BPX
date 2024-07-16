@@ -1,6 +1,6 @@
 ﻿using BepInEx;
 using HarmonyLib;
-
+using System;
 
 namespace BPX
 {
@@ -10,12 +10,23 @@ namespace BPX
         public const string pluginGuid = "com.metalted.zeepkist.blueprintsX";
         public const string pluginName = "Blueprints X";
         public const string pluginVersion = "2.0";
+
         public static Plugin Instance;
+        public string pluginDirectory;
+        public string levelDirectory;
 
         private void Awake()
         {
-            // Plugin startup logic
-            Logger.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} is loaded!");
+            pluginDirectory = AppDomain.CurrentDomain.BaseDirectory + @"\BepInEx\plugins";
+            levelDirectory = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\Zeepkist\\Levels";
+
+            Harmony harmony = new Harmony(pluginGuid);
+            harmony.PatchAll();
+        }
+
+        public void LogMessage(string message)
+        {
+            Logger.LogInfo(message);
         }
     }
 }

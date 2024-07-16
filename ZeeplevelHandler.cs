@@ -10,7 +10,8 @@ namespace BPX
         {
             if (!File.Exists(path))
             {
-                throw new FileNotFoundException($"The file at path {path} does not exist.");
+                Plugin.Instance.LogMessage("No .zeeplevel file exists at path: " + path);
+                return null;
             }
 
             string[] csvData = File.ReadAllLines(path);
@@ -20,8 +21,30 @@ namespace BPX
 
         public static void SaveToFile(ZeeplevelFile zeeplevel, string path)
         {
-            string csvContent = zeeplevel.ToCSV();
-            File.WriteAllText(path, csvContent);
+            string[] csvContent = zeeplevel.ToCSV();
+            File.WriteAllLines(path, csvContent);
+        }
+
+        public static ZeeplevelFile CopyZeeplevelFile(ZeeplevelFile fileToCopy)
+        {
+            string[] csvContent = fileToCopy.ToCSV();
+            string fileName = fileToCopy.FileName;
+
+            ZeeplevelFile copied = new ZeeplevelFile(csvContent, fileName);
+            return copied;
+        }
+
+        public static ZeeplevelFile BlockPropertiesToZeeplevelFile(List<BlockProperties> blockProperties)
+        {
+            List<ZeeplevelBlock> blocks = new List<ZeeplevelBlock>();
+            foreach(BlockProperties bp in  blockProperties)
+            {
+                ZeeplevelBlock block = new ZeeplevelBlock(bp);
+                blocks.Add(block);
+            }
+
+            ZeeplevelFile file = new ZeeplevelFile(blocks);
+            return file;
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using UnityEngine;
@@ -25,6 +26,20 @@ public class ZeeplevelBlock
         ReadCSVString(csvData);
     }
 
+    public ZeeplevelBlock(BlockProperties blockProperties)
+    {
+        BlockID = blockProperties.blockID;
+        Position = new Vector3(blockProperties.properties[0], blockProperties.properties[1], blockProperties.properties[2]);
+        Rotation = new Vector3(blockProperties.properties[3], blockProperties.properties[4], blockProperties.properties[5]);
+        Scale = new Vector3(blockProperties.properties[6], blockProperties.properties[7], blockProperties.properties[8]);
+
+        Properties = new List<float>();
+        foreach(float f in blockProperties.properties)
+        {
+            Properties.Add(f);
+        }
+    }
+
     private void ReadCSVString(string data)
     {
         string[] values = data.Split(',');
@@ -40,17 +55,7 @@ public class ZeeplevelBlock
         Scale = new Vector3(ParseFloat(values[7]), ParseFloat(values[8]), ParseFloat(values[9]));
 
         Properties = new List<float>();
-        Properties.Add(Position.x);
-        Properties.Add(Position.y);
-        Properties.Add(Position.z);
-        Properties.Add(Rotation.x);
-        Properties.Add(Rotation.y);
-        Properties.Add(Rotation.z);
-        Properties.Add(Scale.x);
-        Properties.Add(Scale.y);
-        Properties.Add(Scale.z);
-
-        for (int i = 10; i < values.Length; i++)
+        for (int i = 1; i < values.Length; i++)
         {
             Properties.Add(ParseFloat(values[i]));
         }

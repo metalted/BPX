@@ -11,11 +11,11 @@ namespace BPX
         public string FileName { get; private set; }
 
         // Default constructor: creates a valid file with header and 0 blocks
-        public ZeeplevelFile(string fileName)
+        public ZeeplevelFile()
         {
             Header = new ZeeplevelHeader();
             Blocks = new List<ZeeplevelBlock>();
-            FileName = fileName;
+            FileName = "";
         }
 
         // Constructor that initializes from CSV data
@@ -53,21 +53,29 @@ namespace BPX
             FileName = fileName;
         }
 
-        // Converts the entire ZeeplevelFile to a CSV string
-        public string ToCSV()
+        // Constructor that initializes from a list of blocks, player name, and file name
+        public ZeeplevelFile(List<ZeeplevelBlock> blocks)
         {
-            StringBuilder csvBuilder = new StringBuilder();
+            Header = new ZeeplevelHeader();
+            Header.GenerateNewUUID("Bouwerman", blocks.Count);
+            Blocks = new List<ZeeplevelBlock>(blocks);
+            FileName = "";
+        }
 
-            // Add the header CSV
-            csvBuilder.Append(Header.ToCSV());
+        public string[] ToCSV()
+        {
+            List<string> csvLines = new List<string>();
+
+            // Add the header CSV lines
+            csvLines.AddRange(Header.ToCSV().Split(new[] { Environment.NewLine }, StringSplitOptions.None));
 
             // Add each block's CSV representation
             foreach (var block in Blocks)
             {
-                csvBuilder.AppendLine(block.ToCSV());
+                csvLines.Add(block.ToCSV());
             }
 
-            return csvBuilder.ToString();
+            return csvLines.ToArray();
         }
     }
 }

@@ -35,7 +35,7 @@ namespace BPX
 
         public ZeeplevelHeader(string[] csvData)
         {
-            CameraProperties = new float[8]; // Ensure initialization
+            CameraProperties = new float[8];
             ReadCSVData(csvData);
         }
 
@@ -80,6 +80,7 @@ namespace BPX
         public void GenerateNewUUID(string playerName, int objectCount)
         {
             UUID = GenerateUUID(playerName, objectCount);
+            PlayerName = playerName;
         }
 
         private string GenerateUUID(string playerName, int objectCount)
