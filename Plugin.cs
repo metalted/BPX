@@ -14,31 +14,22 @@ namespace BPX
 
         public static Plugin Instance;
         public string pluginPath;
-        public string levelPath;
-
-        public DirectoryInfo pluginDirectory;
-        public DirectoryInfo levelDirectory;
+        public string levelPath;        
 
         private void Awake()
         {
             pluginPath = AppDomain.CurrentDomain.BaseDirectory + @"\BepInEx\plugins";
             levelPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\Zeepkist\\Levels";
+            Instance = this;
+            BPXSprites.Initialize();
 
             Harmony harmony = new Harmony(pluginGuid);
             harmony.PatchAll();
-
-            RefreshDirectories();
         }
 
         public void LogMessage(string message)
         {
             Logger.LogInfo(message);
-        }
-
-        public void RefreshDirectories()
-        {
-            pluginDirectory = new DirectoryInfo(pluginPath);
-            levelDirectory = new DirectoryInfo(levelPath);
         }
     }
 
@@ -47,6 +38,7 @@ namespace BPX
     {
         public static void Postfix(LEV_LevelEditorCentral __instance)
         {
+            BPXManager.central = __instance;
             UIManagement.InitializeLevelEditor(__instance);
         }
     }

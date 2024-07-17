@@ -89,6 +89,34 @@ namespace BPX
             }
         }
 
+        public void Reset()
+        {
+            switch(ComponentType)
+            {
+                case BPXPanelComponentType.Button:
+                    Button.ResetAllBools();
+                    break;
+            }
+        }
+
+        public void Enable()
+        {
+            Rect.gameObject.SetActive(true);
+        }
+
+        public void Disable()
+        {
+            Rect.gameObject.SetActive(false);
+        }
+
+        public void SetInteractable(bool state)
+        {
+            if(ComponentType == BPXPanelComponentType.TextInput)
+            {
+                textInputField.interactable = state;
+            }
+        }
+
         public void BindButton(UnityAction action)
         {
             if (ComponentType == BPXPanelComponentType.Button)
@@ -141,9 +169,14 @@ namespace BPX
             }
         }
 
-        public void GetText()
+        public string GetText()
         {
+            if(ComponentType == BPXPanelComponentType.TextInput)
+            {
+                return textInputField.text;
+            }
 
+            return "";
         }
 
         public void SetButtonImage(Sprite sprite)

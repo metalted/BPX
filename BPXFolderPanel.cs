@@ -43,5 +43,15 @@ namespace BPX
         {
 
         }
+
+        public void Disable()
+        {
+            Rect.gameObject.SetActive(false);
+        }
+
+        public void Enable()
+        {
+            Rect.gameObject.SetActive(true);
+        }
     }
 }

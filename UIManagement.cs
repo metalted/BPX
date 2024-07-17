@@ -13,6 +13,8 @@ namespace BPX
     {
         public static Color blue = new Color(0, 0.547f, 0.82f, 1f);
         public static Color darkBlue = new Color(0, 0.371f, 0.547f, 1f);
+        private static LEV_CustomButton toolbarSaveButton;
+        private static LEV_CustomButton toolbarLoadButton;
         private static LEV_CustomButton gizmoScaleButton;
         private static BPXPanel panel;
         
@@ -34,15 +36,15 @@ namespace BPX
 
         private static void InitializeToolbar(LEV_LevelEditorCentral central)
         {
-            LEV_CustomButton saveButton = SplitLEVCustomButton(central.tool.button_save);
-            RecolorButton(saveButton, blue);
-            UnbindButton(saveButton);
-            RebindButton(saveButton, () => OnToolbarSaveButton());
+            toolbarSaveButton = SplitLEVCustomButton(central.tool.button_save);
+            RecolorButton(toolbarSaveButton, blue);
+            UnbindButton(toolbarSaveButton);
+            RebindButton(toolbarSaveButton, () => OnToolbarSaveButton());
 
-            LEV_CustomButton loadButton = SplitLEVCustomButton(central.tool.button_load);
-            RecolorButton(loadButton, blue);
-            UnbindButton(loadButton);
-            RebindButton(loadButton, () => OnToolbarLoadButton());
+            toolbarLoadButton = SplitLEVCustomButton(central.tool.button_load);
+            RecolorButton(toolbarLoadButton, blue);
+            UnbindButton(toolbarLoadButton);
+            RebindButton(toolbarLoadButton, () => OnToolbarLoadButton());
         }
 
         private static void InitializeGizmoButton(LEV_LevelEditorCentral central)
@@ -79,12 +81,40 @@ namespace BPX
 
         private static void OnToolbarSaveButton()
         {
-
+            BPXManager.DeselectAllBlocks();
+            if (panel != null)
+            {
+                panel.Open(BPXPanelState.Save);
+                toolbarSaveButton.isSelected = true;
+            }
         }
 
         private static void OnToolbarLoadButton()
         {
+            BPXManager.DeselectAllBlocks();
+            if(panel != null)
+            {
+                panel.Open(BPXPanelState.Load);
+                toolbarLoadButton.isSelected = true;
+            }
+        }
 
+        public static void OnPanelOpen()
+        {
+            BPXManager.central.tool.DisableAllTools();
+            BPXManager.central.tool.RecolorButtons();
+            BPXManager.central.tool.currentTool = 3;
+            BPXManager.central.tool.inspectorTitle.text = "";
+        }
+
+        public static void OnPanelClose()
+        {
+            toolbarLoadButton.isSelected = false;
+            toolbarSaveButton.isSelected = false;
+
+            BPXManager.central.tool.EnableEditTool();
+            BPXManager.central.tool.RecolorButtons();
+            BPXManager.central.cam.OverrideOutsideGameView(false);
         }
 
         private static void OnGizmoScaleButton()
