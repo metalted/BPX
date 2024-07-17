@@ -36,8 +36,8 @@ namespace BPX
                     Button = rect.GetComponent<LEV_CustomButton>();
                     if (Button != null)
                     {
-                        UIManagement.UnbindButton(Button);
-                        UIManagement.RecolorButton(Button, UIManagement.blue);
+                        BPXUIManagement.UnbindButton(Button);
+                        BPXUIManagement.RecolorButton(Button, BPXUIManagement.blue);
                     }
                     break;
                 case BPXPanelComponentType.Image:
@@ -121,7 +121,7 @@ namespace BPX
         {
             if (ComponentType == BPXPanelComponentType.Button)
             {
-                UIManagement.RebindButton(Button, action);
+                BPXUIManagement.RebindButton(Button, action);
             }
         }
 
@@ -157,7 +157,7 @@ namespace BPX
             }
             else if (ComponentType == BPXPanelComponentType.TextInput)
             {
-
+                textInputField.text = text;
             }
         }
 

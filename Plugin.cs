@@ -39,7 +39,7 @@ namespace BPX
         public static void Postfix(LEV_LevelEditorCentral __instance)
         {
             BPXManager.central = __instance;
-            UIManagement.InitializeLevelEditor(__instance);
+            BPXUIManagement.InitializeLevelEditor(__instance);
         }
     }
 }

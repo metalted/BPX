@@ -25,13 +25,13 @@ namespace BPX
             createButton = panelRect.GetChild(1).GetComponent<LEV_CustomButton>();
             input = panelRect.GetChild(2).GetComponent<TMP_InputField>();
 
-            UIManagement.UnbindButton(exitButton);
-            UIManagement.RecolorButton(exitButton, UIManagement.blue);
-            UIManagement.RebindButton(exitButton, () => OnExitButton());
+            BPXUIManagement.UnbindButton(exitButton);
+            BPXUIManagement.RecolorButton(exitButton, BPXUIManagement.blue);
+            BPXUIManagement.RebindButton(exitButton, () => OnExitButton());
 
-            UIManagement.UnbindButton(createButton);
-            UIManagement.RecolorButton(createButton, UIManagement.blue);
-            UIManagement.RebindButton(createButton, () => OnCreateButton());
+            BPXUIManagement.UnbindButton(createButton);
+            BPXUIManagement.RecolorButton(createButton, BPXUIManagement.blue);
+            BPXUIManagement.RebindButton(createButton, () => OnCreateButton());
         }
 
         private void OnExitButton()

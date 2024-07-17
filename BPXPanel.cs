@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -8,10 +9,11 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
+using Debug = UnityEngine.Debug;
 
 namespace BPX
 {
-    public enum BPXPanelComponentName { Background, Save, Load, LoadHere, LoadFile, Home, SwitchDir, Preview, UpOneLevel, NewFolder, Sort, OpenFolder, Exit, ScrollView, URL, FileName, TypeText, SearchBar };
+    public enum BPXPanelComponentName { Background, Save, Load, LoadHere, LoadFile, Home, SwitchDir, Preview, UpOneLevel, NewFolder, Upload, OpenFolder, Exit, ScrollView, URL, FileName, TypeText, SearchBar };
     public enum BPXPanelComponentType { Button, Image, Text, ScrollView, TextInput };    
     public enum BPXPanelState { Closed, Save, Load };
     public enum BPXPanelMode { Blueprint, Level };
@@ -31,18 +33,22 @@ namespace BPX
 
         private List<LEV_FileContent> currentExplorerElements = new List<LEV_FileContent>();
 
+        public ZeeplevelFile selectedBlueprintToLoad = null;
+        public ZeeplevelFile selectedBlueprintToSave = null;
 
         public void Initialize(LEV_LevelEditorCentral central)
         {
             GetPanelComponents();
             ConfigurePanel();
-            RefreshDirectories();
-        }
 
-        public void RefreshDirectories()
-        {
             blueprintDirectory = new DirectoryInfo(Plugin.Instance.pluginPath);
             levelDirectory = new DirectoryInfo(Plugin.Instance.levelPath);
+        }
+
+        public void SetBlueprintToSave(ZeeplevelFile blueprintTosave)
+        {
+            selectedBlueprintToSave = blueprintTosave;
+            Debug.Log("Thumbnail stuff");
         }
 
         private void GetPanelComponents()
@@ -75,7 +81,7 @@ namespace BPX
                         panelComponents.Add(BPXPanelComponentName.NewFolder, new BPXPanelComponent(BPXPanelComponentType.Button, BPXPanelComponentName.NewFolder, rt));
                         break;
                     case "Sort Regular Levels Button":
-                        panelComponents.Add(BPXPanelComponentName.Sort, new BPXPanelComponent(BPXPanelComponentType.Button, BPXPanelComponentName.Sort, rt));
+                        panelComponents.Add(BPXPanelComponentName.Upload, new BPXPanelComponent(BPXPanelComponentType.Button, BPXPanelComponentName.Upload, rt));
                         break;
                     case "Open Folder Button":
                         panelComponents.Add(BPXPanelComponentName.OpenFolder, new BPXPanelComponent(BPXPanelComponentType.Button, BPXPanelComponentName.OpenFolder, rt));
@@ -108,7 +114,7 @@ namespace BPX
         private void ConfigurePanel()
         {
             //Set the background color of the panel
-            panelComponents[BPXPanelComponentName.Background].Image.color = UIManagement.darkBlue;
+            panelComponents[BPXPanelComponentName.Background].Image.color = BPXUIManagement.darkBlue;
 
             //Create a copy of the save button for the load button
             RectTransform loadRect = GameObject.Instantiate(panelComponents[BPXPanelComponentName.Save].Rect.gameObject, panelComponents[BPXPanelComponentName.Save].Rect.transform.parent).GetComponent<RectTransform>();
@@ -117,7 +123,7 @@ namespace BPX
             //Create a copy of the save button so we can create the two smaller load buttons
             RectTransform loadHereRect = GameObject.Instantiate(panelComponents[BPXPanelComponentName.Save].Rect.gameObject, panelComponents[BPXPanelComponentName.Save].Rect.transform.parent).GetComponent<RectTransform>();
             panelComponents.Add(BPXPanelComponentName.LoadHere, new BPXPanelComponent(BPXPanelComponentType.Button, BPXPanelComponentName.LoadHere, loadHereRect));
-            RectTransform loadFileRect = UIManagement.SplitLEVCustomButton(panelComponents[BPXPanelComponentName.LoadHere].Button, 0.05f).GetComponent<RectTransform>();
+            RectTransform loadFileRect = BPXUIManagement.SplitLEVCustomButton(panelComponents[BPXPanelComponentName.LoadHere].Button, 0.05f).GetComponent<RectTransform>();
             panelComponents.Add(BPXPanelComponentName.LoadFile, new BPXPanelComponent(BPXPanelComponentType.Button, BPXPanelComponentName.LoadFile, loadFileRect));
             
             //Create a copy of the filename to use for the searchbar
@@ -132,6 +138,7 @@ namespace BPX
             panelComponents[BPXPanelComponentName.SwitchDir].SetRectAnchors(0.18f, 0.71f, 0.23f, 0.79f);
             panelComponents[BPXPanelComponentName.SearchBar].SetRectAnchors(0.03f, 0.63f, 0.23f, 0.7f);
             panelComponents[BPXPanelComponentName.Preview].SetRectAnchors(0.03f, 0.25f, 0.23f, 0.62f);
+            panelComponents[BPXPanelComponentName.Upload].SetRectAnchors(0.735f, 0.88f, 0.79f, 0.975f);
 
             //Bind functions to the buttons.
             panelComponents[BPXPanelComponentName.Save].BindButton(() => OnSaveButton());
@@ -145,6 +152,7 @@ namespace BPX
             panelComponents[BPXPanelComponentName.Preview].BindButton(() => OnPreviewButton());
             panelComponents[BPXPanelComponentName.OpenFolder].BindButton(() => OnOpenFolderButton());
             panelComponents[BPXPanelComponentName.Exit].BindButton(() => OnExitButton());
+            panelComponents[BPXPanelComponentName.Upload].BindButton(() => OnUploadButton());
 
             //Change button image sizes
             panelComponents[BPXPanelComponentName.Home].SetButtonImageRectAnchors(0.1f, 0.1f, 0.9f, 0.9f);
@@ -155,22 +163,21 @@ namespace BPX
             //Set sprites
             panelComponents[BPXPanelComponentName.LoadHere].SetButtonImage(BPXSprites.markerSprite);
             panelComponents[BPXPanelComponentName.LoadFile].SetButtonImage(BPXSprites.fileSprite);
-            panelComponents[BPXPanelComponentName.SwitchDir].SetButtonImage(BPXSprites.fileSprite);
+            panelComponents[BPXPanelComponentName.SwitchDir].SetButtonImage(BPXSprites.fileSwitchSprite);
             panelComponents[BPXPanelComponentName.Preview].SetButtonImage(BPXSprites.blackPixelSprite);
             panelComponents[BPXPanelComponentName.Save].SetButtonImage(BPXManager.central.saveload.saveImage);
             panelComponents[BPXPanelComponentName.Load].SetButtonImage(BPXManager.central.saveload.loadImage);
+            panelComponents[BPXPanelComponentName.Upload].SetButtonImage(BPXSprites.uploadImageSprite);
+
 
             //Turn preview button completely black
-            UIManagement.RecolorButton(panelComponents[BPXPanelComponentName.Preview].Button, Color.black, true);
+            BPXUIManagement.RecolorButton(panelComponents[BPXPanelComponentName.Preview].Button, Color.black, true);
 
             //Remove texts from buttons
             panelComponents[BPXPanelComponentName.Home].HideButtonText();
             panelComponents[BPXPanelComponentName.NewFolder].HideButtonText();
             panelComponents[BPXPanelComponentName.SwitchDir].HideButtonText();
             panelComponents[BPXPanelComponentName.Preview].HideButtonText();
-
-            //Hide the sort button
-            panelComponents[BPXPanelComponentName.Sort].Button.gameObject.SetActive(false);
 
             confirmPanel.Rect.SetAsLastSibling();
             folderPanel.Rect.SetAsLastSibling();
@@ -201,6 +208,7 @@ namespace BPX
                 panelComponents[BPXPanelComponentName.LoadHere].Disable();
                 panelComponents[BPXPanelComponentName.LoadFile].Disable();
                 panelComponents[BPXPanelComponentName.SearchBar].Disable();
+                panelComponents[BPXPanelComponentName.Upload].Disable();
             }
             else if(panelMode == BPXPanelState.Load)
             {
@@ -222,14 +230,18 @@ namespace BPX
                     panelComponents[BPXPanelComponentName.LoadFile].Disable();
                 }
 
-                if(BPXHistory.PreviouslyLoadedBlueprintAvailable())
+                if(selectedBlueprintToLoad != null)
                 {
-                    //....
+                    Debug.Log("Thumbnail Stuff");
+                    panelComponents[BPXPanelComponentName.Preview].SetButtonImage(BPXSprites.blackPixelSprite);
+                    panelComponents[BPXPanelComponentName.FileName].SetText(selectedBlueprintToLoad.FileName);
+                    panelComponents[BPXPanelComponentName.Upload].Enable();
                 }
                 else
                 {
                     panelComponents[BPXPanelComponentName.Preview].SetButtonImage(BPXSprites.blackPixelSprite);
                     panelComponents[BPXPanelComponentName.FileName].SetText("");
+                    panelComponents[BPXPanelComponentName.Upload].Disable();
                 }
             }           
 
@@ -238,7 +250,7 @@ namespace BPX
             RefreshPanel();
             ResetComponents();
 
-            UIManagement.OnPanelOpen();
+            BPXUIManagement.OnPanelOpen();
 
             gameObject.SetActive(true);
         }
@@ -249,7 +261,7 @@ namespace BPX
             confirmPanel.Disable();
             folderPanel.Disable();            
             currentState = BPXPanelState.Closed;
-            UIManagement.OnPanelClose();
+            BPXUIManagement.OnPanelClose();
         }
 
         private void RefreshPanel()
@@ -261,6 +273,8 @@ namespace BPX
 
                 BPXPanelExplorerContents explorerContents = new BPXPanelExplorerContents(directory, searchInput);
                 panelComponents[BPXPanelComponentName.URL].SetText(directory.ToString());
+                Debug.LogWarning("Directories: " +  explorerContents.directories.Count);
+                Debug.LogWarning("Files: " +  explorerContents.files.Count);
                 ClearExplorerElements();
 
                 //The total count of elements in the explorer
@@ -349,8 +363,10 @@ namespace BPX
                     panelComponents[BPXPanelComponentName.TypeText].SetText(currentMode == BPXPanelMode.Blueprint ? "Import Blueprint" : "Import Level");
                 }
             }
-            catch
+            catch(Exception ex)
             {
+                Debug.Log("An error occured!");
+                Debug.LogError(ex.Message);
                 OnHomeButton();
             }
         }
@@ -376,44 +392,103 @@ namespace BPX
             }
         }
 
-        private static void OnDirectorySelectedInExplorer(DirectoryInfo directoryInfo)
+        private void OnDirectorySelectedInExplorer(DirectoryInfo directoryInfo)
         {
-            Debug.Log(directoryInfo.FullName);
+            if(currentMode == BPXPanelMode.Blueprint)
+            {
+                blueprintDirectory = directoryInfo;
+            }
+            else if(currentMode == BPXPanelMode.Level)
+            {
+                levelDirectory = directoryInfo;
+            }
+
+            RefreshPanel();
         }
 
-        private static void OnFileSelectedInExplorer(FileInfo fileInfo)
+        private void OnFileSelectedInExplorer(FileInfo fileInfo)
         {
-            Debug.Log(fileInfo.FullName);
+            if(currentState == BPXPanelState.Save)
+            {
+                panelComponents[BPXPanelComponentName.FileName].SetText(fileInfo.Name);
+            }
+            else if(currentState == BPXPanelState.Load)
+            {
+                selectedBlueprintToLoad = ZeeplevelHandler.LoadFromFile(fileInfo.FullName);
+
+                if(selectedBlueprintToLoad == null)
+                {
+                    Plugin.Instance.LogMessage("OnFileSelectedInExplorer: Blueprint returned null");
+                    return;
+                }
+
+                panelComponents[BPXPanelComponentName.FileName].SetText(selectedBlueprintToLoad.FileName);
+
+                panelComponents[BPXPanelComponentName.Upload].Enable();
+
+                //Generate a thumbnail.
+                Debug.Log("Thumbnail stuff");
+            }
         }
 
         private void OnSaveButton()
         {
             Debug.Log("Save!");
+            Close();
         }
 
         private void OnLoadButton()
         {
             Debug.Log("Load!");
+            OnLoadHereButton();
         }
 
         private void OnLoadHereButton()
         {
             Debug.Log("LoadHere!");
+            Close();
         }
 
         private void OnLoadFileButton()
         {
             Debug.Log("LoadFile!");
+            Close();
         }       
         
         private void OnHomeButton()
         {
             Debug.Log("Home!");
+            if(currentMode == BPXPanelMode.Level)
+            {
+                levelDirectory = new DirectoryInfo(Plugin.Instance.levelPath);
+            }
+            else if(currentMode == BPXPanelMode.Blueprint)
+            {
+                blueprintDirectory = new DirectoryInfo(Plugin.Instance.pluginPath);
+            }
+
+            RefreshPanel();
         }
 
         private void OnUpOneLevelButton()
         {
             Debug.Log("UpOneLevel");
+            if (currentMode == BPXPanelMode.Level)
+            {
+                if(levelDirectory.Parent != null && levelDirectory.FullName != Plugin.Instance.levelPath)
+                {
+                    levelDirectory = levelDirectory.Parent;
+                }
+            }
+            else if (currentMode == BPXPanelMode.Blueprint)
+            {
+                if (blueprintDirectory.Parent != null && blueprintDirectory.FullName != Plugin.Instance.pluginPath)
+                {
+                    blueprintDirectory = blueprintDirectory.Parent;
+                }
+            }
+
+            RefreshPanel();
         }
 
         private void OnNewFolderButton()
@@ -424,6 +499,16 @@ namespace BPX
         private void OnSwitchDirButton()
         {
             Debug.Log("Switch!");
+            if (currentMode == BPXPanelMode.Level)
+            {
+                currentMode = BPXPanelMode.Blueprint;
+            }
+            else if (currentMode == BPXPanelMode.Blueprint)
+            {
+                currentMode = BPXPanelMode.Level;
+            }
+
+            RefreshPanel();
         }
 
         private void OnPreviewButton()
@@ -434,11 +519,27 @@ namespace BPX
         private void OnOpenFolderButton()
         {
             Debug.Log("OpenFolder!");
+            string path = currentMode == BPXPanelMode.Level ? levelDirectory.FullName : blueprintDirectory.FullName;
+
+            if (Application.platform == RuntimePlatform.WindowsPlayer)
+            {
+                Process.Start("explorer.exe", path);
+            }
+            else
+            {
+                BPXManager.central.manager.messenger.LogError("Not supported on this platform", 2f);
+            }
         }
 
         private void OnExitButton()
         {
             Debug.Log("Exit!");
+            Close();
+        }
+
+        private void OnUploadButton()
+        {
+            Debug.Log("Uploading:" + selectedBlueprintToLoad.Path);
         }
     }
 }

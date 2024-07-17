@@ -9,7 +9,7 @@ using TMPro;
 
 namespace BPX
 {
-    public static class UIManagement
+    public static class BPXUIManagement
     {
         public static Color blue = new Color(0, 0.547f, 0.82f, 1f);
         public static Color darkBlue = new Color(0, 0.371f, 0.547f, 1f);
@@ -81,9 +81,18 @@ namespace BPX
 
         private static void OnToolbarSaveButton()
         {
+            if(!BPXManager.AnyObjectsSelected())
+            {
+                PlayerManager.Instance.messenger.Log("No selection!", 2f);
+                return;
+            }
+
+            ZeeplevelFile toSave = ZeeplevelHandler.BlockPropertiesToZeeplevelFile(BPXManager.central.selection.list);
             BPXManager.DeselectAllBlocks();
+
             if (panel != null)
             {
+                panel.SetBlueprintToSave(toSave);
                 panel.Open(BPXPanelState.Save);
                 toolbarSaveButton.isSelected = true;
             }

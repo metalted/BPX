@@ -16,7 +16,9 @@ namespace BPX
 
             string[] csvData = File.ReadAllLines(path);
             string fileName = Path.GetFileName(path);
-            return new ZeeplevelFile(csvData, fileName);
+            ZeeplevelFile file = new ZeeplevelFile(csvData, fileName);
+            file.Path = path;
+            return file;
         }
 
         public static void SaveToFile(ZeeplevelFile zeeplevel, string path)

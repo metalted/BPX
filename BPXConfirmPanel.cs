@@ -24,13 +24,13 @@ namespace BPX
             saveButton = rect.GetChild(3).GetComponent<LEV_CustomButton>();
             cancelButton = rect.GetChild(4).GetComponent<LEV_CustomButton>();
 
-            UIManagement.UnbindButton(saveButton);
-            UIManagement.RecolorButton(saveButton, UIManagement.blue);
-            UIManagement.RebindButton(saveButton, () => OnSaveButton());
+            BPXUIManagement.UnbindButton(saveButton);
+            BPXUIManagement.RecolorButton(saveButton, BPXUIManagement.blue);
+            BPXUIManagement.RebindButton(saveButton, () => OnSaveButton());
 
-            UIManagement.UnbindButton(cancelButton);
-            UIManagement.RecolorButton(cancelButton, UIManagement.blue);
-            UIManagement.RebindButton(cancelButton, () => OnCancelButton());
+            BPXUIManagement.UnbindButton(cancelButton);
+            BPXUIManagement.RecolorButton(cancelButton, BPXUIManagement.blue);
+            BPXUIManagement.RebindButton(cancelButton, () => OnCancelButton());
         }
 
         private void OnSaveButton()

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using UnityEngine;
 
 namespace BPX
 {
@@ -46,15 +47,18 @@ namespace BPX
             else
             {
                 FileInfo[] f = directory.GetFiles("*.zeeplevel");
+                Debug.Log(f.Length);
                 DirectoryInfo[] d = directory.GetDirectories();
-
+                Debug.Log(d.Length);
                 foreach (DirectoryInfo di in d)
                 {
+                    Debug.Log(di.FullName);
                     bool addThisDirectory = true;
 
                     FileInfo[] diFiles = di.GetFiles();
 
                     bool hasZeeplevels = false;
+                   
                     string firstZeeplevelName = "";
 
                     if (diFiles.Length > 0)
@@ -62,6 +66,7 @@ namespace BPX
                         foreach (FileInfo fi in diFiles)
                         {
                             string ext = fi.Extension.ToLower();
+                            Debug.Log(ext);
                             if (ext == ".zeeplevel")
                             {
                                 if (!hasZeeplevels)
@@ -79,6 +84,8 @@ namespace BPX
                             }
                         }
                     }
+
+                    Debug.Log(hasZeeplevels);
 
                     if (addThisDirectory)
                     {
@@ -104,12 +111,15 @@ namespace BPX
                                 }
                             }
                         }
+
+                        directories.Add(dir);
                     }
                 }
 
                 foreach (FileInfo fi in f)
                 {
                     BPXPanelExplorerFile file = new BPXPanelExplorerFile();
+                    Debug.Log(fi.FullName);
                     file.fileInfo = fi;
                     file.DisplayName = fi.Name.Replace(".zeeplevel", "");
                     files.Add(file);

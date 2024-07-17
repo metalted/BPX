@@ -10,12 +10,15 @@ namespace BPX
         public List<ZeeplevelBlock> Blocks { get; private set; }
         public string FileName { get; private set; }
 
+        public string Path;
+
         // Default constructor: creates a valid file with header and 0 blocks
         public ZeeplevelFile()
         {
             Header = new ZeeplevelHeader();
             Blocks = new List<ZeeplevelBlock>();
             FileName = "";
+            Path = "";
         }
 
         // Constructor that initializes from CSV data
@@ -25,7 +28,7 @@ namespace BPX
             {
                 Header = new ZeeplevelHeader();
                 Blocks = new List<ZeeplevelBlock>();
-                FileName = fileName;
+                FileName = fileName;               
                 return;
             }
 
@@ -42,6 +45,7 @@ namespace BPX
             }
 
             FileName = fileName;
+            Path = "";
         }
 
         // Constructor that initializes from a list of blocks, player name, and file name
@@ -51,6 +55,7 @@ namespace BPX
             Header.GenerateNewUUID(playerName, blocks.Count);
             Blocks = new List<ZeeplevelBlock>(blocks);
             FileName = fileName;
+            Path = "";
         }
 
         // Constructor that initializes from a list of blocks, player name, and file name
@@ -60,6 +65,7 @@ namespace BPX
             Header.GenerateNewUUID("Bouwerman", blocks.Count);
             Blocks = new List<ZeeplevelBlock>(blocks);
             FileName = "";
+            Path = "";
         }
 
         public string[] ToCSV()
