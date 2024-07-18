@@ -44,5 +44,10 @@ namespace BPX
                 return playerName;
             }
         }
+
+        public static void InstantiateBlueprintIntoEditor(ZeeplevelFile zeeplevelFile, bool loadHere = true)
+        {
+            Plugin.Instance.LogMessage("Loading blueprint! " + (loadHere ? "Here!" : " File!"));
+        }
     }
 }

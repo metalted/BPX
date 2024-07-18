@@ -14,11 +14,8 @@ namespace BPX
                 return null;
             }
 
-            string[] csvData = File.ReadAllLines(path);
-            string fileName = Path.GetFileName(path);
-            ZeeplevelFile file = new ZeeplevelFile(csvData, fileName);
-            file.Path = path;
-            return file;
+            ZeeplevelFile zeeplevel = new ZeeplevelFile(path);
+            return zeeplevel;
         }
 
         public static void SaveToFile(ZeeplevelFile zeeplevel, string path)
@@ -31,22 +28,16 @@ namespace BPX
         {
             string[] csvContent = fileToCopy.ToCSV();
             string fileName = fileToCopy.FileName;
-
-            ZeeplevelFile copied = new ZeeplevelFile(csvContent, fileName);
+            ZeeplevelFile copied = new ZeeplevelFile(csvContent);
+            copied.SetFileName(fileName);
             return copied;
         }
 
-        public static ZeeplevelFile BlockPropertiesToZeeplevelFile(List<BlockProperties> blockProperties)
+        public static ZeeplevelFile FromBlockProperties(List<BlockProperties> blockProperties)
         {
-            List<ZeeplevelBlock> blocks = new List<ZeeplevelBlock>();
-            foreach(BlockProperties bp in  blockProperties)
-            {
-                ZeeplevelBlock block = new ZeeplevelBlock(bp);
-                blocks.Add(block);
-            }
-
-            ZeeplevelFile file = new ZeeplevelFile(blocks);
-            return file;
+            ZeeplevelFile zeeplevel = new ZeeplevelFile();
+            zeeplevel.ImportBlockProperties(blockProperties);
+            return zeeplevel;
         }
     }
 }

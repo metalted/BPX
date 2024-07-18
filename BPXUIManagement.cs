@@ -87,7 +87,9 @@ namespace BPX
                 return;
             }
 
-            ZeeplevelFile toSave = ZeeplevelHandler.BlockPropertiesToZeeplevelFile(BPXManager.central.selection.list);
+            ZeeplevelFile toSave = ZeeplevelHandler.FromBlockProperties(BPXManager.central.selection.list);
+            toSave.SetPlayerName(BPXManager.GetPlayerName());
+
             BPXManager.DeselectAllBlocks();
 
             if (panel != null)

@@ -11,6 +11,7 @@ public class ZeeplevelBlock
     public Vector3 Rotation { get; private set; }
     public Vector3 Scale { get; private set; }
     public List<float> Properties { get; private set; }
+    public bool Valid { get; private set; }
 
     public ZeeplevelBlock()
     {
@@ -19,45 +20,60 @@ public class ZeeplevelBlock
         Rotation = Vector3.zero;
         Scale = Vector3.one;
         Properties = new List<float> { 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+        Valid = false;
     }
 
-    public ZeeplevelBlock(string csvData)
+    public void ReadBlockProperties(BlockProperties blockProperties)
     {
-        ReadCSVString(csvData);
-    }
-
-    public ZeeplevelBlock(BlockProperties blockProperties)
-    {
-        BlockID = blockProperties.blockID;
-        Position = new Vector3(blockProperties.properties[0], blockProperties.properties[1], blockProperties.properties[2]);
-        Rotation = new Vector3(blockProperties.properties[3], blockProperties.properties[4], blockProperties.properties[5]);
-        Scale = new Vector3(blockProperties.properties[6], blockProperties.properties[7], blockProperties.properties[8]);
-
-        Properties = new List<float>();
-        foreach(float f in blockProperties.properties)
+        try
         {
-            Properties.Add(f);
+            BlockID = blockProperties.blockID;
+            Position = new Vector3(blockProperties.properties[0], blockProperties.properties[1], blockProperties.properties[2]);
+            Rotation = new Vector3(blockProperties.properties[3], blockProperties.properties[4], blockProperties.properties[5]);
+            Scale = new Vector3(blockProperties.properties[6], blockProperties.properties[7], blockProperties.properties[8]);
+
+            Properties = new List<float>();
+            foreach (float f in blockProperties.properties)
+            {
+                Properties.Add(f);
+            }
+
+            Valid = true;
         }
+        catch
+        {
+            Valid = false;
+        }       
     }
 
-    private void ReadCSVString(string data)
+    public void ReadCSVString(string csvData)
     {
-        string[] values = data.Split(',');
+        string[] values = csvData.Split(',');
 
         if (values.Length != 38)
         {
+            Valid = false;
             return;
         }
 
-        BlockID = ParseInt(values[0]);
-        Position = new Vector3(ParseFloat(values[1]), ParseFloat(values[2]), ParseFloat(values[3]));
-        Rotation = new Vector3(ParseFloat(values[4]), ParseFloat(values[5]), ParseFloat(values[6]));
-        Scale = new Vector3(ParseFloat(values[7]), ParseFloat(values[8]), ParseFloat(values[9]));
-
-        Properties = new List<float>();
-        for (int i = 1; i < values.Length; i++)
+        try
         {
-            Properties.Add(ParseFloat(values[i]));
+            BlockID = ParseInt(values[0]);
+            Position = new Vector3(ParseFloat(values[1]), ParseFloat(values[2]), ParseFloat(values[3]));
+            Rotation = new Vector3(ParseFloat(values[4]), ParseFloat(values[5]), ParseFloat(values[6]));
+            Scale = new Vector3(ParseFloat(values[7]), ParseFloat(values[8]), ParseFloat(values[9]));
+
+            Properties = new List<float>();
+            for (int i = 1; i < values.Length; i++)
+            {
+                Properties.Add(ParseFloat(values[i]));
+            }
+
+            Valid = true;
+        }
+        catch
+        {
+            Valid = false;
         }
     }
 

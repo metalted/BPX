@@ -17,6 +17,7 @@ namespace BPX
         public float BronzeTime { get; private set; }
         public int Skybox { get; private set; }
         public int Ground { get; private set; }
+        public bool Valid { get; private set; }
 
         public ZeeplevelHeader()
         {
@@ -31,18 +32,14 @@ namespace BPX
             BronzeTime = 0;
             Skybox = 0;
             Ground = -1;
+            Valid = true;
         }
 
-        public ZeeplevelHeader(string[] csvData)
-        {
-            CameraProperties = new float[8];
-            ReadCSVData(csvData);
-        }
-
-        private void ReadCSVData(string[] csvData)
+        public void ReadCSVData(string[] csvData)
         {
             if (csvData.Length != 3)
             {
+                Valid = false;
                 return;
             }
 
@@ -51,28 +48,46 @@ namespace BPX
                 string[] values = csvData[i].Split(",");
                 if (i == 0)
                 {
-                    SceneName = values.Length > 0 ? values[0] : "Unknown";
-                    PlayerName = values.Length > 1 ? values[1] : "Unknown";
-                    UUID = values.Length > 2 ? values[2] : GenerateUUID(PlayerName, 0);
+                    if(values.Length != 3)
+                    {
+                        Valid = false;
+                        break;
+                    }
+
+                    SceneName = values[0];
+                    PlayerName = values[1];
+                    UUID = values[2];
                 }
                 else if (i == 1)
                 {
-                    for (int j = 0; j < CameraProperties.Length && j < values.Length; j++)
+                    if(values.Length != 8)
+                    {
+                        Valid = false;
+                        break;
+                    }
+
+                    for (int j = 0; j < 8; j++)
                     {
                         CameraProperties[j] = ParseFloat(values[j]);
                     }
                 }
                 else if (i == 2)
                 {
-                    AuthorTime = ParseFloat(values.Length > 0 ? values[0] : "0");
+                    if(values.Length != 6)
+                    {
+                        Valid = false;
+                        break;
+                    }
+
+                    AuthorTime = ParseFloat(values[0]);
                     AuthorTimeString = AuthorTime == 0 ? "invalid track" : "";
 
-                    GoldTime = ParseFloat(values.Length > 1 ? values[1] : "0");
-                    SilverTime = ParseFloat(values.Length > 2 ? values[2] : "0");
-                    BronzeTime = ParseFloat(values.Length > 3 ? values[3] : "0");
-                    Skybox = ParseInt(values.Length > 4 ? values[4] : "0");
+                    GoldTime = ParseFloat(values[1]);
+                    SilverTime = ParseFloat(values[2]);
+                    BronzeTime = ParseFloat(values[3]);
+                    Skybox = ParseInt(values[4]);
                     if (Skybox == -1) { Skybox = 0; }
-                    Ground = ParseInt(values.Length > 5 ? values[5] : "-1");
+                    Ground = ParseInt(values[0]);
                 }
             }
         }

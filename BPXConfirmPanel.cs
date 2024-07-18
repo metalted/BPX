@@ -35,12 +35,14 @@ namespace BPX
 
         private void OnSaveButton()
         {
-
+            panel.OnConfirmPanel(true);
+            Disable();
         }
 
         private void OnCancelButton()
         {
-
+            panel.OnConfirmPanel(false);
+            Disable();
         }
 
         public void Disable()
@@ -51,6 +53,16 @@ namespace BPX
         public void Enable()
         {
             Rect.gameObject.SetActive(true);
+        }
+
+        public void SetText(string text)
+        {
+            alreadyExists.text = text;
+        }
+
+        public void Confirm()
+        {
+            Enable();
         }
     }
 }
