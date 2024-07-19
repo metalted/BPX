@@ -141,7 +141,7 @@ namespace BPX
 
             //Bind functions to the buttons.
             panelComponents[BPXPanelComponentName.Save].BindButton(() => OnSaveButton());
-            panelComponents[BPXPanelComponentName.Load].BindButton(() => OnLoadButton());
+            panelComponents[BPXPanelComponentName.Load].BindButton(() => OnLoadHereButton());
             panelComponents[BPXPanelComponentName.LoadHere].BindButton(() => OnLoadHereButton());
             panelComponents[BPXPanelComponentName.LoadFile].BindButton(() => OnLoadFileButton());
             panelComponents[BPXPanelComponentName.Home].BindButton(() => OnHomeButton());
@@ -488,26 +488,20 @@ namespace BPX
             } 
         }
 
-        private void OnLoadButton()
-        {
-            OnLoadHereButton();
-        }
-
         private void OnLoadHereButton()
         {
-            BPXManager.InstantiateBlueprintIntoEditor(selectedBlueprintToLoad);
+            ZeeplevelHandler.InstantiateBlueprintIntoEditor(selectedBlueprintToLoad);
             Close();
         }
 
         private void OnLoadFileButton()
         {
-            BPXManager.InstantiateBlueprintIntoEditor(selectedBlueprintToLoad, false);
+            ZeeplevelHandler.InstantiateBlueprintIntoEditor(selectedBlueprintToLoad, false);
             Close();
         }       
         
         private void OnHomeButton()
         {
-            Debug.Log("Home!");
             if(currentMode == BPXPanelMode.Level)
             {
                 levelDirectory = new DirectoryInfo(Plugin.Instance.levelPath);
@@ -548,7 +542,6 @@ namespace BPX
 
         private void OnSwitchDirButton()
         {
-            Debug.Log("Switch!");
             if (currentMode == BPXPanelMode.Level)
             {
                 currentMode = BPXPanelMode.Blueprint;
@@ -568,7 +561,6 @@ namespace BPX
 
         private void OnOpenFolderButton()
         {
-            Debug.Log("OpenFolder!");
             string path = currentMode == BPXPanelMode.Level ? levelDirectory.FullName : blueprintDirectory.FullName;
 
             if (Application.platform == RuntimePlatform.WindowsPlayer)
@@ -583,7 +575,6 @@ namespace BPX
 
         private void OnExitButton()
         {
-            Debug.Log("Exit!");
             Close();
         }
 

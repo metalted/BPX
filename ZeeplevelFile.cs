@@ -24,6 +24,10 @@ namespace BPX
         {
             GenerateBaseFile();
             ReadFromPath(path);
+            if(!Valid)
+            {
+                Plugin.Instance.LogMessage("Invalid!");
+            }
         }
 
         public ZeeplevelFile(string[] csvData)
@@ -134,7 +138,7 @@ namespace BPX
             List<string> csvLines = new List<string>();
 
             // Add the header CSV lines
-            csvLines.AddRange(Header.ToCSV().Split(new[] { Environment.NewLine }, StringSplitOptions.None));
+            csvLines.AddRange(Header.ToCSV());
 
             // Add each block's CSV representation
             foreach (var block in Blocks)

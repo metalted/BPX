@@ -124,21 +124,20 @@ namespace BPX
             return float.TryParse(value, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out float result) ? result : 0.0f;
         }
 
-        public string ToCSV()
+        public string[] ToCSV()
         {
-            StringBuilder csvBuilder = new StringBuilder();
-
             // First line: SceneName, PlayerName, UUID
-            csvBuilder.AppendLine($"{SceneName},{PlayerName},{UUID}");
+            string firstLine = $"{SceneName},{PlayerName},{UUID}";
 
             // Second line: CameraProperties
-            csvBuilder.AppendLine(string.Join(",", CameraProperties));
+            string secondLine = string.Join(",", CameraProperties);
 
             // Third line: AuthorTime (or AuthorTimeString), GoldTime, SilverTime, BronzeTime, Skybox, Ground
             string authorTimeValue = AuthorTimeString == "invalid track" ? AuthorTimeString : AuthorTime.ToString(CultureInfo.InvariantCulture);
-            csvBuilder.AppendLine($"{authorTimeValue},{GoldTime},{SilverTime},{BronzeTime},{Skybox},{Ground}");
+            string thirdLine = $"{authorTimeValue},{GoldTime},{SilverTime},{BronzeTime},{Skybox},{Ground}";
 
-            return csvBuilder.ToString();
+            // Return an array of strings
+            return new string[] { firstLine, secondLine, thirdLine };
         }
     }
 }

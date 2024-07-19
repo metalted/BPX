@@ -31,6 +31,11 @@ namespace BPX
         {
             Logger.LogInfo(message);
         }
+
+        public void LogScreenMessage(string message)
+        {
+            PlayerManager.Instance.messenger.Log(message, 1f);
+        }
     }
 
     [HarmonyPatch(typeof(LEV_LevelEditorCentral), "Awake")]

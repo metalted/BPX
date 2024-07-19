@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine;
 
 namespace BPX
 {
@@ -43,11 +44,6 @@ namespace BPX
             {
                 return playerName;
             }
-        }
-
-        public static void InstantiateBlueprintIntoEditor(ZeeplevelFile zeeplevelFile, bool loadHere = true)
-        {
-            Plugin.Instance.LogMessage("Loading blueprint! " + (loadHere ? "Here!" : " File!"));
-        }
+        }        
     }
 }

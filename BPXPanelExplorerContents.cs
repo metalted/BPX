@@ -47,12 +47,9 @@ namespace BPX
             else
             {
                 FileInfo[] f = directory.GetFiles("*.zeeplevel");
-                Debug.Log(f.Length);
                 DirectoryInfo[] d = directory.GetDirectories();
-                Debug.Log(d.Length);
                 foreach (DirectoryInfo di in d)
                 {
-                    Debug.Log(di.FullName);
                     bool addThisDirectory = true;
 
                     FileInfo[] diFiles = di.GetFiles();
@@ -66,7 +63,6 @@ namespace BPX
                         foreach (FileInfo fi in diFiles)
                         {
                             string ext = fi.Extension.ToLower();
-                            Debug.Log(ext);
                             if (ext == ".zeeplevel")
                             {
                                 if (!hasZeeplevels)
@@ -84,8 +80,6 @@ namespace BPX
                             }
                         }
                     }
-
-                    Debug.Log(hasZeeplevels);
 
                     if (addThisDirectory)
                     {
@@ -119,7 +113,6 @@ namespace BPX
                 foreach (FileInfo fi in f)
                 {
                     BPXPanelExplorerFile file = new BPXPanelExplorerFile();
-                    Debug.Log(fi.FullName);
                     file.fileInfo = fi;
                     file.DisplayName = fi.Name.Replace(".zeeplevel", "");
                     files.Add(file);
