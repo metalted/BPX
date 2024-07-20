@@ -36,6 +36,8 @@ namespace BPX
         public ZeeplevelFile selectedBlueprintToLoad = null;
         public ZeeplevelFile selectedBlueprintToSave = null;
 
+        private string searchValue = "";
+
         public void Initialize(LEV_LevelEditorCentral central)
         {
             GetPanelComponents();
@@ -152,6 +154,7 @@ namespace BPX
             panelComponents[BPXPanelComponentName.OpenFolder].BindButton(() => OnOpenFolderButton());
             panelComponents[BPXPanelComponentName.Exit].BindButton(() => OnExitButton());
             panelComponents[BPXPanelComponentName.Upload].BindButton(() => OnUploadButton());
+            panelComponents[BPXPanelComponentName.SearchBar].textInputField.onValueChanged.AddListener(delegate { RefreshPanel(); });
 
             //Change button image sizes
             panelComponents[BPXPanelComponentName.Home].SetButtonImageRectAnchors(0.1f, 0.1f, 0.9f, 0.9f);
@@ -183,7 +186,7 @@ namespace BPX
 
             //Set some values 
             panelComponents[BPXPanelComponentName.URL].SetText("path/to/some/file");
-            panelComponents[BPXPanelComponentName.FileName].SetPlaceHolderText("Filename placeholder...");
+            panelComponents[BPXPanelComponentName.FileName].SetPlaceHolderText("...");
             panelComponents[BPXPanelComponentName.SearchBar].SetPlaceHolderText("Search...");
             panelComponents[BPXPanelComponentName.TypeText].SetText("Blueprints");
         }
@@ -423,7 +426,7 @@ namespace BPX
         {
             if(currentState == BPXPanelState.Save)
             {
-                panelComponents[BPXPanelComponentName.FileName].SetText(fileInfo.Name);
+                panelComponents[BPXPanelComponentName.FileName].SetText(fileInfo.Name.Replace(".zeeplevel", ""));
             }
             else if(currentState == BPXPanelState.Load)
             {
@@ -488,6 +491,14 @@ namespace BPX
             } 
         }
 
+        public void OnFolderPanel(bool folderCreated)
+        {
+            if(folderCreated)
+            {
+                RefreshPanel();
+            }            
+        }
+
         private void OnLoadHereButton()
         {
             ZeeplevelHandler.InstantiateBlueprintIntoEditor(selectedBlueprintToLoad);
@@ -516,7 +527,6 @@ namespace BPX
 
         private void OnUpOneLevelButton()
         {
-            Debug.Log("UpOneLevel");
             if (currentMode == BPXPanelMode.Level)
             {
                 if(levelDirectory.Parent != null && levelDirectory.FullName != Plugin.Instance.levelPath)
@@ -537,7 +547,9 @@ namespace BPX
 
         private void OnNewFolderButton()
         {
-            Debug.Log("NewFolder!");
+            folderPanel.Enable();
+
+            ResetComponents();
         }
 
         private void OnSwitchDirButton()

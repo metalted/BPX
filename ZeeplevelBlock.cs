@@ -97,7 +97,7 @@ public class ZeeplevelBlock
         csvBuilder.Append($"{Scale.x.ToString(CultureInfo.InvariantCulture)},{Scale.y.ToString(CultureInfo.InvariantCulture)},{Scale.z.ToString(CultureInfo.InvariantCulture)},");
 
         // Properties part
-        for (int i = 10; i < Properties.Count; i++)
+        for (int i = 9; i < Properties.Count; i++)
         {
             csvBuilder.Append(Properties[i].ToString(CultureInfo.InvariantCulture));
             if (i < Properties.Count - 1)

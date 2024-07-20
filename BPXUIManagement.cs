@@ -1,22 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine.Events;
+﻿using UnityEngine.Events;
 using UnityEngine;
-using TMPro;
 
 namespace BPX
 {
+    public struct GizmoValues
+    {
+        public float XZ;
+        public float Y;
+        public float R;
+        public float S;
+    }
+
     public static class BPXUIManagement
     {
         public static Color blue = new Color(0, 0.547f, 0.82f, 1f);
         public static Color darkBlue = new Color(0, 0.371f, 0.547f, 1f);
         private static LEV_CustomButton toolbarSaveButton;
         private static LEV_CustomButton toolbarLoadButton;
-        private static LEV_CustomButton gizmoScaleButton;
+        private static BPXScaleButton scaleButton;
         private static BPXPanel panel;
+        private static bool panelIsOpen = false;
         
         public static void InitializeLevelEditor(LEV_LevelEditorCentral central)
         {
@@ -57,12 +60,9 @@ namespace BPX
             Vector2 buttonShift = new Vector2(0, xzButtonRect.anchorMin.y - yButtonRect.anchorMin.y);
 
             //Create a copy of the XZ button and set the name.
-            GameObject scaleButton = GameObject.Instantiate(xzButtonRect.gameObject, xzButtonRect.parent);
-            RectTransform scaleButtonRect = scaleButton.GetComponent<RectTransform>();
-            scaleButton.name = "S Grid Button";
-
-            //Change the label text for the scaling button.
-            scaleButtonRect.GetChild(2).GetComponent<TextMeshProUGUI>().text = "S";
+            GameObject buttonCopy = GameObject.Instantiate(xzButtonRect.gameObject, xzButtonRect.parent);
+            RectTransform scaleButtonRect = buttonCopy.GetComponent<RectTransform>();
+            buttonCopy.name = "S Grid Button";            
 
             //Move the header up one button height.
             gridSizeTextRect.anchorMin += buttonShift;
@@ -73,10 +73,15 @@ namespace BPX
             scaleButtonRect.anchorMax += buttonShift;
 
             //Set a new color to the button.
-            gizmoScaleButton = scaleButton.GetComponent<LEV_CustomButton>();
+            LEV_CustomButton gizmoScaleButton = buttonCopy.GetComponent<LEV_CustomButton>();
             RecolorButton(gizmoScaleButton, blue);
             UnbindButton(gizmoScaleButton);
-            RebindButton(gizmoScaleButton, () => OnGizmoScaleButton());
+
+            //Add the GizmoScaler monobehaviour to the button.
+            scaleButton = gizmoScaleButton.gameObject.AddComponent<BPXScaleButton>();
+
+            //Assign the click to the function in the behaviour.
+            RebindButton(gizmoScaleButton, () => scaleButton.OnClick());
         }
 
         private static void OnToolbarSaveButton()
@@ -112,6 +117,7 @@ namespace BPX
 
         public static void OnPanelOpen()
         {
+            panelIsOpen = true;
             BPXManager.central.tool.DisableAllTools();
             BPXManager.central.tool.RecolorButtons();
             BPXManager.central.tool.currentTool = 3;
@@ -120,22 +126,14 @@ namespace BPX
 
         public static void OnPanelClose()
         {
+            panelIsOpen = false;
+
             toolbarLoadButton.isSelected = false;
             toolbarSaveButton.isSelected = false;
 
             BPXManager.central.tool.EnableEditTool();
             BPXManager.central.tool.RecolorButtons();
             BPXManager.central.cam.OverrideOutsideGameView(false);
-        }
-
-        private static void OnGizmoScaleButton()
-        {
-
-        }
-
-        private static void SetGizmoScaleButtonText(string value)
-        {
-            gizmoScaleButton.transform.GetChild(1).GetComponent<TextMeshProUGUI>().text = value;
         }
 
         public static void UnbindButton(LEV_CustomButton button)
@@ -200,6 +198,27 @@ namespace BPX
             //Get the LEV_CustomButton script of the new button and set the color and on click listener.
             LEV_CustomButton addedCustomButton = addedButton.GetComponent<LEV_CustomButton>();
             return addedCustomButton;
+        }
+
+        public static GizmoValues GetGizmoValues()
+        {
+            return new GizmoValues()
+            {
+                XZ = BPXManager.central.gizmos.list_gridXZ[BPXManager.central.gizmos.index_gridXZ],
+                Y = BPXManager.central.gizmos.list_gridY[BPXManager.central.gizmos.index_gridY],
+                R = BPXManager.central.gizmos.list_gridR[BPXManager.central.gizmos.index_gridR],
+                S = scaleButton.GetCurrentValue()
+            };
+        }
+
+        public static bool IsPanelOpen()
+        {
+            if(panel == null)
+            {
+                return false;
+            }
+
+            return panelIsOpen;
         }
     }
 }

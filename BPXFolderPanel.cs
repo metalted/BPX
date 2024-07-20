@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
+using System.IO;
 
 namespace BPX
 {
@@ -15,6 +16,7 @@ namespace BPX
         public LEV_CustomButton exitButton;
         public LEV_CustomButton createButton;
         public TMP_InputField input;
+        private bool folderCreated = false;
 
         public BPXFolderPanel(BPXPanel panel, RectTransform rect)
         {
@@ -36,12 +38,38 @@ namespace BPX
 
         private void OnExitButton()
         {
+            input.text = "";
 
+            exitButton.ResetAllBools();
+            createButton.ResetAllBools();
+
+            panel.OnFolderPanel(folderCreated);
+            folderCreated = false;
+            Disable();
         }
 
         private void OnCreateButton()
         {
+            if(input.text.Trim() == "")
+            {
+                Plugin.Instance.LogScreenMessage("Invalid Folder Name");
+                return;
+            }
 
+            string currentlyOpenedPath = panel.currentMode == BPXPanelMode.Blueprint ? panel.blueprintDirectory.FullName : panel.levelDirectory.FullName;
+            string newFolderPath = Path.Combine(currentlyOpenedPath, input.text);
+            
+            if(!Directory.Exists(newFolderPath))
+            {
+                Directory.CreateDirectory(newFolderPath);
+                folderCreated = true;
+            }
+            else
+            {
+                Plugin.Instance.LogScreenMessage("Folder already exists");
+            }
+
+            OnExitButton();
         }
 
         public void Disable()

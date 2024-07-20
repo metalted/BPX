@@ -15,25 +15,88 @@ namespace BPX
         public string FilePath { get; private set; }
         public bool Valid { get; private set; }
 
+        //Create a valid but empty zeeplevel file.
         public ZeeplevelFile()
         {
             GenerateBaseFile();
         }
 
+        //Create a zeeplevel file by reading it from a path, and then reading it from the CSV data.
         public ZeeplevelFile(string path)
         {
             GenerateBaseFile();
             ReadFromPath(path);
-            if(!Valid)
-            {
-                Plugin.Instance.LogMessage("Invalid!");
-            }
         }
 
+        //Create a zeeplevel file from the csv data directly.
         public ZeeplevelFile(string[] csvData)
         {
             GenerateBaseFile();
             ReadCSVData(csvData);
+        }
+
+        private void GenerateBaseFile()
+        {
+            Header = new ZeeplevelHeader();
+            Blocks = new List<ZeeplevelBlock>();
+            FileName = "";
+            FilePath = "";
+            Valid = true;
+        }
+
+        private void ReadFromPath(string path)
+        {
+            string[] csvData;
+
+            try
+            {
+                csvData = File.ReadAllLines(path);
+            }
+            catch (Exception ex)
+            {
+                Plugin.Instance.LogMessage(ex.Message);
+                Valid = false;
+                return;
+            }
+
+            FileName = Path.GetFileNameWithoutExtension(path);
+            FilePath = path;
+
+            Valid = ReadCSVData(csvData);
+        }
+
+        private bool ReadCSVData(string[] csvData)
+        {
+            if (csvData.Length < 3)
+            {
+                return false;
+            }
+
+            // Read the first 3 lines into the header
+            string[] headerData = new string[3];
+            Array.Copy(csvData, 0, headerData, 0, 3);
+            Header.ReadCSVData(headerData);
+
+            if (!Header.Valid)
+            {
+                return false;
+            }
+
+            Blocks.Clear();
+
+            // Read the remaining lines into blocks
+            for (int i = 3; i < csvData.Length; i++)
+            {
+                ZeeplevelBlock block = new ZeeplevelBlock();
+                block.ReadCSVString(csvData[i]);
+
+                if (block.Valid)
+                {
+                    Blocks.Add(block);
+                }
+            }
+
+            return true;
         }
 
         public void SetPlayerName(string playerName)
@@ -67,70 +130,6 @@ namespace BPX
             }
 
             Header.GenerateNewUUID(Header.PlayerName, Blocks.Count);
-        }
-
-        private void GenerateBaseFile()
-        {
-            Header = new ZeeplevelHeader();
-            Blocks = new List<ZeeplevelBlock>();
-            FileName = "";
-            FilePath = "";
-            Valid = true;
-        }
-
-        private void ReadFromPath(string path)
-        { 
-            string[] csvData;
-
-            try
-            {
-                csvData = File.ReadAllLines(path);
-            }
-            catch(Exception ex)
-            {
-                Plugin.Instance.LogMessage(ex.Message);
-                Valid = false;
-                return;
-            }
-            
-            FileName = Path.GetFileNameWithoutExtension(path);
-            FilePath = path;
-
-            Valid = ReadCSVData(csvData);
-        }        
-
-        private bool ReadCSVData(string[] csvData)
-        {
-            if (csvData.Length < 3)
-            {
-                Plugin.Instance.LogMessage("CSV Data not valid.");
-                return false;
-            }
-
-            // Read the first 3 lines into the header
-            string[] headerData = new string[3];
-            Array.Copy(csvData, 0, headerData, 0, 3);
-            Header.ReadCSVData(headerData);
-
-            if(!Header.Valid)
-            {
-                return false;
-            }
-
-            Blocks.Clear();
-            // Read the remaining lines into blocks
-            for (int i = 3; i < csvData.Length; i++)
-            {
-                ZeeplevelBlock block = new ZeeplevelBlock();
-                block.ReadCSVString(csvData[i]);
-
-                if(block.Valid)
-                {
-                    Blocks.Add(block);
-                }                
-            }
-
-            return true;
         }
 
         public string[] ToCSV()

@@ -47,4 +47,32 @@ namespace BPX
             BPXUIManagement.InitializeLevelEditor(__instance);
         }
     }
+
+    [HarmonyPatch(typeof(SkyboxManager), "PreviousCurrent")]
+    public class SkyboxManager_PreviousCurrent
+    {
+        public static bool Prefix(SkyboxManager __instance)
+        {
+            if (BPXUIManagement.IsPanelOpen())
+            {
+                return false;
+            }
+
+            return true;
+        }
+    }
+
+    [HarmonyPatch(typeof(SkyboxManager), "AdvanceCurrent")]
+    public class SkyboxManager_AdvanceCurrent
+    {
+        public static bool Prefix(SkyboxManager __instance)
+        {
+            if (BPXUI.savePanelIsOpen)
+            {
+                return false;
+            }
+
+            return true;
+        }
+    }
 }
