@@ -67,7 +67,7 @@ namespace BPX
     {
         public static bool Prefix(SkyboxManager __instance)
         {
-            if (BPXUI.savePanelIsOpen)
+            if (BPXUIManagement.IsPanelOpen())
             {
                 return false;
             }

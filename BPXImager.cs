@@ -1,16 +1,34 @@
-﻿using System;
+﻿using UnityEngine;
+using UnityEngine.Events;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BPX
 {
     public static class BPXImager
     {
-        public static void GenerateImage(ZeeplevelFile zeeplevelFile)
+        private static BPXImagingObject imager;
+
+        public static void Initialize()
         {
-            Plugin.Instance.LogMessage("Thumbnail!");
+            if (imager == null)
+            {
+                GameObject imagerObj = new GameObject("BPXImager");
+                GameObject.DontDestroyOnLoad(imagerObj);
+                imager = imagerObj.AddComponent<BPXImagingObject>();
+                imager.Initialize();
+            }
+        }
+
+        public static void GenerateImage(ZeeplevelFile zeeplevelFile, int imageSize, UnityAction<List<Texture2D>> callback)
+        {
+            // Ensure the imager is initialized
+            Initialize();
+
+            // Define a tag for the callback (it can be any unique string)
+            string tag = System.Guid.NewGuid().ToString();
+
+            // Call CaptureSubject on the imager with the specified parameters
+            imager.CaptureSubject(imageSize, zeeplevelFile, tag, callback);
         }
     }
 }

@@ -70,8 +70,7 @@ namespace BPX
         public static void SaveToFile(ZeeplevelFile zeeplevel, string path)
         {
             string[] csvContent = zeeplevel.ToCSV();
-            File.WriteAllLines(path, csvContent);
-            Plugin.Instance.LogScreenMessage("Saved " + zeeplevel.FileName);
+            File.WriteAllLines(path, csvContent);            
         }
 
         public static ZeeplevelFile CopyZeeplevelFile(ZeeplevelFile fileToCopy)

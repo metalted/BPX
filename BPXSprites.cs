@@ -43,5 +43,13 @@ namespace BPX
 
             return sprite;
         }
+
+        public static Sprite Texture2DToSprite(Texture2D tex)
+        {
+            Rect rect = new Rect(0, 0, tex.width, tex.height);
+            Vector2 pivot = new Vector2(0.5f, 0.5f);
+            Sprite sprite = Sprite.Create(tex, rect, pivot);
+            return sprite;
+        }
     }
 }

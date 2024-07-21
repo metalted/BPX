@@ -137,5 +137,30 @@ namespace BPX
 
             return directions;
         }
+
+        public static Bounds CalculateBounds(List<GameObject> objs)
+        {
+            Vector3 minBounds = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
+            Vector3 maxBounds = new Vector3(float.MinValue, float.MinValue, float.MinValue);
+
+            foreach (GameObject o in objs)
+            {
+                MeshRenderer[] renderers = o.GetComponentsInChildren<MeshRenderer>();
+
+                foreach (MeshRenderer r in renderers)
+                {
+                    if (r != null)
+                    {
+                        Bounds b = r.bounds;
+                        minBounds = Vector3.Min(minBounds, b.min);
+                        maxBounds = Vector3.Max(maxBounds, b.max);
+                    }
+                }
+            }
+
+            Vector3 center = (minBounds + maxBounds) * 0.5f;
+            Vector3 size = maxBounds - minBounds;
+            return new Bounds(center, size);
+        }
     }
 }
