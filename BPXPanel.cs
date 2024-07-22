@@ -35,16 +35,9 @@ namespace BPX
 
         public ZeeplevelFile selectedBlueprintToLoad = null;
         public ZeeplevelFile selectedBlueprintToSave = null;
-
-        public List<Texture2D> saveBlueprintTextures;
-        public List<Sprite> saveBlueprintSprites = new List<Sprite>();
-        public int saveBlueprintSpriteIndex = 0;
-        public List<Texture2D> loadBlueprintTextures;
-        public List<Sprite> loadBlueprintSprites = new List<Sprite>();
-        public int loadBlueprintSpriteIndex = 0;
-
         private string searchValue = "";
 
+        #region Initialization
         public void Initialize(LEV_LevelEditorCentral central)
         {
             GetPanelComponents();
@@ -53,12 +46,6 @@ namespace BPX
             blueprintDirectory = new DirectoryInfo(Plugin.Instance.pluginPath);
             levelDirectory = new DirectoryInfo(Plugin.Instance.levelPath);
         }
-
-        public void SetBlueprintToSave(ZeeplevelFile blueprintTosave)
-        {
-            selectedBlueprintToSave = blueprintTosave;            
-        }
-
         private void GetPanelComponents()
         {
             panelComponents = new Dictionary<BPXPanelComponentName, BPXPanelComponent>();
@@ -118,7 +105,6 @@ namespace BPX
                 }
             }
         }            
-    
         private void ConfigurePanel()
         {
             //Set the background color of the panel
@@ -155,17 +141,17 @@ namespace BPX
 
             //Bind functions to the buttons.
             panelComponents[BPXPanelComponentName.Save].BindButton(() => OnSaveButton());
-            panelComponents[BPXPanelComponentName.Load].BindButton(() => OnLoadHereButton());
-            panelComponents[BPXPanelComponentName.LoadHere].BindButton(() => OnLoadHereButton());
-            panelComponents[BPXPanelComponentName.LoadFile].BindButton(() => OnLoadFileButton());
-            panelComponents[BPXPanelComponentName.Home].BindButton(() => OnHomeButton());
+            panelComponents[BPXPanelComponentName.Load].BindButton(() => OnLoadButton(true));
+            panelComponents[BPXPanelComponentName.LoadHere].BindButton(() => OnLoadButton(true));
+            panelComponents[BPXPanelComponentName.LoadFile].BindButton(() => OnLoadButton(false));
+            panelComponents[BPXPanelComponentName.Home].BindButton(() => GoHome());
             panelComponents[BPXPanelComponentName.UpOneLevel].BindButton(()=> OnUpOneLevelButton());
             panelComponents[BPXPanelComponentName.NewFolder].BindButton(()=> OnNewFolderButton());
             panelComponents[BPXPanelComponentName.SwitchDir].BindButton(() => OnSwitchDirButton());
             panelComponents[BPXPanelComponentName.LoadPreview].BindButton(() => OnLoadPreviewButton());
             panelComponents[BPXPanelComponentName.SavePreview].BindButton(() => OnSavePreviewButton());
             panelComponents[BPXPanelComponentName.OpenFolder].BindButton(() => OnOpenFolderButton());
-            panelComponents[BPXPanelComponentName.Exit].BindButton(() => OnExitButton());
+            panelComponents[BPXPanelComponentName.Exit].BindButton(() => Close());
             panelComponents[BPXPanelComponentName.Upload].BindButton(() => OnUploadButton());
             panelComponents[BPXPanelComponentName.SearchBar].textInputField.onValueChanged.AddListener(delegate { RefreshPanel(); });
 
@@ -207,20 +193,100 @@ namespace BPX
             panelComponents[BPXPanelComponentName.SearchBar].SetPlaceHolderText("Search...");
             panelComponents[BPXPanelComponentName.TypeText].SetText("Blueprints");
         }
+        #endregion
+        
+        #region ExplorerPanel
+        private void OnDirectorySelectedInExplorer(DirectoryInfo directoryInfo)
+        {
+            if(currentMode == BPXPanelMode.Blueprint)
+            {
+                blueprintDirectory = directoryInfo;
+            }
+            else if(currentMode == BPXPanelMode.Level)
+            {
+                levelDirectory = directoryInfo;
+            }
 
+            RefreshPanel();
+        }
+        private void OnFileSelectedInExplorer(FileInfo fileInfo)
+        {
+            if(currentState == BPXPanelState.Save)
+            {
+                panelComponents[BPXPanelComponentName.FileName].SetText(fileInfo.Name.Replace(".zeeplevel", ""));
+            }
+            else if(currentState == BPXPanelState.Load)
+            {
+                selectedBlueprintToLoad = ZeeplevelHandler.LoadFromFile(fileInfo.FullName);
+
+                ManageLoadButtons();
+
+                if(selectedBlueprintToLoad == null)
+                {
+                    Plugin.Instance.LogMessage("OnFileSelectedInExplorer: Blueprint returned null");
+                    panelComponents[BPXPanelComponentName.FileName].SetText("");
+                    panelComponents[BPXPanelComponentName.Upload].Disable();
+                    return;
+                }
+
+                panelComponents[BPXPanelComponentName.FileName].SetText(selectedBlueprintToLoad.FileName);
+                panelComponents[BPXPanelComponentName.Upload].Enable();
+                BPXImager.GenerateImage(selectedBlueprintToLoad, 512, OnLoadedBlueprintPreviewGenerated);
+            }
+        }
+        private void GoHome()
+        {
+            if (currentMode == BPXPanelMode.Level)
+            {
+                levelDirectory = new DirectoryInfo(Plugin.Instance.levelPath);
+            }
+            else if (currentMode == BPXPanelMode.Blueprint)
+            {
+                blueprintDirectory = new DirectoryInfo(Plugin.Instance.pluginPath);
+            }
+
+            RefreshPanel();
+        }
+        #endregion
+
+        #region Panel        
+        private void ManageLoadButtons()
+        {
+            if (selectedBlueprintToLoad != null)
+            {
+                if (BPXConfiguration.DoubleLoadButton())
+                {
+                    panelComponents[BPXPanelComponentName.Load].Disable();
+                    panelComponents[BPXPanelComponentName.LoadHere].Enable();
+                    panelComponents[BPXPanelComponentName.LoadFile].Enable();
+                }
+                else
+                {
+                    panelComponents[BPXPanelComponentName.Load].Enable();
+                    panelComponents[BPXPanelComponentName.LoadHere].Disable();
+                    panelComponents[BPXPanelComponentName.LoadFile].Disable();
+                }
+            }
+            else
+            {
+                panelComponents[BPXPanelComponentName.Load].Disable();
+                panelComponents[BPXPanelComponentName.LoadHere].Disable();
+                panelComponents[BPXPanelComponentName.LoadFile].Disable();
+            }
+        }
         public void Open(BPXPanelState panelMode)
         {
-            if(panelMode == BPXPanelState.Closed || BPXManager.central == null)
+            if (panelMode == BPXPanelState.Closed || BPXManager.central == null)
             {
                 Close();
                 return;
             }
 
-            if(panelMode == BPXPanelState.Save)
+            if (panelMode == BPXPanelState.Save)
             {
-                panelComponents[BPXPanelComponentName.Save].Enable();                
-                        
-                panelComponents[BPXPanelComponentName.FileName].SetInteractable(true);                
+                panelComponents[BPXPanelComponentName.Save].Enable();
+
+                panelComponents[BPXPanelComponentName.FileName].SetInteractable(true);
                 panelComponents[BPXPanelComponentName.TypeText].SetText("Save Blueprint");
                 panelComponents[BPXPanelComponentName.FileName].SetText("");
 
@@ -236,21 +302,21 @@ namespace BPX
 
                 BPXImager.GenerateImage(selectedBlueprintToSave, 512, OnSavedBlueprintPreviewGenerated);
             }
-            else if(panelMode == BPXPanelState.Load)
+            else if (panelMode == BPXPanelState.Load)
             {
                 panelComponents[BPXPanelComponentName.SearchBar].Enable();
                 panelComponents[BPXPanelComponentName.LoadPreview].Enable();
                 panelComponents[BPXPanelComponentName.FileName].SetInteractable(false);
-                panelComponents[BPXPanelComponentName.TypeText].SetText("Import Blueprint");                
-                panelComponents[BPXPanelComponentName.Save].Disable();                
-                panelComponents[BPXPanelComponentName.SavePreview].Disable();                
+                panelComponents[BPXPanelComponentName.TypeText].SetText("Import Blueprint");
+                panelComponents[BPXPanelComponentName.Save].Disable();
+                panelComponents[BPXPanelComponentName.SavePreview].Disable();
 
-                if(selectedBlueprintToLoad != null)
+                if (selectedBlueprintToLoad != null)
                 {
                     panelComponents[BPXPanelComponentName.LoadPreview].SetButtonImage(BPXSprites.blackPixelSprite);
                     BPXImager.GenerateImage(selectedBlueprintToLoad, 512, OnLoadedBlueprintPreviewGenerated);
                     panelComponents[BPXPanelComponentName.FileName].SetText(selectedBlueprintToLoad.FileName);
-                    panelComponents[BPXPanelComponentName.Upload].Enable();                  
+                    panelComponents[BPXPanelComponentName.Upload].Enable();
                 }
                 else
                 {
@@ -260,7 +326,7 @@ namespace BPX
                 }
 
                 ManageLoadButtons();
-            }           
+            }
 
             currentState = panelMode;
 
@@ -270,17 +336,15 @@ namespace BPX
             BPXUIManagement.OnPanelOpen();
 
             gameObject.SetActive(true);
-        }        
-
+        }
         public void Close()
         {
             gameObject.SetActive(false);
             confirmPanel.Disable();
-            folderPanel.Disable();            
+            folderPanel.Disable();
             currentState = BPXPanelState.Closed;
             BPXUIManagement.OnPanelClose();
         }
-
         private void RefreshPanel()
         {
             try
@@ -383,35 +447,9 @@ namespace BPX
             catch (Exception ex)
             {
                 Plugin.Instance.LogMessage(ex.Message);
-                OnHomeButton();
+                GoHome();
             }
         }
-
-        private void ManageLoadButtons()
-        {
-            if (selectedBlueprintToLoad != null)
-            {
-                if (BPXConfiguration.DoubleLoadButton())
-                {
-                    panelComponents[BPXPanelComponentName.Load].Disable();
-                    panelComponents[BPXPanelComponentName.LoadHere].Enable();
-                    panelComponents[BPXPanelComponentName.LoadFile].Enable();
-                }
-                else
-                {
-                    panelComponents[BPXPanelComponentName.Load].Enable();
-                    panelComponents[BPXPanelComponentName.LoadHere].Disable();
-                    panelComponents[BPXPanelComponentName.LoadFile].Disable();
-                }
-            }
-            else
-            {
-                panelComponents[BPXPanelComponentName.Load].Disable();
-                panelComponents[BPXPanelComponentName.LoadHere].Disable();
-                panelComponents[BPXPanelComponentName.LoadFile].Disable();
-            }
-        }
-
         private void ClearExplorerElements()
         {
             for (int i = 0; i < currentExplorerElements.Count; i++)
@@ -424,61 +462,50 @@ namespace BPX
             }
             currentExplorerElements.Clear();
         }
-
         private void ResetComponents()
         {
-            foreach(KeyValuePair<BPXPanelComponentName, BPXPanelComponent> comp in panelComponents)
+            foreach (KeyValuePair<BPXPanelComponentName, BPXPanelComponent> comp in panelComponents)
             {
                 comp.Value.Reset();
             }
         }
+        #endregion
 
-        private void OnDirectorySelectedInExplorer(DirectoryInfo directoryInfo)
+        #region Callbacks
+        public void OnConfirmPanel(bool confirmed)
         {
-            if(currentMode == BPXPanelMode.Blueprint)
+            if (confirmed)
             {
-                blueprintDirectory = directoryInfo;
-            }
-            else if(currentMode == BPXPanelMode.Level)
-            {
-                levelDirectory = directoryInfo;
-            }
-
-            RefreshPanel();
-        }
-
-        private void OnFileSelectedInExplorer(FileInfo fileInfo)
-        {
-            if(currentState == BPXPanelState.Save)
-            {
-                panelComponents[BPXPanelComponentName.FileName].SetText(fileInfo.Name.Replace(".zeeplevel", ""));
-            }
-            else if(currentState == BPXPanelState.Load)
-            {
-                selectedBlueprintToLoad = ZeeplevelHandler.LoadFromFile(fileInfo.FullName);
-
-                ManageLoadButtons();
-
-                if(selectedBlueprintToLoad == null)
-                {
-                    Plugin.Instance.LogMessage("OnFileSelectedInExplorer: Blueprint returned null");
-                    panelComponents[BPXPanelComponentName.FileName].SetText("");
-                    panelComponents[BPXPanelComponentName.Upload].Disable();
-                    return;
-                }
-
-                panelComponents[BPXPanelComponentName.FileName].SetText(selectedBlueprintToLoad.FileName);
-                panelComponents[BPXPanelComponentName.Upload].Enable();
-                BPXImager.GenerateImage(selectedBlueprintToLoad, 512, OnLoadedBlueprintPreviewGenerated);
+                ZeeplevelHandler.SaveToFile(selectedBlueprintToSave, selectedBlueprintToSave.FilePath);
+                Plugin.Instance.LogScreenMessage("Saved " + Path.GetFileNameWithoutExtension(selectedBlueprintToSave.FilePath));
+                Close();
             }
         }
+        public void OnFolderPanel(bool folderCreated)
+        {
+            if (folderCreated)
+            {
+                RefreshPanel();
+            }
+        }
+        public void SetBlueprintToSave(ZeeplevelFile blueprintTosave)
+        {
+            selectedBlueprintToSave = blueprintTosave;
+        }
+        #endregion
 
+        #region Buttons
+        private void OnLoadButton(bool loadHere)
+        {
+            ZeeplevelHandler.InstantiateBlueprintIntoEditor(selectedBlueprintToLoad, loadHere);
+            Close();
+        }
         private void OnSaveButton()
         {
             //Get the entered name
             string enteredName = panelComponents[BPXPanelComponentName.FileName].GetText();
 
-            if(string.IsNullOrEmpty(enteredName))
+            if (string.IsNullOrEmpty(enteredName))
             {
                 BPXManager.central.manager.messenger.LogError("Please enter a name!", 3f);
                 return;
@@ -492,7 +519,7 @@ namespace BPX
             string targetPath = Path.Combine(directoryPath, enteredName + ".zeeplevel");
 
             //Check if this file already exists
-            if(File.Exists(targetPath))
+            if (File.Exists(targetPath))
             {
                 //Show the are you sure panel with "overwrite".
                 selectedBlueprintToSave.SetPath(targetPath);
@@ -505,58 +532,18 @@ namespace BPX
                 ZeeplevelHandler.SaveToFile(selectedBlueprintToSave, targetPath);
                 Plugin.Instance.LogScreenMessage("Saved " + Path.GetFileNameWithoutExtension(selectedBlueprintToSave.FilePath));
                 Close();
-            }    
-        }
-
-        public void OnConfirmPanel(bool confirmed)
-        {
-            if(confirmed) 
-            {
-                ZeeplevelHandler.SaveToFile(selectedBlueprintToSave, selectedBlueprintToSave.FilePath);
-                Plugin.Instance.LogScreenMessage("Saved " + Path.GetFileNameWithoutExtension(selectedBlueprintToSave.FilePath));
-                Close();
-            } 
-        }
-
-        public void OnFolderPanel(bool folderCreated)
-        {
-            if(folderCreated)
-            {
-                RefreshPanel();
-            }            
-        }
-
-        private void OnLoadHereButton()
-        {
-            ZeeplevelHandler.InstantiateBlueprintIntoEditor(selectedBlueprintToLoad);
-            Close();
-        }
-
-        private void OnLoadFileButton()
-        {
-            ZeeplevelHandler.InstantiateBlueprintIntoEditor(selectedBlueprintToLoad, false);
-            Close();
-        }       
-        
-        private void OnHomeButton()
-        {
-            if(currentMode == BPXPanelMode.Level)
-            {
-                levelDirectory = new DirectoryInfo(Plugin.Instance.levelPath);
             }
-            else if(currentMode == BPXPanelMode.Blueprint)
-            {
-                blueprintDirectory = new DirectoryInfo(Plugin.Instance.pluginPath);
-            }
-
-            RefreshPanel();
         }
-
+        private void OnNewFolderButton()
+        {
+            folderPanel.Enable();
+            ResetComponents();
+        }
         private void OnUpOneLevelButton()
         {
             if (currentMode == BPXPanelMode.Level)
             {
-                if(levelDirectory.Parent != null && levelDirectory.FullName != Plugin.Instance.levelPath)
+                if (levelDirectory.Parent != null && levelDirectory.FullName != Plugin.Instance.levelPath)
                 {
                     levelDirectory = levelDirectory.Parent;
                 }
@@ -571,14 +558,6 @@ namespace BPX
 
             RefreshPanel();
         }
-
-        private void OnNewFolderButton()
-        {
-            folderPanel.Enable();
-
-            ResetComponents();
-        }
-
         private void OnSwitchDirButton()
         {
             if (currentMode == BPXPanelMode.Level)
@@ -592,55 +571,6 @@ namespace BPX
 
             RefreshPanel();
         }
-
-        private void OnLoadedBlueprintPreviewGenerated(List<Texture2D> captures)
-        {
-            loadBlueprintTextures = captures;
-            loadBlueprintSprites.Clear();
-
-            foreach(Texture2D tex in captures)
-            {
-                loadBlueprintSprites.Add(BPXSprites.Texture2DToSprite(tex));
-            }
-
-            loadBlueprintSpriteIndex = 0;
-            panelComponents[BPXPanelComponentName.LoadPreview].SetButtonImage(loadBlueprintSprites[loadBlueprintSpriteIndex]);
-        }
-
-        private void OnLoadPreviewButton()
-        {
-            loadBlueprintSpriteIndex++;
-            if(loadBlueprintSpriteIndex >= loadBlueprintSprites.Count)
-            {
-                loadBlueprintSpriteIndex = 0;
-            }
-            panelComponents[BPXPanelComponentName.LoadPreview].SetButtonImage(loadBlueprintSprites[loadBlueprintSpriteIndex]);
-        }
-
-        private void OnSavedBlueprintPreviewGenerated(List<Texture2D> captures)
-        {
-            saveBlueprintTextures = captures;
-            saveBlueprintSprites.Clear();
-
-            foreach (Texture2D tex in captures)
-            {
-                saveBlueprintSprites.Add(BPXSprites.Texture2DToSprite(tex));
-            }
-
-            saveBlueprintSpriteIndex = 0;
-            panelComponents[BPXPanelComponentName.SavePreview].SetButtonImage(saveBlueprintSprites[saveBlueprintSpriteIndex]);
-        }        
-        
-        private void OnSavePreviewButton()
-        {
-            saveBlueprintSpriteIndex++;
-            if (saveBlueprintSpriteIndex >= saveBlueprintSprites.Count)
-            {
-                saveBlueprintSpriteIndex = 0;
-            }
-            panelComponents[BPXPanelComponentName.SavePreview].SetButtonImage(saveBlueprintSprites[saveBlueprintSpriteIndex]);
-        }
-
         private void OnOpenFolderButton()
         {
             string path = currentMode == BPXPanelMode.Level ? levelDirectory.FullName : blueprintDirectory.FullName;
@@ -654,21 +584,69 @@ namespace BPX
                 BPXManager.central.manager.messenger.LogError("Not supported on this platform", 2f);
             }
         }
-
-        private void OnExitButton()
-        {
-            Close();
-        }
-
         private void OnUploadButton()
         {
             fileToUpload = ZeeplevelHandler.CopyZeeplevelFile(selectedBlueprintToLoad);
             BPXImager.GenerateImage(fileToUpload, 256, OnUploadPreviewGenerated);
         }
+        #endregion
 
+        #region Preview
+        public List<Texture2D> saveBlueprintTextures;
+        public List<Texture2D> loadBlueprintTextures;
+        public List<Sprite> saveBlueprintSprites = new List<Sprite>();
+        public List<Sprite> loadBlueprintSprites = new List<Sprite>();
+        public int saveBlueprintSpriteIndex = 0;
+        public int loadBlueprintSpriteIndex = 0;
+        private void OnLoadedBlueprintPreviewGenerated(List<Texture2D> captures)
+        {
+            loadBlueprintTextures = captures;
+            loadBlueprintSprites.Clear();
+
+            foreach(Texture2D tex in captures)
+            {
+                loadBlueprintSprites.Add(BPXSprites.Texture2DToSprite(tex));
+            }
+
+            loadBlueprintSpriteIndex = 0;
+            panelComponents[BPXPanelComponentName.LoadPreview].SetButtonImage(loadBlueprintSprites[loadBlueprintSpriteIndex]);
+        }
+        private void OnLoadPreviewButton()
+        {
+            loadBlueprintSpriteIndex++;
+            if(loadBlueprintSpriteIndex >= loadBlueprintSprites.Count)
+            {
+                loadBlueprintSpriteIndex = 0;
+            }
+            panelComponents[BPXPanelComponentName.LoadPreview].SetButtonImage(loadBlueprintSprites[loadBlueprintSpriteIndex]);
+        }
+        private void OnSavedBlueprintPreviewGenerated(List<Texture2D> captures)
+        {
+            saveBlueprintTextures = captures;
+            saveBlueprintSprites.Clear();
+
+            foreach (Texture2D tex in captures)
+            {
+                saveBlueprintSprites.Add(BPXSprites.Texture2DToSprite(tex));
+            }
+
+            saveBlueprintSpriteIndex = 0;
+            panelComponents[BPXPanelComponentName.SavePreview].SetButtonImage(saveBlueprintSprites[saveBlueprintSpriteIndex]);
+        }        
+        private void OnSavePreviewButton()
+        {
+            saveBlueprintSpriteIndex++;
+            if (saveBlueprintSpriteIndex >= saveBlueprintSprites.Count)
+            {
+                saveBlueprintSpriteIndex = 0;
+            }
+            panelComponents[BPXPanelComponentName.SavePreview].SetButtonImage(saveBlueprintSprites[saveBlueprintSpriteIndex]);
+        }
+        #endregion
+
+        #region Uploading
         private ZeeplevelFile fileToUpload;
         private Texture2D imageToUpload;
-
         private void OnUploadPreviewGenerated(List<Texture2D> captures)
         {
             // Take the first capture
@@ -704,5 +682,6 @@ namespace BPX
             Debug.Log($"File saved to: {filePath}");
             Debug.Log($"Image saved to: {imagePath}");
         }
+        #endregion
     }
 }
