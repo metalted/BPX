@@ -254,7 +254,7 @@ namespace BPX
         {
             if (selectedBlueprintToLoad != null)
             {
-                if (BPXConfiguration.DoubleLoadButton())
+                if (BPXConfiguration.DoubleLoadButtons())
                 {
                     panelComponents[BPXPanelComponentName.Load].Disable();
                     panelComponents[BPXPanelComponentName.LoadHere].Enable();

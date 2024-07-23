@@ -59,9 +59,9 @@ namespace BPX
 
             if (loadHere)
             {
-                BPXBlueprintBounds bounds = new BPXBlueprintBounds(registration.blockList);
+                Bounds bounds = BPXUtils.CalculateBounds(registration.blockList);
                 Vector3 cameraGridPosition = BPXUtils.ClosestGridPosition(BPXManager.central.cam.transform.position);
-                Vector3 blueprintGridPosition = BPXUtils.ClosestGridPosition(bounds.bounds.center);
+                Vector3 blueprintGridPosition = BPXUtils.ClosestGridPosition(bounds.center);
                 Vector3 move = cameraGridPosition - blueprintGridPosition;
                 BPXOperations.Move(registration.blockList, move);
             }
