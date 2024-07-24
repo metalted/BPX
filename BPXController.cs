@@ -205,7 +205,7 @@ namespace BPX
             //Axis Cycle
             if(GetKeyEnabled(BPXConfiguration.GetAxisCycleKey(), enableKeyState, BPXConfiguration.AxisCycleRequireEnableKey()))
             {
-                HandleAxisCycle();
+                HandleAxisCycle(modifierKeyState);
             }
         }
 
@@ -291,23 +291,23 @@ namespace BPX
 
             GizmoValues gizmoValues = BPXUIManagement.GetGizmoValues();
             Vector3 rotationAxis = Vector3.zero;
-            float amount;
+            float amount = 0;
 
             if (modifierKeyState)
             {
                 switch (direction)
                 {
                     case Direction.Left:
-                    case Direction.Right:
-                        return;
-                    case Direction.Up:
                         rotationAxis = BPXManager.central.gizmos.rotationGizmos.transform.up;
                         amount = gizmoValues.R;
                         break;
-                    case Direction.Down:
+                    case Direction.Right:
                         rotationAxis = BPXManager.central.gizmos.rotationGizmos.transform.up;
                         amount = -gizmoValues.R;
                         break;
+                    case Direction.Up:
+                    case Direction.Down:
+                        return;
                 }
             }
             else
@@ -315,45 +315,82 @@ namespace BPX
                 switch (direction)
                 {
                     case Direction.Left:
-                        rotationAxis = BPXManager.central.gizmos.rotationGizmos.transform.up;
+                        rotationAxis = BPXManager.central.gizmos.rotationGizmos.transform.forward;
                         amount = gizmoValues.R;
                         break;
                     case Direction.Right:
-                        rotationAxis = BPXManager.central.gizmos.rotationGizmos.transform.up;
-                        amount = gizmoValues.R;
+                        rotationAxis = BPXManager.central.gizmos.rotationGizmos.transform.forward;
+                        amount = -gizmoValues.R;
                         break;
                     case Direction.Up:
-                        rotationAxis = BPXManager.central.gizmos.rotationGizmos.transform.up;
-                        amount = gizmoValues.R;
+                        rotationAxis = BPXManager.central.gizmos.rotationGizmos.transform.right;
+                        amount = -gizmoValues.R;
                         break;
                     case Direction.Down:
-                        rotationAxis = BPXManager.central.gizmos.rotationGizmos.transform.up;
+                        rotationAxis = BPXManager.central.gizmos.rotationGizmos.transform.right;
                         amount = gizmoValues.R;
                         break;
                 }
             }
 
-            BPXOperations.Move(BPXManager.GetSelectedBlocks(), moveAxis);
+            BPXOperations.RotateSelection(rotationAxis, amount);
         }
 
         private void HandleMirroring()
         {
+            if (!BPXManager.AnyObjectsSelected()) { return; }
 
+            Vector3 axis = BPXUIManagement.GetGizmo().GetCurrentAxes();
+
+            if(axis[0] != 0)
+            {
+                axis = Vector3.right;
+            }
+            else if(axis[1] != 0)
+            {
+                axis = Vector3.up;
+            }
+            else if(axis[2] != 0)
+            {
+                axis = Vector3.forward;
+            }
+            else
+            {
+                axis = Vector3.right;
+            }
+
+            BPXOperations.Mirror(BPXManager.GetSelectedBlocks(), axis);
         }
 
         private void HandleClipboard(bool isCopyNotPaste)
         {
+            if(isCopyNotPaste)
+            {
+                if (!BPXManager.AnyObjectsSelected()) { return; }
 
+                ZeeplevelFile copy = ZeeplevelHandler.FromBlockProperties(BPXManager.GetSelectedBlocks());
+                BPXManager.SetClipboard(copy);
+            }
+            else
+            {
+                ZeeplevelFile clipboard = BPXManager.GetClipboard();
+
+                if(clipboard != null)
+                {
+                    ZeeplevelHandler.InstantiateBlueprintIntoEditor(clipboard, BPXConfiguration.PasteClipboardToCamera());
+                }
+            }           
         }
 
         private void HandleFastTravel()
         {
-
+            if (!BPXManager.AnyObjectsSelected()) { return; }
+            BPXManager.central.cam.transform.position = BPXManager.central.gizmos.motherGizmo.transform.position;
         }
 
-        private void HandleAxisCycle()
+        private void HandleAxisCycle(bool modifierKeyState)
         {
-
+            BPXUIManagement.GetGizmo().Cycle(!modifierKeyState, BPXConfiguration.IncludePlanesInCycle());
         }
     }
 }

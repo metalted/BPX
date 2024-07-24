@@ -88,56 +88,56 @@ namespace BPX
             Config = cfg;
 
             // General Settings
-            enableKey = Config.Bind("1.General Settings", "1.Enable Key", KeyCode.None, "Key to enable functionality");
-            modifierKey = Config.Bind("1.General Settings", "2.Modifier Key", KeyCode.None, "Modifier key for additional controls");
+            enableKey = Config.Bind("01.General Settings", "1.Enable Key", KeyCode.None, "Key to enable functionality");
+            modifierKey = Config.Bind("01.General Settings", "2.Modifier Key", KeyCode.None, "Modifier key for additional controls");
 
             // Axis Cycling
-            axisCycleKey = Config.Bind("2.Axis Cycling", "1.Axis Cycle Key", KeyCode.None, "Key to cycle through axes");
-            axisCycleRequiresEnableKey = Config.Bind("2.Axis Cycling", "2.Axis Cycle Requires Enable Key", false, "Requires enable key to cycle through axes");
-            includePlanesInCycle = Config.Bind("2.Axis Cycling", "3.Include Planes In Cycle", false, "Include planes in the axis cycling");
+            axisCycleKey = Config.Bind("02.Axis Cycling", "1.Axis Cycle Key", KeyCode.None, "Key to cycle through axes");
+            axisCycleRequiresEnableKey = Config.Bind("02.Axis Cycling", "2.Axis Cycle Requires Enable Key", false, "Requires enable key to cycle through axes");
+            includePlanesInCycle = Config.Bind("02.Axis Cycling", "3.Include Planes In Cycle", false, "Include planes in the axis cycling");
 
             // Drag Selection
-            dragSelectionKey = Config.Bind("3.Drag Selection", "1.Drag Selection Key", KeyCode.None, "Key for drag selection");
-            mmbSelection = Config.Bind("3.Drag Selection", "2.MMB Selection", false, "Use middle mouse button for selection");
-            dragSelectionRequiresEnableKey = Config.Bind("3.Drag Selection", "3.Drag Selection Requires Enable Key", false, "Requires enable key for drag selection");
+            dragSelectionKey = Config.Bind("03.Drag Selection", "1.Drag Selection Key", KeyCode.None, "Key for drag selection");
+            mmbSelection = Config.Bind("03.Drag Selection", "2.MMB Selection", false, "Use middle mouse button for selection");
+            dragSelectionRequiresEnableKey = Config.Bind("03.Drag Selection", "3.Drag Selection Requires Enable Key", false, "Requires enable key for drag selection");
 
             // Scaling
-            scrollScaling = Config.Bind("4.Scaling", "1.Scroll Scaling", false, "Enable scaling with scroll");
-            invertScrollScaling = Config.Bind("4.Scaling", "2.Invert Scroll Scaling", false, "Invert scroll scaling direction");
-            negativeScalingKey = Config.Bind("4.Scaling", "3.Negative Scaling Key", KeyCode.None, "Key for negative scaling");
-            positiveScalingKey = Config.Bind("4.Scaling", "4.Positive Scaling Key", KeyCode.None, "Key for positive scaling");
-            scalingRequiresEnableKey = Config.Bind("4.Scaling", "5.Scaling Requires Enable Key", false, "Requires enable key for scaling");
-            scalingValues = Config.Bind("4.Scaling", "6.Scaling Values", "", "Custom scaling values");
-            defaultScalingValue = Config.Bind("4.Scaling", "7.Default Scaling Value", "", "Default scaling value");
+            scrollScaling = Config.Bind("04.Scaling", "1.Scroll Scaling", false, "Enable scaling with scroll");
+            invertScrollScaling = Config.Bind("04.Scaling", "2.Invert Scroll Scaling", false, "Invert scroll scaling direction");
+            negativeScalingKey = Config.Bind("04.Scaling", "3.Negative Scaling Key", KeyCode.None, "Key for negative scaling");
+            positiveScalingKey = Config.Bind("04.Scaling", "4.Positive Scaling Key", KeyCode.None, "Key for positive scaling");
+            scalingRequiresEnableKey = Config.Bind("04.Scaling", "5.Scaling Requires Enable Key", false, "Requires enable key for scaling");
+            scalingValues = Config.Bind("04.Scaling", "6.Scaling Values", "", "Custom scaling values");
+            defaultScalingValue = Config.Bind("04.Scaling", "7.Default Scaling Value", "", "Default scaling value");
 
             // Key Movement
-            forwardUpMovement = Config.Bind("5.Key Movement", "1.Forward/Up Movement Key", KeyCode.None, "Key for forward/up movement");
-            backDownMovement = Config.Bind("5.Key Movement", "2.Back/Down Movement Key", KeyCode.None, "Key for back/down movement");
-            leftMovement = Config.Bind("5.Key Movement", "3.Left Movement Key", KeyCode.None, "Key for left movement");
-            rightMovement = Config.Bind("5.Key Movement", "4.Right Movement Key", KeyCode.None, "Key for right movement");
-            movementRequiresEnableKey = Config.Bind("5.Key Movement", "5.Movement Requires Enable Key", false, "Requires enable key for movement");
-            movementIfRotationIsDisabled = Config.Bind("5.Key Movement", "6.Movement If Rotation Is Disabled", false, "Allow movement if rotation is disabled");
+            forwardUpMovement = Config.Bind("05.Key Movement", "1.Forward/Up Movement Key", KeyCode.None, "Key for forward/up movement");
+            backDownMovement = Config.Bind("05.Key Movement", "2.Back/Down Movement Key", KeyCode.None, "Key for back/down movement");
+            leftMovement = Config.Bind("05.Key Movement", "3.Left Movement Key", KeyCode.None, "Key for left movement");
+            rightMovement = Config.Bind("05.Key Movement", "4.Right Movement Key", KeyCode.None, "Key for right movement");
+            movementRequiresEnableKey = Config.Bind("05.Key Movement", "5.Movement Requires Enable Key", false, "Requires enable key for movement");
+            movementIfRotationIsDisabled = Config.Bind("05.Key Movement", "6.Movement If Rotation Is Disabled", false, "Allow movement if rotation is disabled");
 
             // Key Rotation
-            xPositiveRotation = Config.Bind("6.Key Rotation", "1.X Positive Rotation Key", KeyCode.None, "Key for positive rotation around the X axis");
-            xNegativeRotation = Config.Bind("6.Key Rotation", "2.X Negative Rotation Key", KeyCode.None, "Key for negative rotation around the X axis");
-            yzPositiveRotation = Config.Bind("6.Key Rotation", "3.YZ Positive Rotation Key", KeyCode.None, "Key for positive rotation around the Y and Z axes");
-            yzNegativeRotation = Config.Bind("6.Key Rotation", "4.YZ Negative Rotation Key", KeyCode.None, "Key for negative rotation around the Y and Z axes");
-            rotationRequiresEnableKey = Config.Bind("6.Key Rotation", "5.Rotation Requires Enable Key", false, "Requires enable key for rotation");
+            xPositiveRotation = Config.Bind("06.Key Rotation", "1.X Positive Rotation Key", KeyCode.None, "Key for positive rotation around the X axis");
+            xNegativeRotation = Config.Bind("06.Key Rotation", "2.X Negative Rotation Key", KeyCode.None, "Key for negative rotation around the X axis");
+            yzPositiveRotation = Config.Bind("06.Key Rotation", "3.YZ Positive Rotation Key", KeyCode.None, "Key for positive rotation around the Y and Z axes");
+            yzNegativeRotation = Config.Bind("06.Key Rotation", "4.YZ Negative Rotation Key", KeyCode.None, "Key for negative rotation around the Y and Z axes");
+            rotationRequiresEnableKey = Config.Bind("06.Key Rotation", "5.Rotation Requires Enable Key", false, "Requires enable key for rotation");
 
             // Mirroring
-            mirrorKey = Config.Bind("7.Mirroring", "1.Mirror Key", KeyCode.None, "Key for mirroring");
-            mirrorRequiresEnableKey = Config.Bind("7.Mirroring", "2.Mirror Requires Enable Key", false, "Requires enable key for mirroring");
+            mirrorKey = Config.Bind("07.Mirroring", "1.Mirror Key", KeyCode.None, "Key for mirroring");
+            mirrorRequiresEnableKey = Config.Bind("07.Mirroring", "2.Mirror Requires Enable Key", false, "Requires enable key for mirroring");
 
             // Clipboard
-            clipboardCopy = Config.Bind("8.Clipboard", "1.Clipboard Copy Key", KeyCode.None, "Key for copying to clipboard");
-            clipboardPaste = Config.Bind("8.Clipboard", "2.Clipboard Paste Key", KeyCode.None, "Key for pasting from clipboard");
-            clipboardRequiresEnableKey = Config.Bind("8.Clipboard", "3.Clipboard Requires Enable Key", false, "Requires enable key for clipboard operations");
-            pasteClipboardToCamera = Config.Bind("8.Clipboard", "4.Paste Clipboard To Camera", false, "Paste clipboard content to camera");
+            clipboardCopy = Config.Bind("08.Clipboard", "1.Clipboard Copy Key", KeyCode.None, "Key for copying to clipboard");
+            clipboardPaste = Config.Bind("08.Clipboard", "2.Clipboard Paste Key", KeyCode.None, "Key for pasting from clipboard");
+            clipboardRequiresEnableKey = Config.Bind("08.Clipboard", "3.Clipboard Requires Enable Key", false, "Requires enable key for clipboard operations");
+            pasteClipboardToCamera = Config.Bind("08.Clipboard", "4.Paste Clipboard To Camera", false, "Paste clipboard content to camera");
 
             // Fast Travel
-            fastTravelKey = Config.Bind("9.Fast Travel", "1.Fast Travel Key", KeyCode.None, "Key for fast travel");
-            fastTravelRequiresEnableKey = Config.Bind("9.Fast Travel", "2.Fast Travel Requires Enable Key", false, "Requires enable key for fast travel");
+            fastTravelKey = Config.Bind("09.Fast Travel", "1.Fast Travel Key", KeyCode.None, "Key for fast travel");
+            fastTravelRequiresEnableKey = Config.Bind("09.Fast Travel", "2.Fast Travel Requires Enable Key", false, "Requires enable key for fast travel");
 
             // Shortcuts
             saveShortcutKey = Config.Bind("10.Shortcuts", "1.Save Shortcut Key", KeyCode.None, "Key for save shortcut");

@@ -28,6 +28,8 @@ namespace BPX
             InitializeToolbar(central);
             InitializeGizmoButton(central);
             InitializeGizmo(central);
+
+            central.gameObject.AddComponent<BPXController>();
         }
 
         private static void InitializePanel(LEV_LevelEditorCentral central)

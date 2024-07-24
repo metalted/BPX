@@ -21,6 +21,8 @@ namespace BPX
             pluginPath = AppDomain.CurrentDomain.BaseDirectory + @"\BepInEx\plugins";
             levelPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\Zeepkist\\Levels";
             Instance = this;
+
+            BPXConfiguration.Initialize(Config);
             BPXSprites.Initialize();
 
             Harmony harmony = new Harmony(pluginGuid);

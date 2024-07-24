@@ -12,6 +12,7 @@ namespace BPX
     {
         public static LEV_LevelEditorCentral central;
         private static BPXImagingObject imager;
+        private static ZeeplevelFile clipboardContent;
 
         public static void DeselectAllBlocks()
         {
@@ -108,6 +109,16 @@ namespace BPX
             }
 
             return false;
+        }
+
+        public static void SetClipboard(ZeeplevelFile content)
+        {
+            clipboardContent = content;
+        }
+
+        public static ZeeplevelFile GetClipboard()
+        {
+            return clipboardContent;
         }
     }
 }
