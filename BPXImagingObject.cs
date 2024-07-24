@@ -15,8 +15,6 @@ namespace BPX
         private Transform subjectPivot;
         private Transform subjectHolder;
         private List<GameObject> objects = new List<GameObject>();
-        private Dictionary<string, UnityAction<List<Texture2D>>> callbackDictionary = new Dictionary<string, UnityAction<List<Texture2D>>>();
-        public float orthoFactor = 0.5f;
 
         public void Initialize()
         {
@@ -32,29 +30,24 @@ namespace BPX
             renderTexture.Create();
             captureCamera.targetTexture = renderTexture;
 
-            // Create the background, position it and child it to the camera.
             Transform background = GameObject.CreatePrimitive(PrimitiveType.Plane).transform;
             background.parent = cameraTransform;
             background.localPosition = new Vector3(0, 0, 128);
             background.Rotate(-90, 0, 0);
 
-            // Create the background plane and set its color.
             Material backgroundMaterial = new Material(Shader.Find("Unlit/Color"));
             backgroundMaterial.color = Color.black;
             background.gameObject.GetComponent<Renderer>().material = backgroundMaterial;
             background.localScale = new Vector3(75f, 75f, 75f);
 
-            // Create the subject pivot
             subjectPivot = new GameObject("Subject Pivot").transform;
             subjectPivot.parent = transform;
             subjectPivot.localPosition = Vector3.zero;
 
-            // Create the subject holder
             subjectHolder = new GameObject("Subject Holder").transform;
             subjectHolder.parent = subjectPivot;
             subjectHolder.localPosition = Vector3.zero;
 
-            // Move somewhere out of sight
             transform.position = new Vector3(0, 20000, 0);
 
             cameraTransform.localPosition = new Vector3(20, 20, -20);
@@ -65,7 +58,7 @@ namespace BPX
             init = true;
         }
 
-        public void CaptureSubject(int imageSize, ZeeplevelFile zeeplevelFile, string tag, UnityAction<List<Texture2D>> callback)
+        public void CaptureSubject(int imageSize, ZeeplevelFile zeeplevelFile, UnityAction<List<Texture2D>> callback)
         {
             Enable();
 
@@ -74,19 +67,10 @@ namespace BPX
             renderTexture.height = imageSize;
             renderTexture.Create();
 
-            if (callbackDictionary.ContainsKey(tag))
-            {
-                callbackDictionary[tag] = callback;
-            }
-            else
-            {
-                callbackDictionary.Add(tag, callback);
-            }
-
-            StartCoroutine(CaptureRoutine(zeeplevelFile, tag));
+            StartCoroutine(CaptureRoutine(zeeplevelFile, callback));
         }
 
-        public IEnumerator CaptureRoutine(ZeeplevelFile zeeplevelFile, string tag)
+        private IEnumerator CaptureRoutine(ZeeplevelFile zeeplevelFile, UnityAction<List<Texture2D>> callback)
         {
             Reset();
             LoadSubject(zeeplevelFile);
@@ -97,11 +81,7 @@ namespace BPX
 
             RemoveSubject();
 
-            if (callbackDictionary.ContainsKey(tag))
-            {
-                callbackDictionary[tag]?.Invoke(captures);
-                callbackDictionary.Remove(tag);
-            }
+            callback?.Invoke(captures);
 
             Disable();
         }
@@ -140,16 +120,13 @@ namespace BPX
             {
                 int id = zeeplevelFile.Blocks[i].BlockID;
 
-                // Skip invalid block ids
                 if (id < 0 || id >= PlayerManager.Instance.loader.globalBlockList.blocks.Count)
                 {
                     continue;
                 }
 
-                // Create a blockPropertyJSON of the ZeeplevelBlock
                 BlockPropertyJSON blockPropertyJSON = BPXUtils.ZeeplevelBlockToBlockPropertyJSON(zeeplevelFile.Blocks[i]);
 
-                // Instantiate the block
                 BlockProperties bp = GameObject.Instantiate<BlockProperties>(BPXManager.central.manager.loader.globalBlockList.blocks[id]);
                 bp.CreateBlock();
                 bp.properties.Clear();
@@ -157,7 +134,6 @@ namespace BPX
                 bp.LoadProperties_v15(blockPropertyJSON, false);
                 bp.isLoading = false;
 
-                // Get the object and remove the block properties
                 GameObject bpObj = bp.gameObject;
                 bpObj.transform.parent = subjectHolder;
                 GameObject.Destroy(bp);
@@ -166,15 +142,13 @@ namespace BPX
 
             Bounds bounds = BPXUtils.CalculateBounds(objects);
 
-            // Scale the subject down so it fits inside a 16^3 cube
             float scaleFactor = 64f / bounds.size.magnitude;
             subjectHolder.transform.localScale = Vector3.one * scaleFactor;
 
-            // Calculate the move vector applying the scale factor
             Vector3 move = (subjectPivot.position - bounds.center) * scaleFactor;
             subjectHolder.localPosition += move;
 
-            captureCamera.orthographicSize = bounds.size.magnitude * orthoFactor * scaleFactor;
+            captureCamera.orthographicSize = bounds.size.magnitude * 0.5f * scaleFactor;
         }
 
         public List<Texture2D> Capture()
@@ -182,7 +156,7 @@ namespace BPX
             List<Texture2D> captures = new List<Texture2D>();
 
             subjectPivot.transform.localEulerAngles = new Vector3(0, -90f, 0);
-            
+
             RenderTexture.active = renderTexture;
 
             for (int i = 0; i < 4; i++)
@@ -206,7 +180,6 @@ namespace BPX
         {
             GameObject.Destroy(subjectHolder.gameObject);
 
-            // Create new subject holder
             subjectHolder = new GameObject("Subject Holder").transform;
             subjectHolder.parent = subjectPivot;
             subjectHolder.localPosition = Vector3.zero;

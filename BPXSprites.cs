@@ -29,7 +29,7 @@ namespace BPX
             uploadImageSprite = Base64ToSprite(uploadImage);
         }
 
-        private static Sprite Base64ToSprite(string base64)
+        public static Sprite Base64ToSprite(string base64)
         {
             // Convert the base64 string to a byte array
             byte[] imageBytes = Convert.FromBase64String(base64);

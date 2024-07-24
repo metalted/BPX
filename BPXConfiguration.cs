@@ -270,6 +270,10 @@ namespace BPX
         }
 
         // Key Rotation
+        public static bool KeyRotationIsEnabled()
+        {
+            return GetXPositiveRotationKey() != KeyCode.None || GetXNegativeRotationKey() != KeyCode.None || GetYZPositiveRotationKey() != KeyCode.None || GetYZNegativeRotationKey() != KeyCode.None;     
+        }
         public static KeyCode GetXPositiveRotationKey()
         {
             return xPositiveRotation.Value;

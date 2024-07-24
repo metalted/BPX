@@ -18,6 +18,7 @@ namespace BPX
         private static LEV_CustomButton toolbarSaveButton;
         private static LEV_CustomButton toolbarLoadButton;
         private static BPXScaleButton scaleButton;
+        private static BPXGizmo gizmo;
         private static BPXPanel panel;
         private static bool panelIsOpen = false;
         
@@ -26,6 +27,7 @@ namespace BPX
             InitializePanel(central);
             InitializeToolbar(central);
             InitializeGizmoButton(central);
+            InitializeGizmo(central);
         }
 
         private static void InitializePanel(LEV_LevelEditorCentral central)
@@ -82,6 +84,11 @@ namespace BPX
 
             //Assign the click to the function in the behaviour.
             RebindButton(gizmoScaleButton, () => scaleButton.OnClick());
+        }
+
+        private static void InitializeGizmo(LEV_LevelEditorCentral central)
+        {
+            gizmo = BPXManager.central.gizmos.gameObject.AddComponent<BPXGizmo>();
         }
 
         private static void OnToolbarSaveButton()
@@ -219,6 +226,36 @@ namespace BPX
             }
 
             return panelIsOpen;
+        }
+
+        public static void PressButtonByName(string buttonName)
+        {
+            switch(buttonName)
+            {
+                case "Save":
+                    if(toolbarSaveButton != null)
+                    {
+                        OnToolbarSaveButton();
+                    }
+                    break;
+                case "Load":
+                    if(toolbarLoadButton != null)
+                    {
+                        OnToolbarLoadButton();
+                    }
+                    break;
+                case "Scale":
+                    if(scaleButton != null)
+                    {
+                        scaleButton.OnClick();
+                    }
+                    break;
+            }
+        }
+
+        public static BPXGizmo GetGizmo()
+        {
+            return gizmo;
         }
     }
 }

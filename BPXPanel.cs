@@ -231,7 +231,7 @@ namespace BPX
 
                 panelComponents[BPXPanelComponentName.FileName].SetText(selectedBlueprintToLoad.FileName);
                 panelComponents[BPXPanelComponentName.Upload].Enable();
-                BPXImager.GenerateImage(selectedBlueprintToLoad, 512, OnLoadedBlueprintPreviewGenerated);
+                BPXManager.GenerateImage(selectedBlueprintToLoad, 512, OnLoadedBlueprintPreviewGenerated);
             }
         }
         private void GoHome()
@@ -300,7 +300,7 @@ namespace BPX
                 panelComponents[BPXPanelComponentName.SavePreview].Enable();
                 panelComponents[BPXPanelComponentName.SavePreview].SetButtonImage(BPXSprites.blackPixelSprite);
 
-                BPXImager.GenerateImage(selectedBlueprintToSave, 512, OnSavedBlueprintPreviewGenerated);
+                BPXManager.GenerateImage(selectedBlueprintToSave, 512, OnSavedBlueprintPreviewGenerated);
             }
             else if (panelMode == BPXPanelState.Load)
             {
@@ -314,7 +314,7 @@ namespace BPX
                 if (selectedBlueprintToLoad != null)
                 {
                     panelComponents[BPXPanelComponentName.LoadPreview].SetButtonImage(BPXSprites.blackPixelSprite);
-                    BPXImager.GenerateImage(selectedBlueprintToLoad, 512, OnLoadedBlueprintPreviewGenerated);
+                    BPXManager.GenerateImage(selectedBlueprintToLoad, 512, OnLoadedBlueprintPreviewGenerated);
                     panelComponents[BPXPanelComponentName.FileName].SetText(selectedBlueprintToLoad.FileName);
                     panelComponents[BPXPanelComponentName.Upload].Enable();
                 }
@@ -523,8 +523,7 @@ namespace BPX
             {
                 //Show the are you sure panel with "overwrite".
                 selectedBlueprintToSave.SetPath(targetPath);
-                confirmPanel.SetText("Overwrite?");
-                confirmPanel.Confirm();
+                confirmPanel.Enable("Overwrite?");
             }
             else
             {
@@ -587,7 +586,7 @@ namespace BPX
         private void OnUploadButton()
         {
             fileToUpload = ZeeplevelHandler.CopyZeeplevelFile(selectedBlueprintToLoad);
-            BPXImager.GenerateImage(fileToUpload, 256, OnUploadPreviewGenerated);
+            BPXManager.GenerateImage(fileToUpload, 256, OnUploadPreviewGenerated);
         }
         #endregion
 

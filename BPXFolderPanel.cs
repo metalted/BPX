@@ -11,12 +11,17 @@ namespace BPX
 {
     public class BPXFolderPanel
     {
+        //The panel this folder panel belongs to.
         public BPXPanel panel;
+        //The rect of this panel.
         public RectTransform Rect;
-        public LEV_CustomButton exitButton;
-        public LEV_CustomButton createButton;
+        //The folder name input field
         public TMP_InputField input;
+        //A flag for keeping track if a folder was created or not.
         private bool folderCreated = false;
+
+        public LEV_CustomButton exitButton;
+        public LEV_CustomButton createButton;       
 
         public BPXFolderPanel(BPXPanel panel, RectTransform rect)
         {
@@ -29,14 +34,24 @@ namespace BPX
 
             BPXUIManagement.UnbindButton(exitButton);
             BPXUIManagement.RecolorButton(exitButton, BPXUIManagement.blue);
-            BPXUIManagement.RebindButton(exitButton, () => OnExitButton());
+            BPXUIManagement.RebindButton(exitButton, () => Exit());
 
             BPXUIManagement.UnbindButton(createButton);
             BPXUIManagement.RecolorButton(createButton, BPXUIManagement.blue);
             BPXUIManagement.RebindButton(createButton, () => OnCreateButton());
         }
 
-        private void OnExitButton()
+        public void Enable()
+        {
+            Rect.gameObject.SetActive(true);
+        }
+
+        public void Disable()
+        {
+            Rect.gameObject.SetActive(false);
+        }
+
+        private void Exit()
         {
             input.text = "";
 
@@ -69,17 +84,7 @@ namespace BPX
                 Plugin.Instance.LogScreenMessage("Folder already exists");
             }
 
-            OnExitButton();
-        }
-
-        public void Disable()
-        {
-            Rect.gameObject.SetActive(false);
-        }
-
-        public void Enable()
-        {
-            Rect.gameObject.SetActive(true);
-        }
+            Exit();
+        }        
     }
 }

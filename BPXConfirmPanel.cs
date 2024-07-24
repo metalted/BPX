@@ -10,9 +10,12 @@ namespace BPX
 {
     public class BPXConfirmPanel
     {
+        //The panel this confirm panel belongs to.
         public BPXPanel panel;
+        //The complete rect of this confirm panel.
         public RectTransform Rect;
-        public TextMeshProUGUI alreadyExists;
+        //The text displayed on this confirm panel.
+        public TextMeshProUGUI panelText;
         public LEV_CustomButton saveButton;
         public LEV_CustomButton cancelButton;
 
@@ -20,7 +23,7 @@ namespace BPX
         {
             this.panel = panel;
             Rect = rect;
-            alreadyExists = rect.GetChild(2).GetComponent<TextMeshProUGUI>();
+            panelText = rect.GetChild(2).GetComponent<TextMeshProUGUI>();
             saveButton = rect.GetChild(3).GetComponent<LEV_CustomButton>();
             cancelButton = rect.GetChild(4).GetComponent<LEV_CustomButton>();
 
@@ -33,6 +36,17 @@ namespace BPX
             BPXUIManagement.RebindButton(cancelButton, () => OnCancelButton());
         }
 
+        public void Enable(string displayText)
+        {
+            panelText.text = displayText;
+            Rect.gameObject.SetActive(true);
+        }
+
+        public void Disable()
+        {
+            Rect.gameObject.SetActive(false);
+        }        
+
         private void OnSaveButton()
         {
             panel.OnConfirmPanel(true);
@@ -43,26 +57,6 @@ namespace BPX
         {
             panel.OnConfirmPanel(false);
             Disable();
-        }
-
-        public void Disable()
-        {
-            Rect.gameObject.SetActive(false);
-        }
-
-        public void Enable()
-        {
-            Rect.gameObject.SetActive(true);
-        }
-
-        public void SetText(string text)
-        {
-            alreadyExists.text = text;
-        }
-
-        public void Confirm()
-        {
-            Enable();
-        }
+        }        
     }
 }
