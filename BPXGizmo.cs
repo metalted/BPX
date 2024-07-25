@@ -7,7 +7,6 @@ namespace BPX
     {
         public enum Axes { All, X, Y, Z, XY, YZ, XZ };
         public Axes currentAxes = Axes.All;
-        private int cycleLength = 3;
 
         public GameObject Xgizmo, Ygizmo, Zgizmo;
 
@@ -69,7 +68,12 @@ namespace BPX
 
         private bool IsAxisSelected(Axes selection, Axes axis)
         {
-            return selection == axis || selection == Axes.All ||
+            if(axis == Axes.All)
+            {
+                return false;
+            }
+
+            return selection == axis || 
                    (axis == Axes.X && (selection == Axes.XY || selection == Axes.XZ)) ||
                    (axis == Axes.Y && (selection == Axes.XY || selection == Axes.YZ)) ||
                    (axis == Axes.Z && (selection == Axes.XZ || selection == Axes.YZ));

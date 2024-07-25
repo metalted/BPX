@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace BPX
 {
@@ -86,6 +87,26 @@ namespace BPX
             else
             {
                 return scrollDelta > 0 ? 1 : -1;
+            }
+        }
+
+        public void ResetController()
+        {
+            if(isDragging)
+            {
+                BPXManager.DeselectAllBlocks();
+                bpPositionMap.Clear();
+                dragStartPosition = Vector3.zero;
+                isDragging = false;
+                dragBox = new Rect();
+            }
+        }
+
+        public void OnApplicationFocus(bool hasFocus)
+        {
+            if (!hasFocus)
+            {
+                ResetController();
             }
         }
 
@@ -207,7 +228,30 @@ namespace BPX
             {
                 HandleAxisCycle(modifierKeyState);
             }
-        }
+
+            //Drag Selection
+            if(Input.GetKeyDown(BPXConfiguration.GetDragSelectionKey()) || (BPXConfiguration.DoMMBSelection() && Input.GetMouseButtonDown(2)))
+            {
+                if(BPXConfiguration.DragSelectionRequiresEnableKey())
+                {
+                    if(enableKeyState)
+                    {
+                        StartDragSelect();
+                    }
+                }
+                else
+                {
+                    StartDragSelect();
+                }
+            }
+
+            if (Input.GetKeyUp(BPXConfiguration.GetDragSelectionKey()) || (BPXConfiguration.DoMMBSelection() && Input.GetMouseButtonUp(2)))
+            {
+                StopDragSelect();
+            }
+
+            HandleDragSelection();
+        }        
 
         private void HandleScaling(bool scaleUp, bool modifierKeyState)
         {
@@ -391,6 +435,98 @@ namespace BPX
         private void HandleAxisCycle(bool modifierKeyState)
         {
             BPXUIManagement.GetGizmo().Cycle(!modifierKeyState, BPXConfiguration.IncludePlanesInCycle());
+        }
+
+        private void OnGUI()
+        {
+            if (dragBox != null)
+            {
+                BPXUtils.DrawScreenRect(dragBox, new Color(1.0f, 0.568f, 0f, 0.2f));
+                BPXUtils.DrawScreenRectBorder(dragBox, 1, new Color(1.0f, 0.568f, 0f));
+            }
+        }
+
+        private Dictionary<Vector3, BlockProperties> bpPositionMap = new Dictionary<Vector3, BlockProperties>();
+        private Vector2 dragStartPosition;
+        private bool isDragging;
+        private Rect dragBox;
+        private List<string> beforeSelection;
+        private Vector3 tempDragVector;
+        private int tempCounter;
+
+        private void HandleDragSelection()
+        {
+            if(isDragging)
+            {
+                dragBox = BPXUtils.GetScreenRect(dragStartPosition, Input.mousePosition);
+
+                foreach (KeyValuePair<Vector3, BlockProperties> bp in bpPositionMap)
+                {
+                    if (dragBox.Contains((Vector2)bp.Key))
+                    {
+                        if (!BPXManager.central.selection.list.Contains(bp.Value))
+                        {
+                            BPXManager.central.selection.AddThisBlock(bp.Value);
+                        }
+                    }
+                    else
+                    {
+                        if (BPXManager.central.selection.list.Contains(bp.Value))
+                        {
+                            int index = BPXManager.central.selection.list.IndexOf(bp.Value);
+                            BPXManager.central.selection.RemoveBlockAt(index, false, false);
+                        }
+                    }
+                }
+            }
+        }
+        private void StartDragSelect()
+        {
+            FillDragPositionMap();
+            dragStartPosition = Input.mousePosition;
+            isDragging = true;
+            BPXManager.DeselectAllBlocks();
+            beforeSelection = BPXManager.central.undoRedo.ConvertSelectionToStringList(BPXManager.central.selection.list);
+        }
+
+        private void StopDragSelect()
+        {
+            isDragging = false;
+            dragBox = new Rect();
+            bpPositionMap.Clear();
+            List<string> afterSelection = BPXManager.central.undoRedo.ConvertSelectionToStringList(BPXManager.central.selection.list);
+            BPXManager.central.selection.RegisterManualSelectionBreakLock(beforeSelection, afterSelection);
+        }
+
+        private void FillDragPositionMap()
+        {
+            bpPositionMap.Clear();
+            GameObject[] allObjects = SceneManager.GetActiveScene().GetRootGameObjects();
+            Camera mainCamera = Camera.main;
+
+            if (mainCamera == null)
+            {
+                Debug.LogError("Main Camera not found");
+                return;
+            }
+
+            tempCounter = 0;
+            foreach(GameObject obj in allObjects)
+            {
+                BlockProperties bp = obj.GetComponent<BlockProperties>();
+                if(bp != null)
+                {
+                    tempDragVector = mainCamera.WorldToScreenPoint(obj.transform.position);
+
+                    if(tempDragVector.z >= 0)
+                    {
+                        tempDragVector.y = Screen.height - tempDragVector.y;
+                        tempDragVector.z = tempCounter;
+                        bpPositionMap.Add(tempDragVector, bp);
+                        tempCounter++;
+                    }
+                }
+            }
         }
     }
 }

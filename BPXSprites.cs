@@ -19,6 +19,7 @@ namespace BPX
         public static Sprite fileSwitchSprite;
         public static Sprite blackPixelSprite;
         public static Sprite uploadImageSprite;
+        public static Texture2D whiteTexture;
 
         public static void Initialize()
         {
@@ -27,6 +28,10 @@ namespace BPX
             fileSwitchSprite = Base64ToSprite(fileSwitchImage);
             blackPixelSprite = Base64ToSprite(blackPixel);
             uploadImageSprite = Base64ToSprite(uploadImage);
+
+            whiteTexture = new Texture2D(1, 1);
+            whiteTexture.SetPixel(0, 0, Color.white);
+            whiteTexture.Apply();
         }
 
         public static Sprite Base64ToSprite(string base64)

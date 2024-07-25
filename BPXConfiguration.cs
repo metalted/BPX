@@ -83,6 +83,10 @@ namespace BPX
         private static ConfigEntry<string> customRValues;
         private static ConfigEntry<string> defaultCustomRValue;
 
+        //Functions 
+        private static ConfigEntry<bool> applyBasicValues;
+        
+
         public static void Initialize(ConfigFile cfg)
         {
             Config = cfg;
@@ -107,8 +111,8 @@ namespace BPX
             negativeScalingKey = Config.Bind("04.Scaling", "3.Negative Scaling Key", KeyCode.None, "Key for negative scaling");
             positiveScalingKey = Config.Bind("04.Scaling", "4.Positive Scaling Key", KeyCode.None, "Key for positive scaling");
             scalingRequiresEnableKey = Config.Bind("04.Scaling", "5.Scaling Requires Enable Key", false, "Requires enable key for scaling");
-            scalingValues = Config.Bind("04.Scaling", "6.Scaling Values", "", "Custom scaling values");
-            defaultScalingValue = Config.Bind("04.Scaling", "7.Default Scaling Value", "", "Default scaling value");
+            scalingValues = Config.Bind("04.Scaling", "6.Scaling Values", "0.05,0.1,0.5,1,5,10,20", "Custom scaling values");
+            defaultScalingValue = Config.Bind("04.Scaling", "7.Default Scaling Value", "10", "Default scaling value");
 
             // Key Movement
             forwardUpMovement = Config.Bind("05.Key Movement", "1.Forward/Up Movement Key", KeyCode.None, "Key for forward/up movement");
@@ -151,12 +155,78 @@ namespace BPX
 
             // Gizmo
             useCustomValues = Config.Bind("12.Gizmo", "1.Use Custom Values", false, "Use custom values for gizmo");
-            customXZValues = Config.Bind("12.Gizmo", "2.Custom XZ Values", "", "Custom XZ values for gizmo");
-            defaultCustomXZValue = Config.Bind("12.Gizmo", "3.Default Custom XZ Value", "", "Default custom XZ value for gizmo");
-            customYValues = Config.Bind("12.Gizmo", "4.Custom Y Values", "", "Custom Y values for gizmo");
-            defaultCustomYValue = Config.Bind("12.Gizmo", "5.Default Custom Y Value", "", "Default custom Y value for gizmo");
-            customRValues = Config.Bind("12.Gizmo", "6.Custom R Values", "", "Custom R values for gizmo");
-            defaultCustomRValue = Config.Bind("12.Gizmo", "7.Default Custom R Value", "", "Default custom R value for gizmo");
+            customXZValues = Config.Bind("12.Gizmo", "2.Custom XZ Values", "0,0.2,0.8,1.6,4,8,16", "Custom XZ values for gizmo");
+            defaultCustomXZValue = Config.Bind("12.Gizmo", "3.Default Custom XZ Value", "16", "Default custom XZ value for gizmo");
+            customYValues = Config.Bind("12.Gizmo", "4.Custom Y Values", "0,0.2,0.8,1.6,4,8", "Custom Y values for gizmo");
+            defaultCustomYValue = Config.Bind("12.Gizmo", "5.Default Custom Y Value", "8", "Default custom Y value for gizmo");
+            customRValues = Config.Bind("12.Gizmo", "6.Custom R Values", "0,1,5,10,30,45,90", "Custom R values for gizmo");
+            defaultCustomRValue = Config.Bind("12.Gizmo", "7.Default Custom R Value", "45", "Default custom R value for gizmo");
+
+            //Functions
+            applyBasicValues = Config.Bind("13.Functions", "1.Apply Basic Values", false, "[Button] Apply Basic Values");
+            applyBasicValues.SettingChanged += ApplyBasicValues;
+        }
+
+        private static void ApplyBasicValues(object sender, EventArgs e)
+        {
+            enableKey.Value = KeyCode.LeftControl;
+            modifierKey.Value = KeyCode.LeftShift;
+
+            axisCycleKey.Value = KeyCode.Space;
+            axisCycleRequiresEnableKey.Value = false;
+            includePlanesInCycle.Value = false;
+
+            dragSelectionKey.Value = KeyCode.LeftAlt;
+            mmbSelection.Value = true;
+            dragSelectionRequiresEnableKey.Value = false;
+
+            scrollScaling.Value = true;
+            invertScrollScaling.Value = false;
+            negativeScalingKey.Value = KeyCode.Minus;
+            positiveScalingKey.Value = KeyCode.Equals;
+            scalingRequiresEnableKey.Value = false;
+            scalingValues.Value = "0.05,0.1,0.5,1,5,10,20";
+            defaultScalingValue.Value = "10";
+
+            forwardUpMovement.Value = KeyCode.UpArrow;
+            backDownMovement.Value = KeyCode.DownArrow;
+            leftMovement.Value = KeyCode.LeftArrow;
+            rightMovement.Value = KeyCode.RightArrow;
+            movementRequiresEnableKey.Value = false;
+            movementIfRotationIsDisabled.Value = false;
+
+            xPositiveRotation.Value = KeyCode.UpArrow;
+            xNegativeRotation.Value = KeyCode.DownArrow;
+            yzPositiveRotation.Value = KeyCode.RightArrow;
+            yzNegativeRotation.Value = KeyCode.LeftArrow;
+            rotationRequiresEnableKey.Value = false;
+
+            mirrorKey.Value = KeyCode.F;
+            mirrorRequiresEnableKey.Value = false;
+
+            clipboardCopy.Value = KeyCode.J;
+            clipboardPaste.Value = KeyCode.K;
+            clipboardRequiresEnableKey.Value = true;
+            pasteClipboardToCamera.Value = true;
+
+            fastTravelKey.Value = KeyCode.U;
+            fastTravelRequiresEnableKey.Value = false;
+
+            saveShortcutKey.Value = KeyCode.S;
+            loadShortcutKey.Value = KeyCode.L;
+            shortcutRequiresEnableKey.Value = true;
+
+            clearSearchOnExit.Value = false;
+            doubleLoadButtons.Value = false;
+            allowedExtensions.Value = ".png,.obj,.jpg,.realm,.zeeplist,.zip,.customsoapbox";
+
+            useCustomValues.Value = false;
+            customXZValues.Value = "0,0.2,0.8,1.6,4,8,16";
+            defaultCustomXZValue.Value = "16";
+            customYValues.Value = "0,0.2,0.8,1.6,4,8";
+            defaultCustomYValue.Value = "8";
+            customRValues.Value = "0,1,5,10,30,45,90";
+            defaultCustomRValue.Value = "45";
         }
 
         // General Settings
