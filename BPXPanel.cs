@@ -37,6 +37,18 @@ namespace BPX
         public ZeeplevelFile selectedBlueprintToSave = null;
         private string searchValue = "";
 
+        public void Update()
+        {
+            if (BPXManager.central.input.Escape.buttonDown)
+            {
+                if(currentState != BPXPanelState.Closed)
+                {
+                    Close();
+                }
+            }
+        }
+
+
         #region Initialization
         public void Initialize(LEV_LevelEditorCentral central)
         {
@@ -343,6 +355,11 @@ namespace BPX
             confirmPanel.Disable();
             folderPanel.Disable();
             currentState = BPXPanelState.Closed;
+
+            if(BPXConfiguration.ClearSearchOnExit())
+            {
+                panelComponents[BPXPanelComponentName.SearchBar].SetText("");
+            }
             BPXUIManagement.OnPanelClose();
         }
         private void RefreshPanel()
@@ -497,8 +514,8 @@ namespace BPX
         #region Buttons
         private void OnLoadButton(bool loadHere)
         {
-            ZeeplevelHandler.InstantiateBlueprintIntoEditor(selectedBlueprintToLoad, loadHere);
             Close();
+            ZeeplevelHandler.InstantiateBlueprintIntoEditor(selectedBlueprintToLoad, loadHere);            
         }
         private void OnSaveButton()
         {

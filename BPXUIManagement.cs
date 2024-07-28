@@ -1,5 +1,6 @@
 ﻿using UnityEngine.Events;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace BPX
 {
@@ -17,14 +18,16 @@ namespace BPX
         public static Color darkBlue = new Color(0, 0.371f, 0.547f, 1f);
         private static LEV_CustomButton toolbarSaveButton;
         private static LEV_CustomButton toolbarLoadButton;
+        private static LEV_CustomButton toolbarOnlineButton;
         private static BPXScaleButton scaleButton;
         private static BPXGizmo gizmo;
         private static BPXPanel panel;
+        private static BPXOnlinePanel onlinePanel;
         private static bool panelIsOpen = false;
         
         public static void InitializeLevelEditor(LEV_LevelEditorCentral central)
         {
-            InitializePanel(central);
+            InitializePanels(central);
             InitializeToolbar(central);
             InitializeGizmoButton(central);
             InitializeGizmo(central);
@@ -32,13 +35,19 @@ namespace BPX
             central.gameObject.AddComponent<BPXController>();
         }
 
-        private static void InitializePanel(LEV_LevelEditorCentral central)
+        private static void InitializePanels(LEV_LevelEditorCentral central)
         {
             Transform panelCopy = GameObject.Instantiate<Transform>(central.saveload.transform, central.saveload.transform.parent);
             panelCopy.gameObject.name = "BPXPanel";
             GameObject.Destroy(panelCopy.GetComponent<LEV_SaveLoad>());
             panel = panelCopy.gameObject.AddComponent<BPXPanel>();
             panel.Initialize(central);
+
+            Transform onlinePanelCopy = GameObject.Instantiate<Transform>(central.saveload.transform, central.saveload.transform.parent);
+            panelCopy.gameObject.name = "BPXOnlinePanel";
+            GameObject.Destroy(onlinePanelCopy.GetComponent<LEV_SaveLoad>());
+            onlinePanel = onlinePanelCopy.gameObject.AddComponent<BPXOnlinePanel>();
+            onlinePanel.Initialize(central);
         }
 
         private static void InitializeToolbar(LEV_LevelEditorCentral central)
@@ -52,6 +61,12 @@ namespace BPX
             RecolorButton(toolbarLoadButton, blue);
             UnbindButton(toolbarLoadButton);
             RebindButton(toolbarLoadButton, () => OnToolbarLoadButton());
+
+            toolbarOnlineButton = SplitLEVCustomButton(central.tool.button_settings);
+            RecolorButton(toolbarOnlineButton, blue);
+            UnbindButton(toolbarOnlineButton);
+            RebindButton(toolbarOnlineButton, () => OnToolbarOnlineButton());
+            toolbarOnlineButton.transform.GetChild(0).GetComponent<Image>().sprite = BPXSprites.onlineSprite;
         }
 
         private static void InitializeGizmoButton(LEV_LevelEditorCentral central)
@@ -86,7 +101,7 @@ namespace BPX
 
             //Assign the click to the function in the behaviour.
             RebindButton(gizmoScaleButton, () => scaleButton.OnClick());
-        }
+        }        
 
         private static void InitializeGizmo(LEV_LevelEditorCentral central)
         {
@@ -121,6 +136,16 @@ namespace BPX
             {
                 panel.Open(BPXPanelState.Load);
                 toolbarLoadButton.isSelected = true;
+            }
+        }
+
+        private static void OnToolbarOnlineButton()
+        {
+            BPXManager.DeselectAllBlocks();
+            if (onlinePanel != null)
+            {
+                onlinePanel.Open();
+                toolbarOnlineButton.isSelected = true;
             }
         }
 

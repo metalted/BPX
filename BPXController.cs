@@ -326,7 +326,10 @@ namespace BPX
                 moveAxis *= gizmoValues.XZ;
             }
 
-            BPXOperations.Move(BPXManager.GetSelectedBlocks(), moveAxis);            
+            Vector3 camDirection = BPXManager.central.cam.cameraTransform.forward;
+            Vector3 moveDirection = BPXUtils.WorldSpaceRelativeMovement(camDirection, moveAxis);
+
+            BPXOperations.Move(BPXManager.GetSelectedBlocks(), moveDirection);            
         }
 
         private void HandleRotation(Direction direction, bool modifierKeyState)
@@ -368,11 +371,11 @@ namespace BPX
                         break;
                     case Direction.Up:
                         rotationAxis = BPXManager.central.gizmos.rotationGizmos.transform.right;
-                        amount = -gizmoValues.R;
+                        amount = gizmoValues.R;
                         break;
                     case Direction.Down:
                         rotationAxis = BPXManager.central.gizmos.rotationGizmos.transform.right;
-                        amount = gizmoValues.R;
+                        amount = -gizmoValues.R;
                         break;
                 }
             }
@@ -410,9 +413,14 @@ namespace BPX
         {
             if(isCopyNotPaste)
             {
-                if (!BPXManager.AnyObjectsSelected()) { return; }
+                if (!BPXManager.AnyObjectsSelected()) {
+
+                    Plugin.Instance.LogScreenMessage("No objects selected to copy to clipboard");
+                    return; 
+                }
 
                 ZeeplevelFile copy = ZeeplevelHandler.FromBlockProperties(BPXManager.GetSelectedBlocks());
+                Plugin.Instance.LogScreenMessage("Copied to clipboard");
                 BPXManager.SetClipboard(copy);
             }
             else
@@ -423,13 +431,23 @@ namespace BPX
                 {
                     ZeeplevelHandler.InstantiateBlueprintIntoEditor(clipboard, BPXConfiguration.PasteClipboardToCamera());
                 }
+                else
+                {
+                    Plugin.Instance.LogScreenMessage("No objects in clipboard");
+                }
             }           
         }
 
         private void HandleFastTravel()
         {
             if (!BPXManager.AnyObjectsSelected()) { return; }
-            BPXManager.central.cam.transform.position = BPXManager.central.gizmos.motherGizmo.transform.position;
+
+            // Calculate the new position with the offset
+            Vector3 offsetPosition = BPXManager.central.gizmos.motherGizmo.transform.position
+                                     - BPXManager.central.cam.cameraTransform.forward * 16;
+
+            // Set the camera position to the new position with offset
+            BPXManager.central.cam.transform.position = offsetPosition;
         }
 
         private void HandleAxisCycle(bool modifierKeyState)

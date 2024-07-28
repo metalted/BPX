@@ -20,6 +20,12 @@ namespace BPX
             Zgizmo = BPXManager.central.gizmos.Zgizmo.gameObject;
         }
 
+        public void Reset()
+        {
+            currentAxes = Axes.All;
+            SetGizmoState(currentAxes);
+        }
+
         public Vector3 GetCurrentAxes()
         {
             switch (currentAxes)

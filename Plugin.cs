@@ -5,6 +5,12 @@ using System.IO;
 
 namespace BPX
 {
+    /* TODO List
+     * Scroll Scaling: When the custom values are set, it doesnt use the default option.
+     * Fix custom values for Gizmo
+     * Create a working window for BPX Online
+     */
+
     [BepInPlugin(pluginGuid, pluginName, pluginVersion)]
     public class Plugin : BaseUnityPlugin
     {
@@ -47,6 +53,19 @@ namespace BPX
         {
             BPXManager.central = __instance;
             BPXUIManagement.InitializeLevelEditor(__instance);
+        }
+    }
+
+    [HarmonyPatch(typeof(LEV_Selection), "DeselectAllBlocks")]
+    public class Selection_DeselectAll
+    {
+        public static void Postfix()
+        {
+            BPXGizmo gizmo = BPXUIManagement.GetGizmo();
+            if(gizmo != null)
+            {
+                gizmo.Reset();
+            }            
         }
     }
 

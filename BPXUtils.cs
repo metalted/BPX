@@ -188,6 +188,41 @@ namespace BPX
             Vector3 size = maxBounds - minBounds;
             return new Bounds(center, size);
         }
+
+        public static Vector3 WorldSpaceRelativeMovement(Vector3 lookDirection, Vector3 move)
+        {
+            Vector3 relativeMove = Vector3.zero;
+
+            if (Mathf.Abs(lookDirection.x) <= Mathf.Abs(lookDirection.z))
+            {
+                if (Mathf.Sign(lookDirection.z) < 0)
+                {
+                    relativeMove.x = move.x * -1;
+                    relativeMove.y = move.y;
+                    relativeMove.z = move.z * -1;
+                }
+                else
+                {
+                    relativeMove = move;
+                }
+            }
+            else
+            {
+                if (Mathf.Sign(lookDirection.x) < 0)
+                {
+                    relativeMove.x = move.z * -1;
+                    relativeMove.y = move.y;
+                    relativeMove.z = move.x;
+                }
+                else
+                {
+                    relativeMove.x = move.z;
+                    relativeMove.y = move.y;
+                    relativeMove.z = move.x * -1;
+                }
+            }
+            return relativeMove;
+        }
         #endregion
 
         #region UI
