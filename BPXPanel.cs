@@ -15,7 +15,7 @@ namespace BPX
 {
     public enum BPXPanelComponentName { Background, Save, Load, LoadHere, LoadFile, Home, SwitchDir, LoadPreview, SavePreview, UpOneLevel, NewFolder, Upload, OpenFolder, Exit, ScrollView, URL, FileName, TypeText, SearchBar };
     public enum BPXPanelComponentType { Button, Image, Text, ScrollView, TextInput };    
-    public enum BPXPanelState { Closed, Save, Load };
+    public enum BPXPanelState { Closed, Save, Load, Open };
     public enum BPXPanelMode { Blueprint, Level };
     
     public class BPXPanel : MonoBehaviour
@@ -164,7 +164,7 @@ namespace BPX
             panelComponents[BPXPanelComponentName.SavePreview].BindButton(() => OnSavePreviewButton());
             panelComponents[BPXPanelComponentName.OpenFolder].BindButton(() => OnOpenFolderButton());
             panelComponents[BPXPanelComponentName.Exit].BindButton(() => Close());
-            panelComponents[BPXPanelComponentName.Upload].BindButton(() => OnUploadButton());
+            //panelComponents[BPXPanelComponentName.Upload].BindButton(() => OnUploadButton());
             panelComponents[BPXPanelComponentName.SearchBar].textInputField.onValueChanged.AddListener(delegate { RefreshPanel(); });
 
             //Change button image sizes
@@ -173,6 +173,9 @@ namespace BPX
             panelComponents[BPXPanelComponentName.SwitchDir].SetButtonImageRectAnchors(0.1f, 0.1f, 0.9f, 0.9f);
             panelComponents[BPXPanelComponentName.LoadPreview].SetButtonImageRectAnchors(0.0f, 0.0f, 1f, 1f);
             panelComponents[BPXPanelComponentName.SavePreview].SetButtonImageRectAnchors(0.0f, 0.0f, 1f, 1f);
+
+            //Temporary greyed out
+            BPXUIManagement.RecolorButton(panelComponents[BPXPanelComponentName.Upload].Button, BPXUIManagement.grey, true);
 
             //Set sprites
             panelComponents[BPXPanelComponentName.LoadHere].SetButtonImage(BPXSprites.markerSprite);
@@ -183,11 +186,11 @@ namespace BPX
             panelComponents[BPXPanelComponentName.Save].SetButtonImage(BPXManager.central.saveload.saveImage);
             panelComponents[BPXPanelComponentName.Load].SetButtonImage(BPXManager.central.saveload.loadImage);
             panelComponents[BPXPanelComponentName.Upload].SetButtonImage(BPXSprites.uploadImageSprite);
-
-
+            
             //Turn preview button completely black
             BPXUIManagement.RecolorButton(panelComponents[BPXPanelComponentName.LoadPreview].Button, Color.black, true);
             BPXUIManagement.RecolorButton(panelComponents[BPXPanelComponentName.SavePreview].Button, Color.black, true);
+            
 
             //Remove texts from buttons
             panelComponents[BPXPanelComponentName.Home].HideButtonText();

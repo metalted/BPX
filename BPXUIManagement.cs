@@ -1,6 +1,9 @@
 ﻿using UnityEngine.Events;
 using UnityEngine;
 using UnityEngine.UI;
+using System;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace BPX
 {
@@ -15,6 +18,7 @@ namespace BPX
     public static class BPXUIManagement
     {
         public static Color blue = new Color(0, 0.547f, 0.82f, 1f);
+        public static Color grey = new Color(0.3f, 0.3f, 0.3f, 1f);
         public static Color darkBlue = new Color(0, 0.371f, 0.547f, 1f);
         private static LEV_CustomButton toolbarSaveButton;
         private static LEV_CustomButton toolbarLoadButton;
@@ -31,6 +35,9 @@ namespace BPX
             InitializeToolbar(central);
             InitializeGizmoButton(central);
             InitializeGizmo(central);
+
+            SaveOriginalGridButtonInfo();
+            UpdateGridButtons();
 
             central.gameObject.AddComponent<BPXController>();
         }
@@ -63,9 +70,10 @@ namespace BPX
             RebindButton(toolbarLoadButton, () => OnToolbarLoadButton());
 
             toolbarOnlineButton = SplitLEVCustomButton(central.tool.button_settings);
-            RecolorButton(toolbarOnlineButton, blue);
+            RecolorButton(toolbarOnlineButton, grey, true);
+            //RecolorButton(toolbarOnlineButton, blue);
             UnbindButton(toolbarOnlineButton);
-            RebindButton(toolbarOnlineButton, () => OnToolbarOnlineButton());
+            //RebindButton(toolbarOnlineButton, () => OnToolbarOnlineButton());
             toolbarOnlineButton.transform.GetChild(0).GetComponent<Image>().sprite = BPXSprites.onlineSprite;
         }
 
@@ -144,7 +152,7 @@ namespace BPX
             BPXManager.DeselectAllBlocks();
             if (onlinePanel != null)
             {
-                onlinePanel.Open();
+                onlinePanel.Open(BPXPanelState.Open);
                 toolbarOnlineButton.isSelected = true;
             }
         }
@@ -164,6 +172,26 @@ namespace BPX
 
             toolbarLoadButton.isSelected = false;
             toolbarSaveButton.isSelected = false;
+
+            BPXManager.central.tool.EnableEditTool();
+            BPXManager.central.tool.RecolorButtons();
+            BPXManager.central.cam.OverrideOutsideGameView(false);
+        }
+
+        public static void OnOnlinePanelOpen()
+        {
+            panelIsOpen = true;
+            BPXManager.central.tool.DisableAllTools();
+            BPXManager.central.tool.RecolorButtons();
+            BPXManager.central.tool.currentTool = 3;
+            BPXManager.central.tool.inspectorTitle.text = "";
+        }
+
+        public static void OnOnlinePanelClose()
+        {
+            panelIsOpen = false;
+
+            toolbarOnlineButton.isSelected = false;
 
             BPXManager.central.tool.EnableEditTool();
             BPXManager.central.tool.RecolorButtons();
@@ -283,6 +311,87 @@ namespace BPX
         public static BPXGizmo GetGizmo()
         {
             return gizmo;
+        }
+
+        private static List<float> xzOriginalList;
+        private static List<float> yOriginalList;
+        private static List<float> rOriginalList;
+        private static int startixz;
+        private static int startiy;
+        private static int startir;
+
+        private static void SaveOriginalGridButtonInfo()
+        {
+            xzOriginalList = new List<float>(BPXManager.central.gizmos.list_gridXZ);
+            yOriginalList = new List<float>(BPXManager.central.gizmos.list_gridY);
+            rOriginalList = new List<float>(BPXManager.central.gizmos.list_gridR);
+
+            startixz = BPXManager.central.gizmos.startiXZ;
+            startiy = BPXManager.central.gizmos.startiY;
+            startir = BPXManager.central.gizmos.startiR;
+        }
+
+        public static void UpdateGridButtons()
+        {
+            if (BPXConfiguration.UseCustomValues())
+            {
+                float[] xz = BPXConfiguration.GetCustomXZValues();
+                float[] y = BPXConfiguration.GetCustomYValues();
+                float[] r = BPXConfiguration.GetCustomRValues();
+
+                float defaultXZ = BPXConfiguration.GetDefaultCustomXZValue();
+                float defaultY = BPXConfiguration.GetDefaultCustomYValue();
+                float defaultR = BPXConfiguration.GetDefaultCustomRValue();
+
+                int xzDefaultIndex = Array.IndexOf(xz, defaultXZ);
+                int yDefaultIndex = Array.IndexOf(y, defaultY);
+                int rDefaultIndex = Array.IndexOf(r, defaultR);
+
+                // Handle XZ list
+                if (xz.Length != 0)
+                {
+                    BPXManager.central.gizmos.list_gridXZ = xz.ToList();
+                    int xzi = (xzDefaultIndex != -1) ? xzDefaultIndex : 0;
+                    BPXManager.central.gizmos.startiXZ = xzi;
+                    BPXManager.central.gizmos.index_gridXZ = xzi;
+                }
+                else
+                {
+                    BPXManager.central.gizmos.list_gridXZ = new List<float>(xzOriginalList);
+                    BPXManager.central.gizmos.startiXZ = startixz;
+                    BPXManager.central.gizmos.index_gridXZ = startixz;
+                }
+
+                // Handle Y list
+                if (y.Length != 0)
+                {
+                    BPXManager.central.gizmos.list_gridY = y.ToList();
+                    int yi = (yDefaultIndex != -1) ? yDefaultIndex : 0;
+                    BPXManager.central.gizmos.startiY = yi;
+                    BPXManager.central.gizmos.index_gridY = yi;
+                }
+                else
+                {
+                    BPXManager.central.gizmos.list_gridY = new List<float>(yOriginalList);
+                    BPXManager.central.gizmos.startiY = startiy;
+                    BPXManager.central.gizmos.index_gridY = startiy;
+                }
+
+                // Handle R list
+                if (r.Length != 0)
+                {
+                    BPXManager.central.gizmos.list_gridR = r.ToList();
+                    int ri = (rDefaultIndex != -1) ? rDefaultIndex : 0;
+                    BPXManager.central.gizmos.startiR = ri;
+                    BPXManager.central.gizmos.index_gridR = ri;
+                }
+                else
+                {
+                    BPXManager.central.gizmos.list_gridR = new List<float>(rOriginalList);
+                    BPXManager.central.gizmos.startiR = startir;
+                    BPXManager.central.gizmos.index_gridR = startir;
+                }
+            }
         }
     }
 }

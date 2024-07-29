@@ -34,6 +34,7 @@ namespace BPX
         private static ConfigEntry<bool> scalingRequiresEnableKey;
         private static ConfigEntry<string> scalingValues;
         private static ConfigEntry<string> defaultScalingValue;
+        private static ConfigEntry<bool> resetScalingValues;
 
         //Key Movement
         private static ConfigEntry<KeyCode> forwardUpMovement;
@@ -82,6 +83,7 @@ namespace BPX
         private static ConfigEntry<string> defaultCustomYValue;
         private static ConfigEntry<string> customRValues;
         private static ConfigEntry<string> defaultCustomRValue;
+        private static ConfigEntry<bool> resetCustomValues;
 
         //Functions 
         private static ConfigEntry<bool> applyBasicValues;
@@ -92,8 +94,10 @@ namespace BPX
             Config = cfg;
 
             // General Settings
-            enableKey = Config.Bind("01.General Settings", "1.Enable Key", KeyCode.None, "Key to enable functionality");
-            modifierKey = Config.Bind("01.General Settings", "2.Modifier Key", KeyCode.None, "Modifier key for additional controls");
+            applyBasicValues = Config.Bind("01.General Settings", "1.Apply Basic Values To Config", false, "[Button] Apply Basic Values to Config");
+            applyBasicValues.SettingChanged += ApplyBasicValues;
+            enableKey = Config.Bind("01.General Settings", "2.Enable Key", KeyCode.None, "Key to enable functionality");
+            modifierKey = Config.Bind("01.General Settings", "3.Modifier Key", KeyCode.None, "Modifier key for additional controls");
 
             // Axis Cycling
             axisCycleKey = Config.Bind("02.Axis Cycling", "1.Axis Cycle Key", KeyCode.None, "Key to cycle through axes");
@@ -113,6 +117,8 @@ namespace BPX
             scalingRequiresEnableKey = Config.Bind("04.Scaling", "5.Scaling Requires Enable Key", false, "Requires enable key for scaling");
             scalingValues = Config.Bind("04.Scaling", "6.Scaling Values", "0.05,0.1,0.5,1,5,10,20", "Custom scaling values");
             defaultScalingValue = Config.Bind("04.Scaling", "7.Default Scaling Value", "10", "Default scaling value");
+            resetScalingValues = Config.Bind("04.Scaling", "8.Reset Values To Default", false, "[Button] Reset the values in the text fields to their default values.");
+            resetScalingValues.SettingChanged += ResetScalingValues;
 
             // Key Movement
             forwardUpMovement = Config.Bind("05.Key Movement", "1.Forward/Up Movement Key", KeyCode.None, "Key for forward/up movement");
@@ -161,10 +167,41 @@ namespace BPX
             defaultCustomYValue = Config.Bind("12.Gizmo", "5.Default Custom Y Value", "8", "Default custom Y value for gizmo");
             customRValues = Config.Bind("12.Gizmo", "6.Custom R Values", "0,1,5,10,30,45,90", "Custom R values for gizmo");
             defaultCustomRValue = Config.Bind("12.Gizmo", "7.Default Custom R Value", "45", "Default custom R value for gizmo");
+            resetCustomValues = Config.Bind("12.Gizmo", "8.Reset Values To Default", false, "[Button] Reset the values in the text fields to their default values.");
+            resetCustomValues.SettingChanged += ResetCustomGridValues;
 
-            //Functions
-            applyBasicValues = Config.Bind("13.Functions", "1.Apply Basic Values", false, "[Button] Apply Basic Values");
-            applyBasicValues.SettingChanged += ApplyBasicValues;
+            Config.SettingChanged += ConfigChanged;
+        }
+
+        private static void ReloadToApplyMessage()
+        {
+            Plugin.Instance.LogScreenMessage("Press [Apply] and reopen settings window to show changes!");
+        }
+
+        private static void ResetScalingValues(object sender, EventArgs e)
+        {
+            scalingValues.Value = (string)scalingValues.DefaultValue;
+            defaultScalingValue.Value = (string)defaultScalingValue.DefaultValue;
+            ReloadToApplyMessage();
+        }
+
+        private static void ResetCustomGridValues(object sender, EventArgs e)
+        {
+            customXZValues.Value = (string) customXZValues.DefaultValue;
+            defaultCustomXZValue.Value = (string)defaultCustomXZValue.DefaultValue;
+            customYValues.Value = (string)customYValues.DefaultValue;
+            defaultCustomYValue.Value = (string)defaultCustomYValue.DefaultValue;
+            customRValues.Value = (string)customRValues.DefaultValue;
+            defaultCustomRValue.Value = (string)defaultCustomRValue.DefaultValue;
+            ReloadToApplyMessage();
+        }
+
+        private static void ConfigChanged(object sender, SettingChangedEventArgs e)
+        {
+            if (BPXManager.central != null)
+            {
+                BPXUIManagement.UpdateGridButtons();
+            }
         }
 
         private static void ApplyBasicValues(object sender, EventArgs e)
@@ -185,8 +222,8 @@ namespace BPX
             negativeScalingKey.Value = KeyCode.Minus;
             positiveScalingKey.Value = KeyCode.Equals;
             scalingRequiresEnableKey.Value = false;
-            scalingValues.Value = "0.05,0.1,0.5,1,5,10,20";
-            defaultScalingValue.Value = "10";
+            scalingValues.Value = (string)scalingValues.DefaultValue;
+            defaultScalingValue.Value = (string)scalingValues.DefaultValue;
 
             forwardUpMovement.Value = KeyCode.UpArrow;
             backDownMovement.Value = KeyCode.DownArrow;
@@ -227,6 +264,7 @@ namespace BPX
             defaultCustomYValue.Value = "8";
             customRValues.Value = "0,1,5,10,30,45,90";
             defaultCustomRValue.Value = "45";
+            ReloadToApplyMessage();
         }
 
         // General Settings

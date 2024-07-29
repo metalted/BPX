@@ -6,8 +6,6 @@ using System.IO;
 namespace BPX
 {
     /* TODO List
-     * Scroll Scaling: When the custom values are set, it doesnt use the default option.
-     * Fix custom values for Gizmo
      * Create a working window for BPX Online
      */
 
@@ -16,7 +14,7 @@ namespace BPX
     {
         public const string pluginGuid = "com.metalted.zeepkist.blueprintsX";
         public const string pluginName = "Blueprints X";
-        public const string pluginVersion = "2.0";
+        public const string pluginVersion = "2.0.1";
 
         public static Plugin Instance;
         public string pluginPath;
@@ -42,7 +40,7 @@ namespace BPX
 
         public void LogScreenMessage(string message)
         {
-            PlayerManager.Instance.messenger.Log(message, 1f);
+            PlayerManager.Instance.messenger.Log(message, 2.5f);
         }
     }
 

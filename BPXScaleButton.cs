@@ -16,10 +16,12 @@ namespace BPX
         private float[] latestScalingValues;
         private float defaultScalingValue = 10f;
         private float currentScalingValue = 10f;
+        private bool init = false;
 
         public void Start()
         {
             latestScalingValues = BPXConfiguration.GetScalingValues();
+            defaultScalingValue = BPXConfiguration.GetDefaultScalingValue();
 
             buttonText = transform.GetChild(1).GetComponent<TextMeshProUGUI>();
             
@@ -65,6 +67,16 @@ namespace BPX
             }
             else
             {
+                if(!init)
+                {
+                    int defaultValueIndex = Array.IndexOf(latestScalingValues, defaultScalingValue);
+                    if(defaultValueIndex != -1)
+                    {
+                        selectedScaleValueIndex = defaultValueIndex;
+                    }
+                    init = true;
+                }
+
                 if (selectedScaleValueIndex < 0)
                 {
                     selectedScaleValueIndex = latestScalingValues.Length - 1;
