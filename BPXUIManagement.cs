@@ -25,7 +25,7 @@ namespace BPX
         private static LEV_CustomButton toolbarOnlineButton;
         private static BPXScaleButton scaleButton;
         private static BPXGizmo gizmo;
-        private static BPXPanel panel;
+        private static BPXSaveLoadPanel panel;
         private static BPXOnlinePanel onlinePanel;
         private static bool panelIsOpen = false;
         
@@ -47,11 +47,11 @@ namespace BPX
             Transform panelCopy = GameObject.Instantiate<Transform>(central.saveload.transform, central.saveload.transform.parent);
             panelCopy.gameObject.name = "BPXPanel";
             GameObject.Destroy(panelCopy.GetComponent<LEV_SaveLoad>());
-            panel = panelCopy.gameObject.AddComponent<BPXPanel>();
+            panel = panelCopy.gameObject.AddComponent<BPXSaveLoadPanel>();
             panel.Initialize(central);
 
             Transform onlinePanelCopy = GameObject.Instantiate<Transform>(central.saveload.transform, central.saveload.transform.parent);
-            panelCopy.gameObject.name = "BPXOnlinePanel";
+            onlinePanelCopy.gameObject.name = "BPXOnlinePanel";
             GameObject.Destroy(onlinePanelCopy.GetComponent<LEV_SaveLoad>());
             onlinePanel = onlinePanelCopy.gameObject.AddComponent<BPXOnlinePanel>();
             onlinePanel.Initialize(central);

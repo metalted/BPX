@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 using BepInEx.Configuration;
+using System.Globalization;
 
 namespace BPX
 {
@@ -115,7 +116,7 @@ namespace BPX
             negativeScalingKey = Config.Bind("04.Scaling", "3.Negative Scaling Key", KeyCode.None, "Key for negative scaling");
             positiveScalingKey = Config.Bind("04.Scaling", "4.Positive Scaling Key", KeyCode.None, "Key for positive scaling");
             scalingRequiresEnableKey = Config.Bind("04.Scaling", "5.Scaling Requires Enable Key", false, "Requires enable key for scaling");
-            scalingValues = Config.Bind("04.Scaling", "6.Scaling Values", "0.05,0.1,0.5,1,5,10,20", "Custom scaling values");
+            scalingValues = Config.Bind("04.Scaling", "6.Scaling Values", "0.05;0.1;0.5;1;5;10;20", "Custom scaling values");
             defaultScalingValue = Config.Bind("04.Scaling", "7.Default Scaling Value", "10", "Default scaling value");
             resetScalingValues = Config.Bind("04.Scaling", "8.Reset Values To Default", false, "[Button] Reset the values in the text fields to their default values.");
             resetScalingValues.SettingChanged += ResetScalingValues;
@@ -161,11 +162,11 @@ namespace BPX
 
             // Gizmo
             useCustomValues = Config.Bind("12.Gizmo", "1.Use Custom Values", false, "Use custom values for gizmo");
-            customXZValues = Config.Bind("12.Gizmo", "2.Custom XZ Values", "0,0.2,0.8,1.6,4,8,16", "Custom XZ values for gizmo");
+            customXZValues = Config.Bind("12.Gizmo", "2.Custom XZ Values", "0;0.2;0.8;1.6;4;8;16", "Custom XZ values for gizmo");
             defaultCustomXZValue = Config.Bind("12.Gizmo", "3.Default Custom XZ Value", "16", "Default custom XZ value for gizmo");
-            customYValues = Config.Bind("12.Gizmo", "4.Custom Y Values", "0,0.2,0.8,1.6,4,8", "Custom Y values for gizmo");
+            customYValues = Config.Bind("12.Gizmo", "4.Custom Y Values", "0;0.2;0.8;1.6;4;8", "Custom Y values for gizmo");
             defaultCustomYValue = Config.Bind("12.Gizmo", "5.Default Custom Y Value", "8", "Default custom Y value for gizmo");
-            customRValues = Config.Bind("12.Gizmo", "6.Custom R Values", "0,1,5,10,30,45,90", "Custom R values for gizmo");
+            customRValues = Config.Bind("12.Gizmo", "6.Custom R Values", "0;1;5;10;30;45;90", "Custom R values for gizmo");
             defaultCustomRValue = Config.Bind("12.Gizmo", "7.Default Custom R Value", "45", "Default custom R value for gizmo");
             resetCustomValues = Config.Bind("12.Gizmo", "8.Reset Values To Default", false, "[Button] Reset the values in the text fields to their default values.");
             resetCustomValues.SettingChanged += ResetCustomGridValues;
@@ -529,12 +530,12 @@ namespace BPX
         // Helper methods to parse float arrays and float values
         private static float[] ParseFloatArray(string value)
         {
-            string[] values = value.Split(',');
+            string[] values = value.Split(';');
             List<float> floatValues = new List<float>();
 
             foreach (var val in values)
             {
-                if (float.TryParse(val, out float parsedValue))
+                if (float.TryParse(val, NumberStyles.Float, CultureInfo.InvariantCulture, out float parsedValue))
                 {
                     floatValues.Add(parsedValue);
                 }
@@ -545,7 +546,7 @@ namespace BPX
 
         private static float ParseFloatValue(string value)
         {
-            if (float.TryParse(value, out float parsedValue))
+            if (float.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out float parsedValue))
             {
                 return parsedValue;
             }

@@ -71,7 +71,7 @@ namespace BPX
                 return;
             }
 
-            string currentlyOpenedPath = panel.currentMode == BPXPanelMode.Blueprint ? panel.blueprintDirectory.FullName : panel.levelDirectory.FullName;
+            string currentlyOpenedPath = panel.GetCurrentPath();
             string newFolderPath = Path.Combine(currentlyOpenedPath, input.text);
             
             if(!Directory.Exists(newFolderPath))

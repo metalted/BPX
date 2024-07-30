@@ -52,11 +52,19 @@ namespace BPX
 
                     // Configuring the ScrollRect as per the standalone code
                     explorerPanel = ScrollRect.content;
-                    ContentSizeFitter contentSizeFitter = explorerPanel.gameObject.AddComponent<ContentSizeFitter>();
+                    ContentSizeFitter contentSizeFitter = explorerPanel.gameObject.GetComponent<ContentSizeFitter>();
+                    if (contentSizeFitter == null)
+                    {
+                        contentSizeFitter = explorerPanel.gameObject.AddComponent<ContentSizeFitter>();
+                    }
                     contentSizeFitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
                     contentSizeFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
-                    GridLayoutGroup gridLayoutGroup = explorerPanel.gameObject.AddComponent<GridLayoutGroup>();
+                    GridLayoutGroup gridLayoutGroup = explorerPanel.gameObject.GetComponent<GridLayoutGroup>();
+                    if(gridLayoutGroup == null)
+                    {
+                        gridLayoutGroup = explorerPanel.gameObject.AddComponent<GridLayoutGroup>();
+                    }                       
                     gridLayoutGroup.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
                     gridLayoutGroup.constraintCount = 6;
 
