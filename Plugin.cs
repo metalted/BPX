@@ -5,16 +5,12 @@ using System.IO;
 
 namespace BPX
 {
-    /* TODO List
-     * Create a working window for BPX Online
-     */
-
     [BepInPlugin(pluginGuid, pluginName, pluginVersion)]
     public class Plugin : BaseUnityPlugin
     {
         public const string pluginGuid = "com.metalted.zeepkist.blueprintsX";
         public const string pluginName = "Blueprints X";
-        public const string pluginVersion = "2.0.1";
+        public const string pluginVersion = "2.0.2";
 
         public static Plugin Instance;
         public string pluginPath;

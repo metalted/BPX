@@ -11,6 +11,15 @@ using UnityEngine.Events;
 using UnityEngine.UI;
 using Debug = UnityEngine.Debug;
 
+/*
+ * We need a double view, one for displaying the search results. One for chosen a folder
+ * On the left we have search input and a search button.
+ *
+ */
+
+
+
+
 namespace BPX
 {
     public class BPXOnlinePanel : MonoBehaviour
@@ -101,7 +110,10 @@ namespace BPX
 
         private void ConfigurePanel()
         {
-            
+            //Set the background color of the panel
+            panelComponents[BPXPanelComponentName.Background].Image.color = BPXUIManagement.darkBlue;
+
+            panelComponents[BPXPanelComponentName.Exit].BindButton(() => Close());
         }
         #endregion
 

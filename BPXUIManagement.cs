@@ -70,10 +70,9 @@ namespace BPX
             RebindButton(toolbarLoadButton, () => OnToolbarLoadButton());
 
             toolbarOnlineButton = SplitLEVCustomButton(central.tool.button_settings);
-            RecolorButton(toolbarOnlineButton, grey, true);
-            //RecolorButton(toolbarOnlineButton, blue);
+            RecolorButton(toolbarOnlineButton, blue);
             UnbindButton(toolbarOnlineButton);
-            //RebindButton(toolbarOnlineButton, () => OnToolbarOnlineButton());
+            RebindButton(toolbarOnlineButton, () => OnToolbarOnlineButton());
             toolbarOnlineButton.transform.GetChild(0).GetComponent<Image>().sprite = BPXSprites.onlineSprite;
         }
 
