@@ -23,6 +23,8 @@ namespace BPX
         public ScrollRect ScrollRect;
         public TMP_InputField textInputField;
         public RectTransform explorerPanel;
+        public ContentSizeFitter contentSizeFitter;
+        public GridLayoutGroup gridLayoutGroup;
 
         public BPXPanelComponent(BPXPanelComponentType componentType, BPXPanelComponentName componentName, RectTransform rect)
         {
@@ -52,7 +54,7 @@ namespace BPX
 
                     // Configuring the ScrollRect as per the standalone code
                     explorerPanel = ScrollRect.content;
-                    ContentSizeFitter contentSizeFitter = explorerPanel.gameObject.GetComponent<ContentSizeFitter>();
+                    contentSizeFitter = explorerPanel.gameObject.GetComponent<ContentSizeFitter>();
                     if (contentSizeFitter == null)
                     {
                         contentSizeFitter = explorerPanel.gameObject.AddComponent<ContentSizeFitter>();
@@ -60,22 +62,13 @@ namespace BPX
                     contentSizeFitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
                     contentSizeFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
-                    GridLayoutGroup gridLayoutGroup = explorerPanel.gameObject.GetComponent<GridLayoutGroup>();
+                    gridLayoutGroup = explorerPanel.gameObject.GetComponent<GridLayoutGroup>();
                     if(gridLayoutGroup == null)
                     {
                         gridLayoutGroup = explorerPanel.gameObject.AddComponent<GridLayoutGroup>();
                     }                       
-                    gridLayoutGroup.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
-                    gridLayoutGroup.constraintCount = 6;
-
-                    Rect viewportRect = ScrollRect.viewport.rect;
-                    int paddingValue = Mathf.RoundToInt(viewportRect.width / 100f);
-                    float cellWidth = (viewportRect.width - paddingValue * 2) / 6.0f;
-                    float cellSpacing = cellWidth * 0.05f;
-
-                    gridLayoutGroup.cellSize = new Vector2(cellWidth - cellSpacing, cellWidth - cellSpacing);
-                    gridLayoutGroup.spacing = new Vector2(cellSpacing, cellSpacing);
-                    gridLayoutGroup.padding = new RectOffset(paddingValue, paddingValue, paddingValue, paddingValue);
+                    gridLayoutGroup.constraint = GridLayoutGroup.Constraint.FixedColumnCount; 
+                    SetGridLayoutColumns(6);
                     break;
                 case BPXPanelComponentType.TextInput:
                     textInputField = rect.GetComponent<TMP_InputField>();
@@ -95,6 +88,20 @@ namespace BPX
                     SetPlaceHolderText("");
                     break;
             }
+        }
+
+        public void SetGridLayoutColumns(int count)
+        {
+            gridLayoutGroup.constraintCount = count;
+
+            Rect viewportRect = ScrollRect.viewport.rect;
+            int paddingValue = Mathf.RoundToInt(viewportRect.width / 100f);
+            float cellWidth = (viewportRect.width - paddingValue * 2) / ((float)count);
+            float cellSpacing = cellWidth * 0.05f;
+
+            gridLayoutGroup.cellSize = new Vector2(cellWidth - cellSpacing, cellWidth - cellSpacing);
+            gridLayoutGroup.spacing = new Vector2(cellSpacing, cellSpacing);
+            gridLayoutGroup.padding = new RectOffset(paddingValue, paddingValue, paddingValue, paddingValue);
         }
 
         public void Reset()
