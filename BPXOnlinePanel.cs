@@ -23,6 +23,7 @@ namespace BPX
 
         public BPXPanelState currentState = BPXPanelState.Closed;
         private List<LEV_FileContent> currentExplorerElements = new List<LEV_FileContent>();
+        private List<LEV_FileContent> currentOnlineExplorerElements = new List<LEV_FileContent>();
 
         public void Update()
         {
@@ -188,6 +189,7 @@ namespace BPX
             panelComponents[BPXPanelComponentName.NextPage].BindButton(() => OnNextPageButton());
 
             panelComponents[BPXPanelComponentName.ScrollView].SetGridLayoutColumns(3);
+            panelComponents[BPXPanelComponentName.SearchResultScrollView].SetGridLayoutColumns(6);
         }
         #endregion
 
@@ -432,6 +434,106 @@ namespace BPX
         private void OnNextPageButton()
         {
             Plugin.Instance.LogScreenMessage("Next");
+        }
+        #endregion
+
+        #region OnlineExplorer
+        public void OnOnlineSearchResults(List<BPXOnlineSearchResult> results)
+        {
+            try
+            {
+                ClearOnlineExplorerElements();
+
+                if(results.Count == 0)
+                {
+                    return;
+                }
+
+                //The total count of elements in the explorer
+                int amountOfElements = results.Count;
+                //The amount of objects displayed on each row.
+                int columnCount = 5;
+                //The amount of rows needed for all elements.
+                int rowCount = Mathf.CeilToInt((float)amountOfElements / (float)columnCount);
+                //The horizontal padding for each element.
+                float horizontalPadding = 0.1f / (columnCount + 1);
+                //The vertical padding for each element.
+                float verticalPadding = 0.12f / rowCount;
+                //The width of each element.
+                float elementWidth = 0.9f / columnCount;
+                //The height of each element.
+                float elementHeight = 1f - (rowCount + 1) * verticalPadding / rowCount;
+
+                //Flag for completion.
+                bool allElementsPlaced = false;
+
+                for (int row = 0; row < rowCount; row++)
+                {
+                    for (int col = 0; col < columnCount; col++)
+                    {
+                        //In case of half filled rows, we can quit halfway through
+                        if (row * columnCount + col >= amountOfElements)
+                        {
+                            allElementsPlaced = true;
+                            break;
+                        }
+
+                        //Create the element
+                        LEV_FileContent element = GameObject.Instantiate(BPXManager.central.saveload.filePrefab);
+                        element.central = BPXManager.central;
+
+                        int currentButtonIndex = row * columnCount + col;
+
+                        element.fileNameText.text = results[currentButtonIndex].name;
+                        element.thumbnail.sprite = BPXSprites.Texture2DToSprite(results[currentButtonIndex].thumbnail);
+                        element.fileType = 2;
+                        element.button.onClick.AddListener(() => OnFileSelectedInOnlineExplorer(results[currentButtonIndex]));                        
+
+                        //Positioning
+                        element.transform.SetParent(panelComponents[BPXPanelComponentName.SearchResultScrollView].ScrollRect.content, false);
+                        float xPosition = horizontalPadding + (horizontalPadding * col) + (elementWidth * col);
+                        float yPosition = 1f - (verticalPadding + (verticalPadding * row) + (elementHeight * row));
+
+                        RectTransform elementRectTransform = element.GetComponent<RectTransform>();
+                        elementRectTransform.anchorMin = new Vector2(xPosition, yPosition - elementHeight);
+                        elementRectTransform.anchorMax = new Vector2(xPosition + elementWidth, yPosition);
+
+                        currentOnlineExplorerElements.Add(element);
+
+                        element.GetComponent<LEV_CustomButton>().normalColor = Color.white;
+                    }
+
+                    if (allElementsPlaced)
+                    {
+                        break;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Plugin.Instance.LogMessage(ex.Message);
+            }
+        }
+
+        private void ClearOnlineExplorerElements()
+        {
+            for (int i = 0; i < currentOnlineExplorerElements.Count; i++)
+            {
+                if (currentOnlineExplorerElements[i] != null)
+                {
+                    currentOnlineExplorerElements[i].button.onClick.RemoveAllListeners();
+                    GameObject.Destroy(currentOnlineExplorerElements[i].gameObject);
+                }
+            }
+            currentOnlineExplorerElements.Clear();
+        }
+
+        private BPXOnlineSearchResult selectedResult;
+        private void OnFileSelectedInOnlineExplorer(BPXOnlineSearchResult result)
+        {
+            selectedResult = result;
+            panelComponents[BPXPanelComponentName.FileName].SetText(Path.GetFileNameWithoutExtension(result.name));
+            panelComponents[BPXPanelComponentName.SelectedName].SetText("[" + result.name + "] by [" + result.creator + "]");
         }
         #endregion
     }

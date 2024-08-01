@@ -598,10 +598,14 @@ namespace BPX
                 BPXManager.central.manager.messenger.LogError("Not supported on this platform", 2f);
             }
         }
+
+        private bool uploadingInProgress = false;
+        
         private void OnUploadButton()
         {
-            //fileToUpload = ZeeplevelHandler.CopyZeeplevelFile(selectedBlueprintToLoad);
-            //BPXManager.GenerateImage(fileToUpload, 256, OnUploadPreviewGenerated);
+            if(selectedBlueprintToLoad == null) { return; }
+            fileToUpload = ZeeplevelHandler.CopyZeeplevelFile(selectedBlueprintToLoad);
+            BPXManager.GenerateImage(fileToUpload, 256, OnUploadPreviewGenerated);
         }
         #endregion
 
@@ -664,37 +668,8 @@ namespace BPX
         private void OnUploadPreviewGenerated(List<Texture2D> captures)
         {
             // Take the first capture
-            imageToUpload = captures[0];
-
-            // Create a timestamp
-            string timestamp = System.DateTime.Now.ToString("yyyyMMddHHmmss");
-
-            // Define the base path for uploads
-            string baseUploadPath = "D:/Uploads/";
-
-            // Create a folder with the name being the timestamp
-            string folderPath = Path.Combine(baseUploadPath, timestamp);
-            if (!Directory.Exists(folderPath))
-            {
-                Directory.CreateDirectory(folderPath);
-            }
-
-            // Define the path for the file to upload
-            string filePath = Path.Combine(folderPath, fileToUpload.FileName.Replace(".zeeplevel", "") + ".zeeplevel");
-            ZeeplevelHandler.SaveToFile(fileToUpload, filePath);
-
-            // Save the image as a PNG
-            string imageFileName = fileToUpload.FileName + "_Thumb.png";
-            string imagePath = Path.Combine(folderPath, imageFileName);
-
-            // Encode the image to PNG format
-            byte[] pngData = imageToUpload.EncodeToPNG();
-
-            // Write the PNG file
-            File.WriteAllBytes(imagePath, pngData);
-
-            Debug.Log($"File saved to: {filePath}");
-            Debug.Log($"Image saved to: {imagePath}");
+            imageToUpload = captures[0];         
+            BPXOnline.Upload(fileToUpload, imageToUpload, fileToUpload.Header.PlayerName, fileToUpload.FileName);
         }
         #endregion
     }

@@ -88,6 +88,9 @@ namespace BPX
 
         //Functions 
         private static ConfigEntry<bool> applyBasicValues;
+
+        //BPX Online
+        private static ConfigEntry<string> bpxOnlineTestingDirectory;
         
 
         public static void Initialize(ConfigFile cfg)
@@ -170,6 +173,9 @@ namespace BPX
             defaultCustomRValue = Config.Bind("12.Gizmo", "7.Default Custom R Value", "45", "Default custom R value for gizmo");
             resetCustomValues = Config.Bind("12.Gizmo", "8.Reset Values To Default", false, "[Button] Reset the values in the text fields to their default values.");
             resetCustomValues.SettingChanged += ResetCustomGridValues;
+
+            //BPXOnline
+            bpxOnlineTestingDirectory = Config.Bind("13.BPXOnline", "1. Testing Directory", "D:/BPXOnline", "");
 
             Config.SettingChanged += ConfigChanged;
         }
@@ -554,6 +560,12 @@ namespace BPX
             {
                 return -1.0f;
             }
+        }
+
+        //BPXOnline
+        public static string GetBPXOnlineTestingDirectory()
+        {
+            return bpxOnlineTestingDirectory.Value;
         }
     }
 }

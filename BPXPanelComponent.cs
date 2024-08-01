@@ -92,6 +92,11 @@ namespace BPX
 
         public void SetGridLayoutColumns(int count)
         {
+            if(ComponentType != BPXPanelComponentType.ScrollView)
+            {
+                return;
+            }
+
             gridLayoutGroup.constraintCount = count;
 
             Rect viewportRect = ScrollRect.viewport.rect;
