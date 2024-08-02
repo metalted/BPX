@@ -19,6 +19,7 @@ namespace BPX
 
         public BPXConfirmPanel confirmPanel;
         public BPXFolderPanel folderPanel;
+        public BPXUploadPanel uploadPanel;
 
         public DirectoryInfo blueprintDirectory;
         public DirectoryInfo levelDirectory;
@@ -134,6 +135,10 @@ namespace BPX
             //Create a copy of the filename to use for the searchbar
             RectTransform searchBarRect = GameObject.Instantiate(panelComponents[BPXPanelComponentName.FileName].Rect.gameObject, panelComponents[BPXPanelComponentName.FileName].Rect.transform.parent).GetComponent<RectTransform>();
             panelComponents.Add(BPXPanelComponentName.SearchBar, new BPXPanelComponent(BPXPanelComponentType.TextInput, BPXPanelComponentName.SearchBar, searchBarRect));
+
+            //Create a copy of the folder panel for the upload panel
+            RectTransform uploadPanelRect = GameObject.Instantiate(folderPanel.Rect.gameObject, folderPanel.Rect.transform.parent).GetComponent<RectTransform>();
+            uploadPanel = new BPXUploadPanel(this, uploadPanelRect);
 
             //Reposition components
             panelComponents[BPXPanelComponentName.TypeText].SetRectAnchors(0.03f, 0.8f, 0.23f, 0.85f);
@@ -604,8 +609,10 @@ namespace BPX
         private void OnUploadButton()
         {
             if(selectedBlueprintToLoad == null) { return; }
-            fileToUpload = ZeeplevelHandler.CopyZeeplevelFile(selectedBlueprintToLoad);
-            BPXManager.GenerateImage(fileToUpload, 256, OnUploadPreviewGenerated);
+
+            uploadPanel.SetFileToUpload(ZeeplevelHandler.CopyZeeplevelFile(selectedBlueprintToLoad));
+            uploadPanel.Enable();
+            ResetComponents();
         }
         #endregion
 

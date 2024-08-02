@@ -31,6 +31,7 @@ namespace BPX
             this.ComponentType = componentType;
             this.ComponentName = componentName;
             this.Rect = rect;
+            this.Rect.gameObject.name = componentName.ToString();
 
             switch (ComponentType)
             {
