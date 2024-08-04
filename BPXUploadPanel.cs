@@ -31,6 +31,13 @@ namespace BPX
         public TextMeshProUGUI tagsTitle;
         public TMP_InputField tagsInput;
 
+        public GameObject confirmPanel;
+        public TextMeshProUGUI confirmPanelText;
+        public LEV_CustomButton confirmSaveButton;
+        public LEV_CustomButton confirmCancelButton;
+
+        private bool waitingForServer = false;
+
         public BPXUploadPanel(BPXPanel panel, RectTransform rect)
         {
             this.panel = panel;
@@ -139,6 +146,28 @@ namespace BPX
             uploadButton.transform.GetChild(0).GetComponent<Image>().sprite = BPXSprites.uploadImageSprite;
         }
 
+        public void InitializeConfirmPanel(RectTransform confirm)
+        {
+            confirm.SetAsLastSibling();
+            this.confirmPanel = confirm.gameObject;
+
+            confirmPanelText = confirm.GetChild(2).GetComponent<TextMeshProUGUI>();
+            confirmPanelText.text = "Overwrite?";
+
+            confirmSaveButton = confirm.GetChild(3).GetComponent<LEV_CustomButton>();
+            confirmCancelButton = confirm.GetChild(4).GetComponent<LEV_CustomButton>();
+
+            BPXUIManagement.UnbindButton(confirmSaveButton);
+            BPXUIManagement.RecolorButton(confirmSaveButton, BPXUIManagement.blue);
+            BPXUIManagement.RebindButton(confirmSaveButton, () => OnConfirmSaveButton());
+
+            BPXUIManagement.UnbindButton(confirmCancelButton);
+            BPXUIManagement.RecolorButton(confirmCancelButton, BPXUIManagement.blue);
+            BPXUIManagement.RebindButton(confirmCancelButton, () => OnConfirmCancelButton());
+
+            confirmPanel.SetActive(false);
+        }
+
         public void Enable()
         {
             Rect.gameObject.SetActive(true);
@@ -161,17 +190,15 @@ namespace BPX
 
             fileImage = null;
 
+            waitingForServer = false;
+
             Disable();
         }
 
         private void OnUploadButton()
         {
-            //Does the blueprint have any blocks
-            if(fileToUpload.Blocks.Count == 0)
-            {
-                Plugin.Instance.LogScreenMessage("Blueprint doesn't contain any blocks...");
-                return;
-            }
+            Debug.Log("Waiting1: " + waitingForServer);
+            if (waitingForServer) { return; }
 
             string saveName = nameInput.text.Replace(".zeeplevel", "").Trim();
 
@@ -188,9 +215,65 @@ namespace BPX
                 return;
             }
 
-            BPXOnline.Upload(fileToUpload, fileImage, creatorInput.text, saveName);
+            string[] tagsInputComponents = tagsInput.text.Split(",");
+            List<string> tags = new List<string>();
 
+            foreach(string t in tagsInputComponents)
+            {
+                string result = t.Trim();
+                if(!string.IsNullOrEmpty(result))
+                {
+                    tags.Add(result);
+                }
+            }
+
+            BPXOnlineUploadFile toUpload = new BPXOnlineUploadFile();
+            toUpload.name = saveName;
+            toUpload.file = fileToUpload;
+            toUpload.creator = creatorInput.text;
+            toUpload.tags = tags.ToArray();
+            toUpload.thumbnail = fileImage;
+
+            waitingForServer = true;
+            BPXOnline.SetFileToUpload(toUpload);
+            BPXOnline.CheckForOverwrite(OnServerOverwriteCheck);            
+        }
+
+        private void OnServerOverwriteCheck(bool isOverwrite)
+        {            
+            waitingForServer = false;
+
+            if (!isOverwrite)
+            {
+                BPXOnline.Upload();
+                Exit();
+            }
+            else
+            {
+                ShowConfirmPanel();
+            }
+        }
+
+        private void ShowConfirmPanel()
+        {
+            confirmPanel.SetActive(true);
+        }
+
+        private void CloseConfirmPanel()
+        {
+            confirmPanel.SetActive(false);
+        }
+
+        public void OnConfirmSaveButton()
+        {
+            BPXOnline.Upload();            
+            CloseConfirmPanel();
             Exit();
+        }
+
+        public void OnConfirmCancelButton()
+        {
+            CloseConfirmPanel();
         }
 
         private ZeeplevelFile fileToUpload;

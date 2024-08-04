@@ -408,6 +408,11 @@ namespace BPX
 
         private void OnSearchButton()
         {
+            if(!BPXOnline.IsSetup())
+            {
+                Plugin.Instance.LogScreenMessage("BPXOnline testing folder not setup!"); return;
+            }
+
             string query = panelComponents[BPXPanelComponentName.SearchBar].GetText().Trim();
 
             if(string.IsNullOrEmpty(query))
@@ -417,7 +422,7 @@ namespace BPX
             }
             else
             {
-                BPXOnline.Search(query);
+                BPXOnline.Search(new BPXOnlineSearchQuery(query));
             }
         }
 

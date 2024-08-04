@@ -140,6 +140,10 @@ namespace BPX
             RectTransform uploadPanelRect = GameObject.Instantiate(folderPanel.Rect.gameObject, folderPanel.Rect.transform.parent).GetComponent<RectTransform>();
             uploadPanel = new BPXUploadPanel(this, uploadPanelRect);
 
+            //Create a copy of the are you sure panel and use it for the upload panel
+            RectTransform uploadPanelConfirmPanel = GameObject.Instantiate(confirmPanel.Rect, confirmPanel.Rect.transform.parent).GetComponent<RectTransform>();
+            uploadPanel.InitializeConfirmPanel(uploadPanelConfirmPanel);
+
             //Reposition components
             panelComponents[BPXPanelComponentName.TypeText].SetRectAnchors(0.03f, 0.8f, 0.23f, 0.85f);
             panelComponents[BPXPanelComponentName.Home].SetRectAnchors(0.03f, 0.71f, 0.07f, 0.79f);
@@ -603,12 +607,11 @@ namespace BPX
                 BPXManager.central.manager.messenger.LogError("Not supported on this platform", 2f);
             }
         }
-
-        private bool uploadingInProgress = false;
-        
         private void OnUploadButton()
         {
             if(selectedBlueprintToLoad == null) { return; }
+
+            if (!BPXOnline.IsSetup()) { Plugin.Instance.LogScreenMessage("BPXOnline testing folder not setup!"); return; }
 
             uploadPanel.SetFileToUpload(ZeeplevelHandler.CopyZeeplevelFile(selectedBlueprintToLoad));
             uploadPanel.Enable();
@@ -666,17 +669,6 @@ namespace BPX
                 saveBlueprintSpriteIndex = 0;
             }
             panelComponents[BPXPanelComponentName.SavePreview].SetButtonImage(saveBlueprintSprites[saveBlueprintSpriteIndex]);
-        }
-        #endregion
-
-        #region Uploading
-        private ZeeplevelFile fileToUpload;
-        private Texture2D imageToUpload;
-        private void OnUploadPreviewGenerated(List<Texture2D> captures)
-        {
-            // Take the first capture
-            imageToUpload = captures[0];         
-            BPXOnline.Upload(fileToUpload, imageToUpload, fileToUpload.Header.PlayerName, fileToUpload.FileName);
         }
         #endregion
     }
