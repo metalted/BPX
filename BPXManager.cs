@@ -52,7 +52,7 @@ namespace BPX
 
             try
             {
-                playerName = PlayerManager.Instance.steamAchiever.GetPlayerName(true);
+                playerName = PlayerManager.Instance.steamAchiever.GetPlayerNameNoTag(true);
                 return playerName;
             }
             catch

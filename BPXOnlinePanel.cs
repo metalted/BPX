@@ -22,19 +22,6 @@ namespace BPX
         public DirectoryInfo downloadDirectory;
 
         public BPXPanelState currentState = BPXPanelState.Closed;
-        private List<LEV_FileContent> currentExplorerElements = new List<LEV_FileContent>();
-        private List<LEV_FileContent> currentOnlineExplorerElements = new List<LEV_FileContent>();
-
-        public void Update()
-        {
-            if (BPXManager.central.input.Escape.buttonDown)
-            {
-                if (currentState != BPXPanelState.Closed)
-                {
-                    Close();
-                }
-            }
-        }
 
         #region Initialization
         public void Initialize(LEV_LevelEditorCentral central)
@@ -170,7 +157,7 @@ namespace BPX
             panelComponents[BPXPanelComponentName.URL].SetText("path/to/some/folder");
             panelComponents[BPXPanelComponentName.FileName].SetPlaceHolderText("...");
             panelComponents[BPXPanelComponentName.SearchBar].SetPlaceHolderText("Search...");
-            panelComponents[BPXPanelComponentName.SelectedName].SetText("[Selected blueprint to download] by [some creator]");
+            panelComponents[BPXPanelComponentName.SelectedName].SetText("");
             panelComponents[BPXPanelComponentName.PageCounter].SetText("0 / 0");
 
             //Center the page counter
@@ -190,37 +177,22 @@ namespace BPX
 
             panelComponents[BPXPanelComponentName.ScrollView].SetGridLayoutColumns(3);
             panelComponents[BPXPanelComponentName.SearchResultScrollView].SetGridLayoutColumns(6);
+
+            //Temporarely remove the pagination
+            panelComponents[BPXPanelComponentName.PreviousPage].Disable();
+            panelComponents[BPXPanelComponentName.NextPage].Disable();
+            panelComponents[BPXPanelComponentName.PageCounter].Disable();
         }
         #endregion
 
-        #region ExplorerPanel
-        private void OnDirectorySelectedInExplorer(DirectoryInfo directoryInfo)
-        {
-            downloadDirectory = directoryInfo;
-            RefreshPanel();
-        }
-        private void OnFileSelectedInExplorer(FileInfo fileInfo)
-        {
-            panelComponents[BPXPanelComponentName.FileName].SetText(Path.GetFileNameWithoutExtension(fileInfo.Name));
-        }
-        #endregion
-
-        #region SearchResultPanel
-        private void OnFileSelectedInSearchResult(FileInfo fileInfo)
-        {
-
-        }
-        #endregion
-
-        #region Panel      
-
+        #region States
         public void Open(BPXPanelState panelMode)
         {
             if (panelMode == BPXPanelState.Closed || BPXManager.central == null)
             {
                 Close();
                 return;
-            }           
+            }
 
             currentState = panelMode;
 
@@ -230,14 +202,32 @@ namespace BPX
             BPXUIManagement.OnOnlinePanelOpen();
             gameObject.SetActive(true);
         }
-
         public void Close()
         {
             gameObject.SetActive(false);
             currentState = BPXPanelState.Closed;
             BPXUIManagement.OnOnlinePanelClose();
         }
+        private void ResetComponents()
+        {
+            foreach (KeyValuePair<BPXPanelComponentName, BPXPanelComponent> comp in panelComponents)
+            {
+                comp.Value.Reset();
+            }
+        }
+        #endregion
 
+        #region ExplorerPanel
+        private List<LEV_FileContent> currentExplorerElements = new List<LEV_FileContent>();
+        private void OnDirectorySelectedInExplorer(DirectoryInfo directoryInfo)
+        {
+            downloadDirectory = directoryInfo;
+            RefreshPanel();
+        }
+        private void OnFileSelectedInExplorer(FileInfo fileInfo)
+        {
+            panelComponents[BPXPanelComponentName.FileName].SetText(Path.GetFileNameWithoutExtension(fileInfo.Name));
+        }
         private void RefreshPanel()
         {
             try
@@ -327,7 +317,6 @@ namespace BPX
                 GoHome();
             }
         }
-
         private void ClearExplorerElements()
         {
             for (int i = 0; i < currentExplorerElements.Count; i++)
@@ -340,15 +329,117 @@ namespace BPX
             }
             currentExplorerElements.Clear();
         }
+        #endregion
 
-        private void ResetComponents()
+        #region SearchResultPanel
+        private List<LEV_FileContent> currentOnlineExplorerElements = new List<LEV_FileContent>();
+        private List<BPXOnlineSearchResult> currentOnlineSearchResults = new List<BPXOnlineSearchResult>();
+        private BPXOnlineSearchResult selectedResult = null;
+        
+        private void OnFileSelectedInOnlineExplorer(BPXOnlineSearchResult result)
         {
-            foreach (KeyValuePair<BPXPanelComponentName, BPXPanelComponent> comp in panelComponents)
-            {
-                comp.Value.Reset();
-            }
+            selectedResult = result;
+            panelComponents[BPXPanelComponentName.FileName].SetText(Path.GetFileNameWithoutExtension(result.name));
+            panelComponents[BPXPanelComponentName.SelectedName].SetText("[" + result.name + "] by [" + result.creator + "]");
         }
 
+        private void ResetFileSelectionInOnlineExplorer()
+        {
+            selectedResult = null;
+            panelComponents[BPXPanelComponentName.SelectedName].SetText("");
+        }
+
+        private void ClearOnlineExplorerElements()
+        {
+            for (int i = 0; i < currentOnlineExplorerElements.Count; i++)
+            {
+                if (currentOnlineExplorerElements[i] != null)
+                {
+                    currentOnlineExplorerElements[i].button.onClick.RemoveAllListeners();
+                    GameObject.Destroy(currentOnlineExplorerElements[i].gameObject);
+                }
+            }
+            currentOnlineExplorerElements.Clear();
+        }
+        public void RefreshOnlinePanel()
+        {
+            try
+            {
+                ClearOnlineExplorerElements();
+
+                if (currentOnlineSearchResults.Count == 0)
+                {
+                    return;
+                }
+
+                //The total count of elements in the explorer
+                int amountOfElements = currentOnlineSearchResults.Count;
+                //The amount of objects displayed on each row.
+                int columnCount = 5;
+                //The amount of rows needed for all elements.
+                int rowCount = Mathf.CeilToInt((float)amountOfElements / (float)columnCount);
+                //The horizontal padding for each element.
+                float horizontalPadding = 0.1f / (columnCount + 1);
+                //The vertical padding for each element.
+                float verticalPadding = 0.12f / rowCount;
+                //The width of each element.
+                float elementWidth = 0.9f / columnCount;
+                //The height of each element.
+                float elementHeight = 1f - (rowCount + 1) * verticalPadding / rowCount;
+
+                //Flag for completion.
+                bool allElementsPlaced = false;
+
+                for (int row = 0; row < rowCount; row++)
+                {
+                    for (int col = 0; col < columnCount; col++)
+                    {
+                        //In case of half filled rows, we can quit halfway through
+                        if (row * columnCount + col >= amountOfElements)
+                        {
+                            allElementsPlaced = true;
+                            break;
+                        }
+
+                        //Create the element
+                        LEV_FileContent element = GameObject.Instantiate(BPXManager.central.saveload.filePrefab);
+                        element.central = BPXManager.central;
+
+                        int currentButtonIndex = row * columnCount + col;
+
+                        element.fileNameText.text = currentOnlineSearchResults[currentButtonIndex].name;
+                        element.thumbnail.sprite = BPXSprites.Texture2DToSprite(currentOnlineSearchResults[currentButtonIndex].thumbnail);
+                        element.fileType = 2;
+                        element.button.onClick.AddListener(() => OnFileSelectedInOnlineExplorer(currentOnlineSearchResults[currentButtonIndex]));
+
+                        //Positioning
+                        element.transform.SetParent(panelComponents[BPXPanelComponentName.SearchResultScrollView].ScrollRect.content, false);
+                        float xPosition = horizontalPadding + (horizontalPadding * col) + (elementWidth * col);
+                        float yPosition = 1f - (verticalPadding + (verticalPadding * row) + (elementHeight * row));
+
+                        RectTransform elementRectTransform = element.GetComponent<RectTransform>();
+                        elementRectTransform.anchorMin = new Vector2(xPosition, yPosition - elementHeight);
+                        elementRectTransform.anchorMax = new Vector2(xPosition + elementWidth, yPosition);
+
+                        currentOnlineExplorerElements.Add(element);
+
+                        element.GetComponent<LEV_CustomButton>().normalColor = Color.white;
+                    }
+
+                    if (allElementsPlaced)
+                    {
+                        break;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Plugin.Instance.LogMessage(ex.Message);
+            }
+        }
+        #endregion
+
+        #region GetSet
         public override string GetCurrentPath()
         {
             return downloadDirectory.FullName;
@@ -356,11 +447,17 @@ namespace BPX
         #endregion
 
         #region Callback
+        private string downloadTargetPath = "";
         public override void OnConfirmPanel(bool confirmed)
         {
             if (confirmed)
             {
+                if(!string.IsNullOrEmpty(downloadTargetPath))
+                {
+                    BPXOnline.DownloadSearchResultTo(selectedResult, downloadTargetPath, OnDownloadComplete);                    
+                }                
             }
+            downloadTargetPath = "";
         }
         public override void OnFolderPanel(bool folderCreated)
         {
@@ -368,6 +465,16 @@ namespace BPX
             {
                 RefreshPanel();
             }
+        }
+        private void OnSearchQueryCompleted(List<BPXOnlineSearchResult> results)
+        {
+            currentOnlineSearchResults = results;
+            RefreshOnlinePanel();
+        }
+
+        private void OnDownloadComplete()
+        {
+            RefreshPanel();
         }
         #endregion
 
@@ -402,33 +509,63 @@ namespace BPX
             }
             else
             {
-                BPXManager.central.manager.messenger.LogError("Not supported on this platform", 2f);
+                Plugin.Instance.LogScreenMessage("Not supported on this platform");
             }
         }
 
         private void OnSearchButton()
         {
-            if(!BPXOnline.IsSetup())
+            if (!BPXOnline.IsSetup())
             {
-                Plugin.Instance.LogScreenMessage("BPXOnline testing folder not setup!"); return;
+                Plugin.Instance.LogScreenMessage("BPXOnline testing folder not setup!");
+                return;
             }
+
+            ResetFileSelectionInOnlineExplorer();
 
             string query = panelComponents[BPXPanelComponentName.SearchBar].GetText().Trim();
 
             if(string.IsNullOrEmpty(query))
             {
-                Plugin.Instance.LogScreenMessage("Search cannot be empty...");
-                return;
+                Plugin.Instance.LogScreenMessage("Search is empty...");
             }
-            else
-            {
-                BPXOnline.Search(new BPXOnlineSearchQuery(query));
-            }
+
+            BPXOnline.SearchQuery(query, OnSearchQueryCompleted);
         }
 
         private void OnDownloadButton()
         {
-            Plugin.Instance.LogScreenMessage("Download");
+            if(selectedResult == null)
+            {
+                return;
+            }
+
+            //Get the entered name
+            string enteredName = panelComponents[BPXPanelComponentName.FileName].GetText();
+
+            if (string.IsNullOrEmpty(enteredName))
+            {
+                Plugin.Instance.LogScreenMessage("Please enter a name!");
+                return;
+            }
+
+            //Remove the extension if the user has entered one.
+            enteredName = enteredName.Replace(".zeeplevel", "");
+
+            //Create the target path and check if there is already a file there.
+            string directoryPath = downloadDirectory.ToString();
+            string targetPath = Path.Combine(directoryPath, enteredName + ".zeeplevel");
+
+            //Check if this file already exists
+            if (File.Exists(targetPath))
+            {
+                downloadTargetPath = targetPath;
+                confirmPanel.Enable("Overwrite?");
+            }
+            else
+            {
+                BPXOnline.DownloadSearchResultTo(selectedResult, targetPath, OnDownloadComplete);
+            }
         }
 
         private void OnPreviousPageButton()
@@ -439,106 +576,6 @@ namespace BPX
         private void OnNextPageButton()
         {
             Plugin.Instance.LogScreenMessage("Next");
-        }
-        #endregion
-
-        #region OnlineExplorer
-        public void OnOnlineSearchResults(List<BPXOnlineSearchResult> results)
-        {
-            try
-            {
-                ClearOnlineExplorerElements();
-
-                if(results.Count == 0)
-                {
-                    return;
-                }
-
-                //The total count of elements in the explorer
-                int amountOfElements = results.Count;
-                //The amount of objects displayed on each row.
-                int columnCount = 5;
-                //The amount of rows needed for all elements.
-                int rowCount = Mathf.CeilToInt((float)amountOfElements / (float)columnCount);
-                //The horizontal padding for each element.
-                float horizontalPadding = 0.1f / (columnCount + 1);
-                //The vertical padding for each element.
-                float verticalPadding = 0.12f / rowCount;
-                //The width of each element.
-                float elementWidth = 0.9f / columnCount;
-                //The height of each element.
-                float elementHeight = 1f - (rowCount + 1) * verticalPadding / rowCount;
-
-                //Flag for completion.
-                bool allElementsPlaced = false;
-
-                for (int row = 0; row < rowCount; row++)
-                {
-                    for (int col = 0; col < columnCount; col++)
-                    {
-                        //In case of half filled rows, we can quit halfway through
-                        if (row * columnCount + col >= amountOfElements)
-                        {
-                            allElementsPlaced = true;
-                            break;
-                        }
-
-                        //Create the element
-                        LEV_FileContent element = GameObject.Instantiate(BPXManager.central.saveload.filePrefab);
-                        element.central = BPXManager.central;
-
-                        int currentButtonIndex = row * columnCount + col;
-
-                        element.fileNameText.text = results[currentButtonIndex].name;
-                        element.thumbnail.sprite = BPXSprites.Texture2DToSprite(results[currentButtonIndex].thumbnail);
-                        element.fileType = 2;
-                        element.button.onClick.AddListener(() => OnFileSelectedInOnlineExplorer(results[currentButtonIndex]));                        
-
-                        //Positioning
-                        element.transform.SetParent(panelComponents[BPXPanelComponentName.SearchResultScrollView].ScrollRect.content, false);
-                        float xPosition = horizontalPadding + (horizontalPadding * col) + (elementWidth * col);
-                        float yPosition = 1f - (verticalPadding + (verticalPadding * row) + (elementHeight * row));
-
-                        RectTransform elementRectTransform = element.GetComponent<RectTransform>();
-                        elementRectTransform.anchorMin = new Vector2(xPosition, yPosition - elementHeight);
-                        elementRectTransform.anchorMax = new Vector2(xPosition + elementWidth, yPosition);
-
-                        currentOnlineExplorerElements.Add(element);
-
-                        element.GetComponent<LEV_CustomButton>().normalColor = Color.white;
-                    }
-
-                    if (allElementsPlaced)
-                    {
-                        break;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Plugin.Instance.LogMessage(ex.Message);
-            }
-        }
-
-        private void ClearOnlineExplorerElements()
-        {
-            for (int i = 0; i < currentOnlineExplorerElements.Count; i++)
-            {
-                if (currentOnlineExplorerElements[i] != null)
-                {
-                    currentOnlineExplorerElements[i].button.onClick.RemoveAllListeners();
-                    GameObject.Destroy(currentOnlineExplorerElements[i].gameObject);
-                }
-            }
-            currentOnlineExplorerElements.Clear();
-        }
-
-        private BPXOnlineSearchResult selectedResult;
-        private void OnFileSelectedInOnlineExplorer(BPXOnlineSearchResult result)
-        {
-            selectedResult = result;
-            panelComponents[BPXPanelComponentName.FileName].SetText(Path.GetFileNameWithoutExtension(result.name));
-            panelComponents[BPXPanelComponentName.SelectedName].SetText("[" + result.name + "] by [" + result.creator + "]");
         }
         #endregion
     }

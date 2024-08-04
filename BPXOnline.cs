@@ -9,75 +9,6 @@ using UnityEngine.Events;
 
 namespace BPX
 {
-    public class BPXOnlineSearchResult
-    {
-        public string name;
-        public string path;
-        public string creator;
-        public Texture2D thumbnail;
-    }
-
-    public class BPXOnlineUploadFile
-    {
-        public string name;
-        public ZeeplevelFile file;
-        public string creator;
-        public string[] tags;
-        public Texture2D thumbnail;
-    }
-
-    public class BPXOnlineSearchQuery
-    {
-        public string[] searchTerms;
-        public string creator;
-        public string[] tags;
-
-        public BPXOnlineSearchQuery(string query)
-        {
-            List<string> _searchTerms = new List<string>();
-            List<string> _tags = new List<string>();
-            string _creator = "";
-            
-            string[] components = query.Split(" ");
-            foreach(string comp in components)
-            {
-                if (comp.Contains(":"))
-                {
-                    string[] keywordComponents = comp.Split(":");
-                    if(keywordComponents[0].ToLower() == "from")
-                    {
-                        _creator = keywordComponents[1].ToLower();
-                        continue;
-                    }
-                    else if(keywordComponents[0].ToLower() == "tags")
-                    {
-                        string[] tagComponents = keywordComponents[1].Split(",");
-                        foreach(string t in tagComponents)
-                        {
-                            string tag = t.ToLower().Trim();
-                            if(!string.IsNullOrEmpty(tag))
-                            {
-                                _tags.Add(tag);
-                            }
-                        }
-                        continue;
-                    }
-                }
-
-                //No keywords so search term
-                string c = comp.ToLower().Trim();
-                if(!string.IsNullOrEmpty(c))
-                {
-                    _searchTerms.Add(c);
-                }
-            }
-
-            searchTerms = _searchTerms.ToArray();
-            creator = _creator;
-            tags = _tags.ToArray();
-        }
-    }
-
     public static class BPXOnline
     {
         private static BPXOnlineUploadFile fileToUpload;
@@ -89,7 +20,7 @@ namespace BPX
 
         public static void CheckForOverwrite(UnityAction<bool> callback)
         {
-            if(fileToUpload == null) { Debug.Log("FileToUpload?");  return; }
+            if(fileToUpload == null) { return; }
 
             //Do server stuff...
 
@@ -151,12 +82,29 @@ namespace BPX
 
             Plugin.Instance.LogScreenMessage("BPXOnline: Uploading Complete!");
         }
+        
+        public static void SearchQuery(string query, UnityAction <List<BPXOnlineSearchResult>> callback)
+        {
+            if (!BPXOnline.IsSetup())
+            {
+                callback(new List<BPXOnlineSearchResult>());
+                return;
+            }
 
-        public static void Search(BPXOnlineSearchQuery query)
+            if (string.IsNullOrEmpty(query.Trim()))
+            {
+                callback(new List<BPXOnlineSearchResult>());
+                return;
+            }
+            else
+            {
+                Search(new BPXOnlineSearchQuery(query), callback);
+            }
+        }
+
+        private static void Search(BPXOnlineSearchQuery query, UnityAction<List<BPXOnlineSearchResult>> callback)
         {
             string baseDirectory = BPXConfiguration.GetBPXOnlineTestingDirectory();
-
-            Plugin.Instance.LogScreenMessage("Searching for " + query + "...");
 
             // Determine the directory to search
             string searchDirectory = string.IsNullOrEmpty(query.creator) ? baseDirectory : Path.Combine(baseDirectory, query.creator);
@@ -165,8 +113,7 @@ namespace BPX
 
             if (!Directory.Exists(searchDirectory))
             {
-                Plugin.Instance.LogScreenMessage("User not found: " + query.creator);
-                BPXUIManagement.OnOnlineSearchResults(results);
+                callback(results);
                 return;
             }
 
@@ -197,7 +144,7 @@ namespace BPX
                         {
                             name = fileName,
                             path = filePath,
-                            creator = query.creator,
+                            creator = string.IsNullOrEmpty(query.creator) ? "The Player" : query.creator,
                             thumbnail = thumbnail
                         };
 
@@ -206,18 +153,21 @@ namespace BPX
                 }
             }
 
-            // You can handle the results list as needed
-            if (results.Count > 0)
-            {
-                Plugin.Instance.LogScreenMessage($"Found {results.Count} results for '{query}'");
-            }
-            else
-            {
-                Plugin.Instance.LogScreenMessage("No results found for " + query);
-            }
-
-            BPXUIManagement.OnOnlineSearchResults(results);
+            callback(results);
         }
 
+        public static void DownloadSearchResultTo(BPXOnlineSearchResult result, string path, UnityAction callback)
+        {
+            ZeeplevelFile file = ZeeplevelHandler.LoadFromFile(result.path);
+            if(file.Valid)
+            {
+                ZeeplevelHandler.SaveToFile(file, path);
+                callback();
+            }   
+            else
+            {
+                Plugin.Instance.LogScreenMessage("Something went wrong :S");
+            }
+        }
     }
 }

@@ -392,13 +392,5 @@ namespace BPX
                 }
             }
         }
-
-        public static void OnOnlineSearchResults(List<BPXOnlineSearchResult> results)
-        {
-            if(onlinePanel != null)
-            {
-                onlinePanel.OnOnlineSearchResults(results);
-            }
-        }
     }
 }
