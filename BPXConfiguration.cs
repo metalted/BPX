@@ -91,6 +91,7 @@ namespace BPX
 
         //BPX Online
         private static ConfigEntry<string> bpxOnlineTestingDirectory;
+        private static ConfigEntry<string> bpxOnlineApiUrl;
         
 
         public static void Initialize(ConfigFile cfg)
@@ -176,6 +177,7 @@ namespace BPX
 
             //BPXOnline
             bpxOnlineTestingDirectory = Config.Bind("13.BPXOnline", "1. Testing Directory", "D:/BPXOnline", "");
+            bpxOnlineApiUrl = Config.Bind("13.BPXOnline", "2. API URL", "https://bpx.metalted.com", "");
 
             Config.SettingChanged += ConfigChanged;
         }
@@ -566,6 +568,11 @@ namespace BPX
         public static string GetBPXOnlineTestingDirectory()
         {
             return bpxOnlineTestingDirectory.Value;
+        }
+        
+        public static string GetBPXOnlineApiUrl()
+        {
+            return bpxOnlineApiUrl.Value;
         }
     }
 }
