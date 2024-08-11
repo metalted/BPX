@@ -9,6 +9,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
+using ZeepSDK.External.Cysharp.Threading.Tasks;
 using Debug = UnityEngine.Debug;
 
 namespace BPX
@@ -408,9 +409,9 @@ namespace BPX
                         int currentButtonIndex = row * columnCount + col;
 
                         element.fileNameText.text = currentOnlineSearchResults[currentButtonIndex].name;
-                        element.thumbnail.sprite = BPXSprites.Texture2DToSprite(currentOnlineSearchResults[currentButtonIndex].thumbnail);
                         element.fileType = 2;
                         element.button.onClick.AddListener(() => OnFileSelectedInOnlineExplorer(currentOnlineSearchResults[currentButtonIndex]));
+                        LoadThumbnail(element, currentOnlineSearchResults[currentButtonIndex]).Forget();
 
                         //Positioning
                         element.transform.SetParent(panelComponents[BPXPanelComponentName.SearchResultScrollView].ScrollRect.content, false);
@@ -437,6 +438,16 @@ namespace BPX
                 Plugin.Instance.LogMessage(ex.Message);
             }
         }
+
+        private async UniTaskVoid LoadThumbnail(LEV_FileContent element, BPXOnlineSearchResult result)
+        {
+            byte[] bytes = await BPXApi.DownloadImage((int)result.steamID, result.path);
+            Texture2D textured = new Texture2D(1, 1);
+            textured.LoadImage(bytes);
+            if (element != null)
+                element.thumbnail.sprite = BPXSprites.Texture2DToSprite(textured);
+        }
+
         #endregion
 
         #region GetSet
@@ -515,12 +526,6 @@ namespace BPX
 
         private void OnSearchButton()
         {
-            if (!BPXOnline.IsSetup())
-            {
-                Plugin.Instance.LogScreenMessage("BPXOnline testing folder not setup!");
-                return;
-            }
-
             ResetFileSelectionInOnlineExplorer();
 
             string query = panelComponents[BPXPanelComponentName.SearchBar].GetText().Trim();
