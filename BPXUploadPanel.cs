@@ -8,6 +8,7 @@ using UnityEngine;
 using System.IO;
 using UnityEngine.UI;
 using I2.Loc;
+using ZeepSDK.External.Cysharp.Threading.Tasks;
 
 namespace BPX
 {
@@ -26,8 +27,6 @@ namespace BPX
 
         public TextMeshProUGUI nameTitle;
         public TMP_InputField nameInput;
-        public TextMeshProUGUI creatorTitle;
-        public TMP_InputField creatorInput;
         public TextMeshProUGUI tagsTitle;
         public TMP_InputField tagsInput;
 
@@ -77,21 +76,6 @@ namespace BPX
             nameInput.placeholder.GetComponent<TMP_Text>().text = "Blueprint name...";
             nameInput.text = "";
 
-            creatorInput = GameObject.Instantiate(nameInputRect.gameObject, nameInput.transform.parent).GetComponent<TMP_InputField>();
-            RectTransform creatorInputRect = creatorInput.GetComponent<RectTransform>();
-            creatorInputRect.anchorMin = new Vector2(0.05f, 0.39f);
-            creatorInputRect.anchorMax = new Vector2(0.49f, 0.49f);
-
-            Localize creatorloc = creatorInput.placeholder.GetComponent<Localize>();
-            if (creatorloc != null)
-            {
-                GameObject.Destroy(creatorloc);
-            }
-
-            creatorInput.placeholder.GetComponent<TMP_Text>().text = "Creator...";
-            creatorInput.text = "";
-            creatorInput.interactable = false;
-
             tagsInput = GameObject.Instantiate(nameInputRect.gameObject, nameInput.transform.parent).GetComponent<TMP_InputField>();
             RectTransform tagsInputRect = tagsInput.GetComponent<RectTransform>();
             tagsInputRect.anchorMin = new Vector2(0.05f, 0.15f);
@@ -117,12 +101,6 @@ namespace BPX
             nameTitleRect.anchorMin = new Vector2(0.05f, 0.75f);
             nameTitleRect.anchorMax = new Vector2(0.49f, 0.85f);
             nameTitle.text = "Name:";
-
-            creatorTitle = GameObject.Instantiate(titleBar.gameObject, titleBar.transform.parent).GetComponent<TextMeshProUGUI>();
-            RectTransform creatorTitleRect = creatorTitle.GetComponent<RectTransform>();
-            creatorTitleRect.anchorMin = new Vector2(0.05f, 0.51f);
-            creatorTitleRect.anchorMax = new Vector2(0.49f, 0.61f);
-            creatorTitle.text = "Creator:";
 
             tagsTitle = GameObject.Instantiate(titleBar.gameObject, titleBar.transform.parent).GetComponent<TextMeshProUGUI>();
             RectTransform tagsTitleRect = tagsTitle.GetComponent<RectTransform>();
@@ -181,7 +159,6 @@ namespace BPX
         private void Exit()
         {
             nameInput.text = "";
-            creatorInput.text = "";
             tagsInput.text = "";
 
             exitButton.ResetAllBools();
@@ -230,13 +207,12 @@ namespace BPX
             BPXOnlineUploadFile toUpload = new BPXOnlineUploadFile();
             toUpload.name = saveName;
             toUpload.file = fileToUpload;
-            toUpload.creator = creatorInput.text;
             toUpload.tags = tags.ToArray();
             toUpload.thumbnail = fileImage;
 
             waitingForServer = true;
             BPXOnline.SetFileToUpload(toUpload);
-            BPXOnline.CheckForOverwrite(OnServerOverwriteCheck);            
+            BPXOnline.CheckForOverwrite(OnServerOverwriteCheck).Forget();            
         }
 
         private void OnServerOverwriteCheck(bool isOverwrite)
@@ -245,7 +221,7 @@ namespace BPX
 
             if (!isOverwrite)
             {
-                BPXOnline.Upload();
+                BPXOnline.Upload().Forget();
                 Exit();
             }
             else
@@ -266,7 +242,7 @@ namespace BPX
 
         public void OnConfirmSaveButton()
         {
-            BPXOnline.Upload();            
+            BPXOnline.Upload().Forget();            
             CloseConfirmPanel();
             Exit();
         }
@@ -284,7 +260,6 @@ namespace BPX
             fileToUpload = file;
             SetImage(BPXSprites.blackPixelSprite);
             nameInput.text = Path.GetFileNameWithoutExtension(file.FileName);
-            creatorInput.text = BPXManager.GetPlayerName();
             tagsInput.text = "";
 
             BPXManager.GenerateImage(fileToUpload, 256, OnThumbnailCreated);

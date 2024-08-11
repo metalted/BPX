@@ -611,8 +611,6 @@ namespace BPX
         {
             if(selectedBlueprintToLoad == null) { return; }
 
-            if (!BPXOnline.IsSetup()) { Plugin.Instance.LogScreenMessage("BPXOnline testing folder not setup!"); return; }
-
             uploadPanel.SetFileToUpload(ZeeplevelHandler.CopyZeeplevelFile(selectedBlueprintToLoad));
             uploadPanel.Enable();
             ResetComponents();

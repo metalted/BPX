@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.IO;
+using System.Text;
+using BPX.Api.Response;
 using UnityEngine;
 using UnityEngine.Events;
+using ZeepSDK.External.Cysharp.Threading.Tasks;
 
 namespace BPX
 {
@@ -18,152 +18,82 @@ namespace BPX
             fileToUpload = file;
         }
 
-        public static void CheckForOverwrite(UnityAction<bool> callback)
+        public static async UniTaskVoid CheckForOverwrite(UnityAction<bool> callback)
         {
-            if(fileToUpload == null) { return; }
-
-            //Do server stuff...
-
-            bool isOverwrite = IsOverwrite(fileToUpload.creator, fileToUpload.name);
-            callback(isOverwrite);
-        }
-
-        public static bool IsSetup()
-        {
-            return Directory.Exists(BPXConfiguration.GetBPXOnlineTestingDirectory());
-        }
-        
-        public static bool IsOverwrite(string creator, string name)
-        {
-            if(!Directory.Exists(Path.Combine(BPXConfiguration.GetBPXOnlineTestingDirectory(), creator)))
-            {
-                return false;
-            }
-
-            string saveName = name.Replace(".zeeplevel", "").Trim();
-
-            if (File.Exists(Path.Combine(BPXConfiguration.GetBPXOnlineTestingDirectory(), creator, saveName + ".zeeplevel")))
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        public static void Upload()
-        {
-            if(fileToUpload == null)
+            if (fileToUpload == null)
             {
                 return;
             }
 
-            // Create a folder with the name being the timestamp
-            string folderPath = Path.Combine(BPXConfiguration.GetBPXOnlineTestingDirectory(), fileToUpload.creator);
-            if (!Directory.Exists(folderPath))
+            bool exists = await BPXApi.Exists(fileToUpload.name);
+            callback(exists);
+        }
+
+        public static async UniTask Upload()
+        {
+            if (fileToUpload == null)
             {
-                Directory.CreateDirectory(folderPath);
+                return;
             }
 
-            // Define the path for the file to upload
-            string filePath = Path.Combine(folderPath, fileToUpload.name + ".zeeplevel");
-            ZeeplevelHandler.SaveToFile(fileToUpload.file, filePath);
-
-            // Save the image as a PNG
-            string imageFileName = fileToUpload.name + "_Thumb.png";
-            string imagePath = Path.Combine(folderPath, imageFileName);
-
-            // Encode the image to PNG format
-            byte[] pngData = fileToUpload.thumbnail.EncodeToPNG();
-
-            // Write the PNG file
-            File.WriteAllBytes(imagePath, pngData);
-
+            string blueprintBase64 = Convert.ToBase64String(
+                Encoding.UTF8.GetBytes(string.Join(Environment.NewLine, fileToUpload.file.ToCSV())));
+            string imageBase64 = Convert.ToBase64String(fileToUpload.thumbnail.EncodeToPNG());
+            await BPXApi.Submit(fileToUpload.name, fileToUpload.tags, blueprintBase64, imageBase64);
             Plugin.Instance.LogScreenMessage("BPXOnline: Uploading Complete!");
         }
-        
-        public static void SearchQuery(string query, UnityAction <List<BPXOnlineSearchResult>> callback)
-        {
-            if (!BPXOnline.IsSetup())
-            {
-                callback(new List<BPXOnlineSearchResult>());
-                return;
-            }
 
+        public static void SearchQuery(string query, UnityAction<List<BPXOnlineSearchResult>> callback)
+        {
             if (string.IsNullOrEmpty(query.Trim()))
             {
                 callback(new List<BPXOnlineSearchResult>());
-                return;
             }
             else
             {
-                Search(new BPXOnlineSearchQuery(query), callback);
+                Search(new BPXOnlineSearchQuery(query), callback).Forget();
             }
         }
 
-        private static void Search(BPXOnlineSearchQuery query, UnityAction<List<BPXOnlineSearchResult>> callback)
+        private static async UniTaskVoid Search(BPXOnlineSearchQuery query, UnityAction<List<BPXOnlineSearchResult>> callback)
         {
-            string baseDirectory = BPXConfiguration.GetBPXOnlineTestingDirectory();
+            List<BlueprintData> blueprintDatas = await BPXApi.Search(query.creator, query.searchTerms, query.tags);
+            List<BPXOnlineSearchResult> results = new();
 
-            // Determine the directory to search
-            string searchDirectory = string.IsNullOrEmpty(query.creator) ? baseDirectory : Path.Combine(baseDirectory, query.creator);
-
-            List<BPXOnlineSearchResult> results = new List<BPXOnlineSearchResult>();
-
-            if (!Directory.Exists(searchDirectory))
+            foreach (BlueprintData blueprintData in blueprintDatas)
             {
-                callback(results);
-                return;
-            }
-
-            // Get all .zeeplevel files in the directory and subdirectories
-            var zeeplevelFiles = Directory.GetFiles(searchDirectory, "*.zeeplevel", SearchOption.AllDirectories);
-
-            foreach (var filePath in zeeplevelFiles)
-            {
-                string fileName = Path.GetFileNameWithoutExtension(filePath);
-
-                // Check if the file name contains all search terms
-                bool containsAllSearchTerms = query.searchTerms.All(term => fileName.IndexOf(term, StringComparison.OrdinalIgnoreCase) >= 0);
-
-                if (containsAllSearchTerms)
-                {
-                    // Check for corresponding thumbnail
-                    string thumbnailPath = Path.Combine(Path.GetDirectoryName(filePath), fileName + "_Thumb.png");
-
-                    if (File.Exists(thumbnailPath))
+                results.Add(
+                    new BPXOnlineSearchResult()
                     {
-                        // Read the thumbnail image into a Texture2D
-                        byte[] thumbnailData = File.ReadAllBytes(thumbnailPath);
-                        Texture2D thumbnail = new Texture2D(2, 2);
-                        thumbnail.LoadImage(thumbnailData);
-
-                        // Create and populate the search result
-                        BPXOnlineSearchResult result = new BPXOnlineSearchResult
-                        {
-                            name = fileName,
-                            path = filePath,
-                            creator = string.IsNullOrEmpty(query.creator) ? "The Player" : query.creator,
-                            thumbnail = thumbnail
-                        };
-
-                        results.Add(result);
-                    }
-                }
+                        creator = blueprintData.User.SteamName,
+                        name = blueprintData.Name,
+                        path = blueprintData.FileId,
+                        steamID = blueprintData.IdUser,
+                        thumbnail = null // TODO: This should probably be the url to the thumbnail
+                    });
             }
 
             callback(results);
         }
 
-        public static void DownloadSearchResultTo(BPXOnlineSearchResult result, string path, UnityAction callback)
+        public static async UniTaskVoid DownloadSearchResultTo(BPXOnlineSearchResult result, string path, UnityAction callback)
         {
-            ZeeplevelFile file = ZeeplevelHandler.LoadFromFile(result.path);
-            if(file.Valid)
+            string blueprintContents = await BPXApi.DownloadBlueprint((int)result.steamID, result.path);
+            if (string.IsNullOrEmpty(blueprintContents))
+            {
+                Plugin.Instance.LogScreenMessage("Something went wrong :S");
+                return;
+            }
+
+            string tempFileName = Path.GetTempFileName();
+            await File.WriteAllTextAsync(tempFileName, blueprintContents);
+
+            ZeeplevelFile file = ZeeplevelHandler.LoadFromFile(tempFileName);
+            if (file.Valid)
             {
                 ZeeplevelHandler.SaveToFile(file, path);
                 callback();
-            }   
+            }
             else
             {
                 Plugin.Instance.LogScreenMessage("Something went wrong :S");
