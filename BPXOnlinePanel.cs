@@ -163,7 +163,7 @@ namespace BPX
             panelComponents[BPXPanelComponentName.FileName].SetPlaceHolderText("...");
             panelComponents[BPXPanelComponentName.SearchBar].SetPlaceHolderText("Search...");
             panelComponents[BPXPanelComponentName.SelectedName].SetText("");
-            panelComponents[BPXPanelComponentName.PageCounter].SetText("0 / 0");
+            panelComponents[BPXPanelComponentName.PageCounter].SetText("1 / 1");
 
             //Center the page counter
             panelComponents[BPXPanelComponentName.PageCounter].textMesh.alignment = TextAlignmentOptions.Center;
@@ -182,11 +182,6 @@ namespace BPX
 
             panelComponents[BPXPanelComponentName.ScrollView].SetGridLayoutColumns(3);
             panelComponents[BPXPanelComponentName.SearchResultScrollView].SetGridLayoutColumns(6);
-
-            //Temporarely remove the pagination
-            panelComponents[BPXPanelComponentName.PreviousPage].Disable();
-            panelComponents[BPXPanelComponentName.NextPage].Disable();
-            panelComponents[BPXPanelComponentName.PageCounter].Disable();
         }
         #endregion
 
@@ -339,6 +334,8 @@ namespace BPX
         #region SearchResultPanel
         private List<LEV_FileContent> currentOnlineExplorerElements = new List<LEV_FileContent>();
         private List<BPXOnlineSearchResult> currentOnlineSearchResults = new List<BPXOnlineSearchResult>();
+        private int currentOnlineSearchResultPageCount = 0;
+        private int currentOnlineSearchResultPage = 0;
         private BPXOnlineSearchResult selectedResult = null;
         
         private void OnFileSelectedInOnlineExplorer(BPXOnlineSearchResult result)
@@ -366,19 +363,38 @@ namespace BPX
             }
             currentOnlineExplorerElements.Clear();
         }
+
         public void RefreshOnlinePanel()
-        {
+        {            
             try
             {
                 ClearOnlineExplorerElements();
+
+                //Set the page numbering
+                panelComponents[BPXPanelComponentName.PageCounter].SetText("" + (currentOnlineSearchResultPage + 1) + " / " + currentOnlineSearchResultPageCount);
 
                 if (currentOnlineSearchResults.Count == 0)
                 {
                     return;
                 }
 
+                //Calculate the startIndex
+                int onlineResultsPerPage = Mathf.Max(1, BPXConfiguration.GetBPXOnlineResultsPerPage());
+                int itemStartIndex = currentOnlineSearchResultPage * onlineResultsPerPage;
+
+                if(itemStartIndex >= currentOnlineSearchResults.Count)
+                {
+                    return;
+                }
+
+                //Calculate the number of items to take
+                int count = Math.Min(onlineResultsPerPage, currentOnlineSearchResults.Count - itemStartIndex);
+
+                BPXOnlineSearchResult[] pageResults = new BPXOnlineSearchResult[count];
+                Array.Copy(currentOnlineSearchResults.ToArray(), itemStartIndex, pageResults, 0, count);
+
                 //The total count of elements in the explorer
-                int amountOfElements = currentOnlineSearchResults.Count;
+                int amountOfElements = pageResults.Length;
                 //The amount of objects displayed on each row.
                 int columnCount = 5;
                 //The amount of rows needed for all elements.
@@ -412,10 +428,10 @@ namespace BPX
 
                         int currentButtonIndex = row * columnCount + col;
 
-                        element.fileNameText.text = currentOnlineSearchResults[currentButtonIndex].name;
+                        element.fileNameText.text = pageResults[currentButtonIndex].name;
                         element.fileType = 2;
-                        element.button.onClick.AddListener(() => OnFileSelectedInOnlineExplorer(currentOnlineSearchResults[currentButtonIndex]));
-                        LoadThumbnail(element, currentOnlineSearchResults[currentButtonIndex]).Forget();
+                        element.button.onClick.AddListener(() => OnFileSelectedInOnlineExplorer(pageResults[currentButtonIndex]));
+                        LoadThumbnail(element, pageResults[currentButtonIndex]).Forget();
 
                         //Positioning
                         element.transform.SetParent(panelComponents[BPXPanelComponentName.SearchResultScrollView].ScrollRect.content, false);
@@ -484,7 +500,20 @@ namespace BPX
         }
         private void OnSearchQueryCompleted(List<BPXOnlineSearchResult> results)
         {
+            if(results.Count == 0)
+            {
+                Plugin.Instance.LogScreenMessage("No Results :(");
+            }
+            else
+            {
+                Plugin.Instance.LogScreenMessage("Search Result: " + results.Count + (results.Count > 1  ? " items." : " item."));
+            }
+            
+            int onlineResultsPerPage = Mathf.Max(1, BPXConfiguration.GetBPXOnlineResultsPerPage());
             currentOnlineSearchResults = results;
+            currentOnlineSearchResultPageCount = Mathf.CeilToInt(((float)results.Count) / ((float)onlineResultsPerPage));
+            currentOnlineSearchResultPage = 0;
+
             RefreshOnlinePanel();
         }
 
@@ -581,12 +610,20 @@ namespace BPX
 
         private void OnPreviousPageButton()
         {
-            Plugin.Instance.LogScreenMessage("Previous");
+            if(currentOnlineSearchResultPage > 0)
+            {
+                currentOnlineSearchResultPage--;
+                RefreshOnlinePanel();
+            }
         }
 
         private void OnNextPageButton()
         {
-            Plugin.Instance.LogScreenMessage("Next");
+            if(currentOnlineSearchResultPage + 1 < currentOnlineSearchResultPageCount)
+            {
+                currentOnlineSearchResultPage++;
+                RefreshOnlinePanel();
+            }
         }
         #endregion
     }

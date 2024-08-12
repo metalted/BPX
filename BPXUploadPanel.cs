@@ -55,8 +55,8 @@ namespace BPX
 
             uploadButton = panelRect.GetChild(1).GetComponent<LEV_CustomButton>();
             RectTransform uploadButtonRect = uploadButton.GetComponent<RectTransform>();
-            uploadButtonRect.anchorMin = new Vector2(0.86f, 0.05f);
-            uploadButtonRect.anchorMax = new Vector2(0.95f, 0.14f);
+            uploadButtonRect.anchorMin = new Vector2(0.05f, 0.15f);
+            uploadButtonRect.anchorMax = new Vector2(0.49f, 0.25f);
 
             imageButton = GameObject.Instantiate(uploadButton.gameObject, uploadButton.transform.parent).GetComponent<LEV_CustomButton>();
             RectTransform imageButtonRect = imageButton.GetComponent<RectTransform>();
@@ -79,8 +79,8 @@ namespace BPX
 
             tagsInput = GameObject.Instantiate(nameInputRect.gameObject, nameInput.transform.parent).GetComponent<TMP_InputField>();
             RectTransform tagsInputRect = tagsInput.GetComponent<RectTransform>();
-            tagsInputRect.anchorMin = new Vector2(0.05f, 0.15f);
-            tagsInputRect.anchorMax = new Vector2(0.49f, 0.25f);
+            tagsInputRect.anchorMin = new Vector2(0.05f, 0.39f);
+            tagsInputRect.anchorMax = new Vector2(0.49f, 0.49f);
 
             Localize tagloc = tagsInput.placeholder.GetComponent<Localize>();
             if (tagloc != null)
@@ -105,8 +105,8 @@ namespace BPX
 
             tagsTitle = GameObject.Instantiate(titleBar.gameObject, titleBar.transform.parent).GetComponent<TextMeshProUGUI>();
             RectTransform tagsTitleRect = tagsTitle.GetComponent<RectTransform>();
-            tagsTitleRect.anchorMin = new Vector2(0.05f, 0.27f);
-            tagsTitleRect.anchorMax = new Vector2(0.49f, 0.37f);
+            tagsTitleRect.anchorMin = new Vector2(0.05f, 0.51f);
+            tagsTitleRect.anchorMax = new Vector2(0.49f, 0.61f);
             tagsTitle.text = "Tags (Seperate by comma):";
 
             BPXUIManagement.UnbindButton(exitButton);

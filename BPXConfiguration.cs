@@ -92,6 +92,7 @@ namespace BPX
         //BPX Online
         private static ConfigEntry<string> bpxOnlineTestingDirectory;
         private static ConfigEntry<string> bpxOnlineApiUrl;
+        private static ConfigEntry<int> bpxOnlineResultsPerPage;
         
 
         public static void Initialize(ConfigFile cfg)
@@ -178,6 +179,7 @@ namespace BPX
             //BPXOnline
             //bpxOnlineTestingDirectory = Config.Bind("13.BPXOnline", "2. Testing Directory", "D:/BPXOnline", "");
             bpxOnlineApiUrl = Config.Bind("13.BPXOnline", "1.API URL", "http://195.201.16.152:5204/", "");
+            bpxOnlineResultsPerPage = Config.Bind("13.BPXOnline", "2.Results Per Page", 20, "The amount of files displayed on a single page");
 
             Config.SettingChanged += ConfigChanged;
         }
@@ -573,6 +575,11 @@ namespace BPX
         public static string GetBPXOnlineApiUrl()
         {
             return bpxOnlineApiUrl.Value;
+        }
+
+        public static int GetBPXOnlineResultsPerPage()
+        {
+            return bpxOnlineResultsPerPage.Value;
         }
     }
 }

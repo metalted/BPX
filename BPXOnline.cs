@@ -57,6 +57,7 @@ namespace BPX
 
         private static async UniTaskVoid Search(BPXOnlineSearchQuery query, UnityAction<List<BPXOnlineSearchResult>> callback)
         {
+            Plugin.Instance.LogScreenMessage("Starting search...");
             List<BlueprintData> blueprintDatas = await BPXApi.Search(query.creator, query.tags, query.searchTerms);
             List<BPXOnlineSearchResult> results = new();
 
