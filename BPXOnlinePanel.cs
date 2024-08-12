@@ -154,6 +154,10 @@ namespace BPX
             confirmPanel.Rect.SetAsLastSibling();
             folderPanel.Rect.SetAsLastSibling();
 
+            confirmPanel.Rect.GetComponent<Image>().color = BPXUIManagement.darkestBlue;
+            confirmPanel.panelHeader.text = "Overwriting local blueprint!";
+            confirmPanel.panelText.text = "A file with this name already exists locally. Continuing will overwrite the existing file. Do you want to proceed?"; ;
+
             //Set some values 
             panelComponents[BPXPanelComponentName.URL].SetText("path/to/some/folder");
             panelComponents[BPXPanelComponentName.FileName].SetPlaceHolderText("...");
@@ -470,6 +474,7 @@ namespace BPX
             }
             downloadTargetPath = "";
         }
+
         public override void OnFolderPanel(bool folderCreated)
         {
             if (folderCreated)
@@ -485,6 +490,7 @@ namespace BPX
 
         private void OnDownloadComplete()
         {
+            Plugin.Instance.LogScreenMessage("Download complete :)");
             RefreshPanel();
         }
         #endregion
@@ -565,7 +571,7 @@ namespace BPX
             if (File.Exists(targetPath))
             {
                 downloadTargetPath = targetPath;
-                confirmPanel.Enable("Overwrite?");
+                confirmPanel.Enable();
             }
             else
             {

@@ -33,11 +33,11 @@ namespace BPX
             input = panelRect.GetChild(2).GetComponent<TMP_InputField>();
 
             BPXUIManagement.UnbindButton(exitButton);
-            BPXUIManagement.RecolorButton(exitButton, BPXUIManagement.blue);
+            BPXUIManagement.StandardRecolorButton(exitButton);
             BPXUIManagement.RebindButton(exitButton, () => Exit());
 
             BPXUIManagement.UnbindButton(createButton);
-            BPXUIManagement.RecolorButton(createButton, BPXUIManagement.blue);
+            BPXUIManagement.StandardRecolorButton(createButton);
             BPXUIManagement.RebindButton(createButton, () => OnCreateButton());
         }
 

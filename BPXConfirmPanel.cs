@@ -15,6 +15,7 @@ namespace BPX
         //The complete rect of this confirm panel.
         public RectTransform Rect;
         //The text displayed on this confirm panel.
+        public TextMeshProUGUI panelHeader;
         public TextMeshProUGUI panelText;
         public LEV_CustomButton saveButton;
         public LEV_CustomButton cancelButton;
@@ -23,22 +24,28 @@ namespace BPX
         {
             this.panel = panel;
             Rect = rect;
+            panelHeader = rect.GetChild(1).GetComponent<TextMeshProUGUI>();
             panelText = rect.GetChild(2).GetComponent<TextMeshProUGUI>();
             saveButton = rect.GetChild(3).GetComponent<LEV_CustomButton>();
             cancelButton = rect.GetChild(4).GetComponent<LEV_CustomButton>();
 
             BPXUIManagement.UnbindButton(saveButton);
-            BPXUIManagement.RecolorButton(saveButton, BPXUIManagement.blue);
+            BPXUIManagement.StandardRecolorButton(saveButton);
             BPXUIManagement.RebindButton(saveButton, () => OnSaveButton());
 
             BPXUIManagement.UnbindButton(cancelButton);
-            BPXUIManagement.RecolorButton(cancelButton, BPXUIManagement.blue);
+            BPXUIManagement.StandardRecolorButton(cancelButton);
             BPXUIManagement.RebindButton(cancelButton, () => OnCancelButton());
+
+            I2.Loc.Localize[] localizers = rect.GetComponentsInChildren<I2.Loc.Localize>();
+            foreach(I2.Loc.Localize loc in localizers)
+            {
+                loc.enabled = false;
+            }
         }
 
-        public void Enable(string displayText)
+        public void Enable()
         {
-            panelText.text = displayText;
             Rect.gameObject.SetActive(true);
         }
 

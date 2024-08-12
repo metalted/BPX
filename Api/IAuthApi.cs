@@ -3,13 +3,15 @@ using BPX.Api.Request;
 using BPX.Api.Response;
 using RestEase;
 
-namespace BPX.Api;
-
-public interface IAuthApi
+namespace BPX.Api
 {
-    [Post("auth/login")]
-    Task<Response<AuthenticationResponseData>> Login([Body] AuthLoginRequestData data);
 
-    [Post("auth/refresh")]
-    Task<Response<AuthenticationResponseData>> Refresh([Body] AuthRefreshRequestData data);
+    public interface IAuthApi
+    {
+        [Post("auth/login")]
+        Task<Response<AuthenticationResponseData>> Login([Body] AuthLoginRequestData data);
+
+        [Post("auth/refresh")]
+        Task<Response<AuthenticationResponseData>> Refresh([Body] AuthRefreshRequestData data);
+    }
 }

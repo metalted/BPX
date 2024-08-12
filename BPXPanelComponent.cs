@@ -40,7 +40,7 @@ namespace BPX
                     if (Button != null)
                     {
                         BPXUIManagement.UnbindButton(Button);
-                        BPXUIManagement.RecolorButton(Button, BPXUIManagement.blue);
+                        BPXUIManagement.StandardRecolorButton(Button);
                     }
                     break;
                 case BPXPanelComponentType.Image:

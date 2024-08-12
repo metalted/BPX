@@ -189,8 +189,8 @@ namespace BPX
             panelComponents[BPXPanelComponentName.Upload].SetButtonImage(BPXSprites.uploadImageSprite);
             
             //Turn preview button completely black
-            BPXUIManagement.RecolorButton(panelComponents[BPXPanelComponentName.LoadPreview].Button, Color.black, true);
-            BPXUIManagement.RecolorButton(panelComponents[BPXPanelComponentName.SavePreview].Button, Color.black, true);
+            BPXUIManagement.RecolorButton(panelComponents[BPXPanelComponentName.LoadPreview].Button, Color.black, Color.black, Color.black, true);
+            BPXUIManagement.RecolorButton(panelComponents[BPXPanelComponentName.SavePreview].Button, Color.black, Color.black, Color.black, true);
             
             //Remove texts from buttons
             panelComponents[BPXPanelComponentName.Home].HideButtonText();
@@ -201,6 +201,11 @@ namespace BPX
 
             confirmPanel.Rect.SetAsLastSibling();
             folderPanel.Rect.SetAsLastSibling();
+
+            confirmPanel.Rect.GetComponent<Image>().color = BPXUIManagement.darkestBlue;
+            confirmPanel.panelHeader.text = "Overwriting Local Blueprint!";
+            confirmPanel.panelText.text = "A file with this name already exists locally. Continuing will overwrite the existing file. Do you want to proceed?";
+
 
             //Set some values 
             panelComponents[BPXPanelComponentName.URL].SetText("path/to/some/file");
@@ -547,7 +552,7 @@ namespace BPX
             {
                 //Show the are you sure panel with "overwrite".
                 selectedBlueprintToSave.SetPath(targetPath);
-                confirmPanel.Enable("Overwrite?");
+                confirmPanel.Enable();
             }
             else
             {

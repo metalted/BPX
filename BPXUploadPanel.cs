@@ -31,6 +31,7 @@ namespace BPX
         public TMP_InputField tagsInput;
 
         public GameObject confirmPanel;
+        public TextMeshProUGUI confirmPanelHeader;
         public TextMeshProUGUI confirmPanelText;
         public LEV_CustomButton confirmSaveButton;
         public LEV_CustomButton confirmCancelButton;
@@ -109,15 +110,15 @@ namespace BPX
             tagsTitle.text = "Tags (Seperate by comma):";
 
             BPXUIManagement.UnbindButton(exitButton);
-            BPXUIManagement.RecolorButton(exitButton, BPXUIManagement.blue);
+            BPXUIManagement.StandardRecolorButton(exitButton);
             BPXUIManagement.RebindButton(exitButton, () => Exit());
 
             BPXUIManagement.UnbindButton(uploadButton);
-            BPXUIManagement.RecolorButton(uploadButton, BPXUIManagement.blue);
+            BPXUIManagement.StandardRecolorButton(uploadButton);
             BPXUIManagement.RebindButton(uploadButton, () => OnUploadButton());
 
             BPXUIManagement.UnbindButton(imageButton);
-            BPXUIManagement.RecolorButton(imageButton, Color.black, true);
+            BPXUIManagement.RecolorButton(imageButton, Color.black, Color.black, Color.black, true);
 
             SetImage(BPXSprites.blackPixelSprite);
 
@@ -129,18 +130,23 @@ namespace BPX
             confirm.SetAsLastSibling();
             this.confirmPanel = confirm.gameObject;
 
+            confirm.GetComponent<Image>().color = BPXUIManagement.darkestBlue;
+
+            confirmPanelHeader = confirm.GetChild(1).GetComponent<TextMeshProUGUI>();
+            confirmPanelHeader.text = "Overwriting Online Blueprint!";
+
             confirmPanelText = confirm.GetChild(2).GetComponent<TextMeshProUGUI>();
-            confirmPanelText.text = "Overwrite?";
+            confirmPanelText.text = "A file with this name already exists online. Continuing will overwrite the existing file. Do you want to proceed?";
 
             confirmSaveButton = confirm.GetChild(3).GetComponent<LEV_CustomButton>();
             confirmCancelButton = confirm.GetChild(4).GetComponent<LEV_CustomButton>();
 
             BPXUIManagement.UnbindButton(confirmSaveButton);
-            BPXUIManagement.RecolorButton(confirmSaveButton, BPXUIManagement.blue);
+            BPXUIManagement.StandardRecolorButton(confirmSaveButton);
             BPXUIManagement.RebindButton(confirmSaveButton, () => OnConfirmSaveButton());
 
             BPXUIManagement.UnbindButton(confirmCancelButton);
-            BPXUIManagement.RecolorButton(confirmCancelButton, BPXUIManagement.blue);
+            BPXUIManagement.StandardRecolorButton(confirmCancelButton);
             BPXUIManagement.RebindButton(confirmCancelButton, () => OnConfirmCancelButton());
 
             confirmPanel.SetActive(false);
@@ -174,7 +180,6 @@ namespace BPX
 
         private void OnUploadButton()
         {
-            Debug.Log("Waiting1: " + waitingForServer);
             if (waitingForServer) { return; }
 
             string saveName = nameInput.text.Replace(".zeeplevel", "").Trim();

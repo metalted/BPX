@@ -17,9 +17,12 @@ namespace BPX
 
     public static class BPXUIManagement
     {
-        public static Color blue = new Color(0, 0.547f, 0.82f, 1f);
-        public static Color grey = new Color(0.3f, 0.3f, 0.3f, 1f);
+        public static Color lightestBlue = new Color(0.336f, 0.766f, 1f); //86.196.255
+        public static Color lightBlue = new Color(0f, 0.656f, 1f); //0.168.255
+        public static Color blue = new Color(0, 0.547f, 0.82f, 1f); //0.140.210
         public static Color darkBlue = new Color(0, 0.371f, 0.547f, 1f);
+        public static Color darkestBlue = new Color(0, 0.238f, 0.348f, 1f);
+        public static Color grey = new Color(0.3f, 0.3f, 0.3f, 1f);
         private static LEV_CustomButton toolbarSaveButton;
         private static LEV_CustomButton toolbarLoadButton;
         private static LEV_CustomButton toolbarOnlineButton;
@@ -60,17 +63,17 @@ namespace BPX
         private static void InitializeToolbar(LEV_LevelEditorCentral central)
         {
             toolbarSaveButton = SplitLEVCustomButton(central.tool.button_save);
-            RecolorButton(toolbarSaveButton, blue);
+            StandardRecolorButton(toolbarSaveButton);
             UnbindButton(toolbarSaveButton);
             RebindButton(toolbarSaveButton, () => OnToolbarSaveButton());
 
             toolbarLoadButton = SplitLEVCustomButton(central.tool.button_load);
-            RecolorButton(toolbarLoadButton, blue);
+            StandardRecolorButton(toolbarLoadButton);
             UnbindButton(toolbarLoadButton);
             RebindButton(toolbarLoadButton, () => OnToolbarLoadButton());
 
             toolbarOnlineButton = SplitLEVCustomButton(central.tool.button_settings);
-            RecolorButton(toolbarOnlineButton, blue);
+            StandardRecolorButton(toolbarOnlineButton);
             UnbindButton(toolbarOnlineButton);
             RebindButton(toolbarOnlineButton, () => OnToolbarOnlineButton());
             toolbarOnlineButton.transform.GetChild(0).GetComponent<Image>().sprite = BPXSprites.onlineSprite;
@@ -100,7 +103,7 @@ namespace BPX
 
             //Set a new color to the button.
             LEV_CustomButton gizmoScaleButton = buttonCopy.GetComponent<LEV_CustomButton>();
-            RecolorButton(gizmoScaleButton, blue);
+            StandardRecolorButton(gizmoScaleButton);
             UnbindButton(gizmoScaleButton);
 
             //Add the GizmoScaler monobehaviour to the button.
@@ -219,23 +222,33 @@ namespace BPX
             button.onClick.AddListener(action);
         }
 
-        public static void RecolorButton(LEV_CustomButton button, Color color, bool recolorAll = false)
+        public static void RecolorButton(LEV_CustomButton button, Color normalColor, Color hoverColor, Color clickColor, bool recolorAllNormal = false)
         {
-            button.normalColor = color;
+            button.normalColor = normalColor;
             button.overrideNormalColor = true;
-            button.buttonImage.color = color;
+            button.buttonImage.color = normalColor;
+            button.hoverColor = hoverColor;
+            button.clickColor = clickColor;
+            button.isDisabled_clickColor = clickColor;
+            button.isDisabled_hoverColor = hoverColor;
+            button.isDisabled_normalColor = normalColor;
 
-            if(recolorAll)
+            if (recolorAllNormal)
             {
-                button.clickColor = color;
-                button.hoverColor = color;
-                button.normalColor = color;
-                button.selectedColor = color;
-                button.isDisabled_clickColor = color;
-                button.isDisabled_hoverColor = color;
-                button.isDisabled_normalColor = color;
-                button.isDisabled_selectedColor = color;
+                button.clickColor = normalColor;
+                button.hoverColor = normalColor;
+                button.normalColor = normalColor;
+                button.selectedColor = normalColor;
+                button.isDisabled_clickColor = normalColor;
+                button.isDisabled_hoverColor = normalColor;
+                button.isDisabled_normalColor = normalColor;
+                button.isDisabled_selectedColor = normalColor;
             }
+        }
+
+        public static void StandardRecolorButton(LEV_CustomButton button)
+        {
+            RecolorButton(button, blue, lightBlue, lightestBlue, false);
         }
 
         public static LEV_CustomButton SplitLEVCustomButton(LEV_CustomButton original, float padding = 0)

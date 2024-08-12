@@ -176,8 +176,8 @@ namespace BPX
             resetCustomValues.SettingChanged += ResetCustomGridValues;
 
             //BPXOnline
-            bpxOnlineTestingDirectory = Config.Bind("13.BPXOnline", "1. Testing Directory", "D:/BPXOnline", "");
-            bpxOnlineApiUrl = Config.Bind("13.BPXOnline", "2. API URL", "https://bpx.metalted.com", "");
+            //bpxOnlineTestingDirectory = Config.Bind("13.BPXOnline", "2. Testing Directory", "D:/BPXOnline", "");
+            bpxOnlineApiUrl = Config.Bind("13.BPXOnline", "1.API URL", "http://195.201.16.152:5204/", "");
 
             Config.SettingChanged += ConfigChanged;
         }

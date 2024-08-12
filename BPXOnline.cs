@@ -78,6 +78,8 @@ namespace BPX
 
         public static async UniTaskVoid DownloadSearchResultTo(BPXOnlineSearchResult result, string path, UnityAction callback)
         {
+            Plugin.Instance.LogScreenMessage("Starting download...");
+
             string blueprintContents = await BPXApi.DownloadBlueprint((int)result.steamID, result.path);
             if (string.IsNullOrEmpty(blueprintContents))
             {

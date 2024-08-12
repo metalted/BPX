@@ -1,10 +1,12 @@
 ﻿using System.Collections.Generic;
 
-namespace BPX.Api.Request;
-
-public class BlueprintSearchRequestData
+namespace BPX.Api.Request
 {
-    public string Creator { get; set; } = null!;
-    public List<string> Tags { get; set; } = null!;
-    public List<string> Terms { get; set; } = null!;
+
+    public class BlueprintSearchRequestData
+    {
+        public string Creator { get; set; } = null!;
+        public List<string> Tags { get; set; } = null!;
+        public List<string> Terms { get; set; } = null!;
+    }
 }
