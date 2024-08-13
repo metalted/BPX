@@ -51,7 +51,7 @@ namespace BPX
             GetPanelComponents();
             ConfigurePanel();
 
-            blueprintDirectory = new DirectoryInfo(Plugin.Instance.pluginPath);
+            blueprintDirectory = new DirectoryInfo(Plugin.Instance.blueprintPath);
             levelDirectory = new DirectoryInfo(Plugin.Instance.levelPath);
         }
         private void GetPanelComponents()
@@ -250,7 +250,15 @@ namespace BPX
                 }
 
                 panelComponents[BPXPanelComponentName.FileName].SetText(selectedBlueprintToLoad.FileName);
-                panelComponents[BPXPanelComponentName.Upload].Enable();
+                if (currentMode == BPXPanelMode.Blueprint)
+                {
+                    panelComponents[BPXPanelComponentName.Upload].Enable();
+                }
+                else
+                {
+                    panelComponents[BPXPanelComponentName.Upload].Disable();
+                }
+               
                 BPXManager.GenerateImage(selectedBlueprintToLoad, 512, OnLoadedBlueprintPreviewGenerated);
             }
         }
@@ -262,7 +270,7 @@ namespace BPX
             }
             else if (currentMode == BPXPanelMode.Blueprint)
             {
-                blueprintDirectory = new DirectoryInfo(Plugin.Instance.pluginPath);
+                blueprintDirectory = new DirectoryInfo(Plugin.Instance.blueprintPath);
             }
 
             RefreshPanel();
@@ -616,7 +624,14 @@ namespace BPX
         {
             if(selectedBlueprintToLoad == null) { return; }
 
-            uploadPanel.SetFileToUpload(ZeeplevelHandler.CopyZeeplevelFile(selectedBlueprintToLoad));
+            if(!selectedBlueprintToLoad.Valid)
+            {
+                Plugin.Instance.LogScreenMessage("This blueprint is invalid and can't be uploaded.");
+                return;
+            }
+
+            ZeeplevelFile preUploadFile = ZeeplevelHandler.CopyZeeplevelFile(selectedBlueprintToLoad);
+            uploadPanel.SetFileToUpload(preUploadFile);
             uploadPanel.Enable();
             ResetComponents();
         }

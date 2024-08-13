@@ -30,7 +30,7 @@ namespace BPX
             GetPanelComponents();
             ConfigurePanel();
 
-            downloadDirectory = new DirectoryInfo(Plugin.Instance.pluginPath);
+            downloadDirectory = new DirectoryInfo(Plugin.Instance.blueprintPath);
         }
 
         private void GetPanelComponents()
@@ -180,11 +180,17 @@ namespace BPX
             panelComponents[BPXPanelComponentName.PreviousPage].BindButton(() => OnPreviousPageButton());
             panelComponents[BPXPanelComponentName.NextPage].BindButton(() => OnNextPageButton());
 
+            panelComponents[BPXPanelComponentName.SearchBar].textInputField.onSubmit.AddListener(OnSubmit);
+
             panelComponents[BPXPanelComponentName.ScrollView].SetGridLayoutColumns(3);
             panelComponents[BPXPanelComponentName.SearchResultScrollView].SetGridLayoutColumns(6);
         }
         #endregion
 
+        public void OnSubmit(string input)
+        {
+            OnSearchButton();
+        }
         #region States
         public void Open(BPXPanelState panelMode)
         {
@@ -527,7 +533,7 @@ namespace BPX
         #region Buttons
         private void GoHome()
         {
-            downloadDirectory = new DirectoryInfo(Plugin.Instance.pluginPath);
+            downloadDirectory = new DirectoryInfo(Plugin.Instance.blueprintPath);
             RefreshPanel();
         }
 
@@ -626,5 +632,15 @@ namespace BPX
             }
         }
         #endregion
+
+        public void OnDestroy()
+        {
+            // Remove the listener when the object is destroyed
+            try
+            {
+                panelComponents[BPXPanelComponentName.SearchBar].textInputField.onSubmit.RemoveListener(OnSubmit);
+            }
+            catch { }
+        }
     }
 }

@@ -4,7 +4,7 @@
     <TargetFramework>net472</TargetFramework>
     <AssemblyName>BPX</AssemblyName>
     <Description>Blueprints and tools for the Zeepkist level editor</Description>
-    <Version>2.1</Version>
+    <Version>2.1.2</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>

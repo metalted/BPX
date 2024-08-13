@@ -55,23 +55,40 @@ namespace BPX
             }
         }
 
+        private static bool isSearching;
         private static async UniTaskVoid Search(BPXOnlineSearchQuery query, UnityAction<List<BPXOnlineSearchResult>> callback)
         {
-            Plugin.Instance.LogScreenMessage("Starting search...");
-            List<BlueprintData> blueprintDatas = await BPXApi.Search(query.creator, query.tags, query.searchTerms);
+            if (isSearching)
+                return;
+            isSearching = true;
+
             List<BPXOnlineSearchResult> results = new();
 
-            foreach (BlueprintData blueprintData in blueprintDatas)
+            Plugin.Instance.LogScreenMessage("Starting search...");
+            try
             {
-                results.Add(
-                    new BPXOnlineSearchResult()
-                    {
-                        creator = blueprintData.User.SteamName,
-                        name = blueprintData.Name,
-                        path = blueprintData.FileId,
-                        steamID = blueprintData.IdUser,
-                        thumbnail = null // TODO: This should probably be the url to the thumbnail
-                    });
+                List<BlueprintData> blueprintDatas = await BPXApi.Search(query.creator, query.tags, query.searchTerms);                
+
+                foreach (BlueprintData blueprintData in blueprintDatas)
+                {
+                    results.Add(
+                        new BPXOnlineSearchResult()
+                        {
+                            creator = blueprintData.User.SteamName,
+                            name = blueprintData.Name,
+                            path = blueprintData.FileId,
+                            steamID = blueprintData.IdUser,
+                            thumbnail = null // TODO: This should probably be the url to the thumbnail
+                });
+                }
+            }
+            catch (Exception e)
+            {
+                // Handle exception
+            }
+            finally
+            {
+                isSearching = false;
             }
 
             callback(results);

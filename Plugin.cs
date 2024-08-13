@@ -10,15 +10,23 @@ namespace BPX
     {
         public const string pluginGuid = "com.metalted.zeepkist.blueprintsX";
         public const string pluginName = "Blueprints X";
-        public const string pluginVersion = "2.1";
+        public const string pluginVersion = "2.1.2";
 
         public static Plugin Instance;
         public string pluginPath;
+        public string blueprintPath;
         public string levelPath;        
 
         private void Awake()
         {
             pluginPath = AppDomain.CurrentDomain.BaseDirectory + @"\BepInEx\plugins";
+            blueprintPath = Path.Combine(pluginPath, "Blueprints");
+
+            if(!Directory.Exists(blueprintPath))
+            {
+                Directory.CreateDirectory(blueprintPath);
+            }
+            
             levelPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\Zeepkist\\Levels";
             Instance = this;
 

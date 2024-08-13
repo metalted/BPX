@@ -94,6 +94,10 @@ namespace BPX
                 {
                     Blocks.Add(block);
                 }
+                else
+                {
+                    return false;
+                }
             }
 
             return true;

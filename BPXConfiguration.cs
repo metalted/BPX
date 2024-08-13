@@ -234,7 +234,7 @@ namespace BPX
             positiveScalingKey.Value = KeyCode.Equals;
             scalingRequiresEnableKey.Value = false;
             scalingValues.Value = (string)scalingValues.DefaultValue;
-            defaultScalingValue.Value = (string)scalingValues.DefaultValue;
+            defaultScalingValue.Value = (string)defaultScalingValue.DefaultValue;
 
             forwardUpMovement.Value = KeyCode.UpArrow;
             backDownMovement.Value = KeyCode.DownArrow;
