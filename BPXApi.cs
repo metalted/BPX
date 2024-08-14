@@ -141,6 +141,25 @@ namespace BPX
             return response.GetContent();
         }
 
+        public static async UniTask<List<BlueprintData>> Latest(int amount)
+        {
+            IBlueprintsApi blueprintsApi = RestClient.For<IBlueprintsApi>(BPXConfiguration.GetBPXOnlineApiUrl());
+            Response<List<BlueprintData>> response = await blueprintsApi.Latest(amount);
+
+            try
+            {
+                response.ResponseMessage.EnsureSuccessStatusCode();
+            }
+            catch (Exception e)
+            {
+                Debug.LogError("Failed to search blueprints");
+                Debug.LogException(e);
+                return new List<BlueprintData>();
+            }
+
+            return response.GetContent();
+        }
+
         /// <summary>
         /// This can be used to search for blueprints with the given creator, tags, and terms
         /// </summary>
