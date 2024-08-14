@@ -43,6 +43,38 @@ namespace BPX
             Plugin.Instance.LogScreenMessage("BPXOnline: Uploading Complete!");
         }
 
+        public static void GetLatest(int amount, UnityAction<List<BPXOnlineSearchResult>> callback)
+        {
+            GetLatestAsync(amount,callback).Forget();
+        }
+
+        private static async UniTaskVoid GetLatestAsync(int amount, UnityAction<List<BPXOnlineSearchResult>> callback)
+        {
+            List<BlueprintData> blueprintDatas = await BPXApi.Latest(amount);
+
+            if (blueprintDatas.Count == 0)
+            {
+                callback(new List<BPXOnlineSearchResult>());
+                return;
+            }
+
+            List<BPXOnlineSearchResult> results = new List<BPXOnlineSearchResult>();
+            foreach (BlueprintData blueprintData in blueprintDatas)
+            {
+                results.Add(
+                    new BPXOnlineSearchResult()
+                    {
+                        creator = blueprintData.User.SteamName,
+                        name = blueprintData.Name,
+                        path = blueprintData.FileId,
+                        steamID = blueprintData.IdUser,
+                        thumbnail = null // TODO: This should probably be the url to the thumbnail
+                    });
+            }
+
+            callback(results);
+        }
+
         public static void SearchQuery(string query, UnityAction<List<BPXOnlineSearchResult>> callback)
         {
             if (string.IsNullOrEmpty(query.Trim()))
@@ -67,7 +99,7 @@ namespace BPX
             Plugin.Instance.LogScreenMessage("Starting search...");
             try
             {
-                List<BlueprintData> blueprintDatas = await BPXApi.Search(query.creator, query.tags, query.searchTerms);                
+                List<BlueprintData> blueprintDatas = await BPXApi.Search(query.creator, query.tags, query.searchTerms);
 
                 foreach (BlueprintData blueprintData in blueprintDatas)
                 {
@@ -79,7 +111,7 @@ namespace BPX
                             path = blueprintData.FileId,
                             steamID = blueprintData.IdUser,
                             thumbnail = null // TODO: This should probably be the url to the thumbnail
-                });
+                        });
                 }
             }
             catch (Exception e)
