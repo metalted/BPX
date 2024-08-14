@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BPX
 {
@@ -18,43 +15,88 @@ namespace BPX
             List<string> _tags = new List<string>();
             string _creator = "";
 
-            string[] components = query.Split(" ");
-            foreach (string comp in components)
+            bool insideQuotes = false;
+            string currentTerm = "";
+            string keyword = "";
+
+            for (int i = 0; i < query.Length; i++)
             {
-                if (comp.Contains(":"))
+                char c = query[i];
+
+                if (c == '\'')
                 {
-                    string[] keywordComponents = comp.Split(":");
-                    if (keywordComponents[0].ToLower() == "from")
-                    {
-                        _creator = keywordComponents[1].ToLower();
-                        continue;
-                    }
-                    else if (keywordComponents[0].ToLower() == "tags")
-                    {
-                        string[] tagComponents = keywordComponents[1].Split(",");
-                        foreach (string t in tagComponents)
-                        {
-                            string tag = t.ToLower().Trim();
-                            if (!string.IsNullOrEmpty(tag))
-                            {
-                                _tags.Add(tag);
-                            }
-                        }
-                        continue;
-                    }
+                    insideQuotes = !insideQuotes;
+                    continue;
                 }
 
-                //No keywords so search term
-                string c = comp.ToLower().Trim();
-                if (!string.IsNullOrEmpty(c))
+                if (c == ' ' && !insideQuotes)
                 {
-                    _searchTerms.Add(c);
+                    ProcessTerm(currentTerm, ref _creator, _tags, _searchTerms, ref keyword);
+                    currentTerm = "";
+                }
+                else if (c == ':' && !insideQuotes)
+                {
+                    keyword = currentTerm.ToLower().Trim();
+                    currentTerm = "";
+                }
+                else
+                {
+                    currentTerm += c;
                 }
             }
+
+            // Add the last term
+            ProcessTerm(currentTerm, ref _creator, _tags, _searchTerms, ref keyword);
 
             searchTerms = _searchTerms.ToArray();
             creator = _creator;
             tags = _tags.ToArray();
+
+            foreach (string s in searchTerms)
+            {
+                Plugin.Instance.LogMessage("SearchTerm:" + s);
+            }
+
+            Plugin.Instance.LogMessage("Creator:" + creator);
+
+            foreach (string s in tags)
+            {
+                Plugin.Instance.LogMessage("Tags:" + s);
+            }
+        }
+
+        private void ProcessTerm(string term, ref string creator, List<string> tags, List<string> searchTerms, ref string keyword)
+        {
+            term = term.Trim().ToLower();
+
+            if (string.IsNullOrEmpty(term))
+                return;
+
+            if (!string.IsNullOrEmpty(keyword))
+            {
+                if (keyword == "from")
+                {
+                    creator = term;
+                }
+                else if (keyword == "tags")
+                {
+                    string[] tagComponents = term.Split(",");
+                    foreach (string t in tagComponents)
+                    {
+                        string tag = t.Trim();
+                        if (!string.IsNullOrEmpty(tag))
+                        {
+                            tags.Add(tag);
+                        }
+                    }
+                }
+
+                keyword = ""; // Reset keyword after use
+            }
+            else
+            {
+                searchTerms.Add(term);
+            }
         }
     }
 }

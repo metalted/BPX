@@ -103,7 +103,7 @@ namespace BPX
             applyBasicValues = Config.Bind("01.General Settings", "1.Apply Basic Values To Config", false, "[Button] Apply Basic Values to Config");
             applyBasicValues.SettingChanged += ApplyBasicValues;
             enableKey = Config.Bind("01.General Settings", "2.Enable Key", KeyCode.None, "Key to enable functionality");
-            modifierKey = Config.Bind("01.General Settings", "3.Modifier Key", KeyCode.None, "Modifier key for additional controls");
+            modifierKey = Config.Bind("01.General Settings", "3.Modifier Key", KeyCode.LeftShift, "Modifier key for additional controls");
 
             // Axis Cycling
             axisCycleKey = Config.Bind("02.Axis Cycling", "1.Axis Cycle Key", KeyCode.None, "Key to cycle through axes");

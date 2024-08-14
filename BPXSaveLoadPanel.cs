@@ -214,7 +214,7 @@ namespace BPX
             panelComponents[BPXPanelComponentName.TypeText].SetText("Blueprints");
 
             //Set tooltips
-            ZeepSDK.UI.UIApi.AddTooltip(panelComponents[BPXPanelComponentName.Home].Rect.gameObject, "Navigate to the home directory");
+            /*ZeepSDK.UI.UIApi.AddTooltip(panelComponents[BPXPanelComponentName.Home].Rect.gameObject, "Navigate to the home directory");
             ZeepSDK.UI.UIApi.AddTooltip(panelComponents[BPXPanelComponentName.UpOneLevel].Rect.gameObject, "Navigate to the parent directory");
             ZeepSDK.UI.UIApi.AddTooltip(panelComponents[BPXPanelComponentName.NewFolder].Rect.gameObject, "Create a new folder");
             ZeepSDK.UI.UIApi.AddTooltip(panelComponents[BPXPanelComponentName.OpenFolder].Rect.gameObject, "View the opened folder in windows explorer");
@@ -223,7 +223,7 @@ namespace BPX
             ZeepSDK.UI.UIApi.AddTooltip(panelComponents[BPXPanelComponentName.Save].Rect.gameObject, "Save");
             ZeepSDK.UI.UIApi.AddTooltip(panelComponents[BPXPanelComponentName.Load].Rect.gameObject, "Load");
             ZeepSDK.UI.UIApi.AddTooltip(panelComponents[BPXPanelComponentName.LoadFile].Rect.gameObject, "Load at the position specified in the file");
-            ZeepSDK.UI.UIApi.AddTooltip(panelComponents[BPXPanelComponentName.LoadHere].Rect.gameObject, "Load at the grid position closest to camera");
+            ZeepSDK.UI.UIApi.AddTooltip(panelComponents[BPXPanelComponentName.LoadHere].Rect.gameObject, "Load at the grid position closest to camera");*/
         }
         #endregion
         
