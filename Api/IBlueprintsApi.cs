@@ -26,6 +26,9 @@ namespace BPX.Api
             [Header("Authorization")] string authorization,
             [Query] string name);
 
+        [Get("blueprints/latest/{amount}")]
+        Task<Response<List<BlueprintData>>> Latest([Path] int amount);
+
         [Post("blueprints/search")]
         Task<Response<List<BlueprintData>>> Search(
             [Header("Authorization")] string authorization,
