@@ -23,6 +23,7 @@ namespace BPX
         public DirectoryInfo downloadDirectory;
 
         public BPXPanelState currentState = BPXPanelState.Closed;
+        public bool isFirstOpen = true;
 
         #region Initialization
         public void Initialize(LEV_LevelEditorCentral central)
@@ -217,6 +218,12 @@ namespace BPX
 
             BPXUIManagement.OnOnlinePanelOpen();
             gameObject.SetActive(true);
+
+            if(isFirstOpen)
+            {
+                FillExplorerWithLatest();
+                isFirstOpen = false;
+            }
         }
         public void Close()
         {
@@ -514,6 +521,7 @@ namespace BPX
                 RefreshPanel();
             }
         }
+
         private void OnSearchQueryCompleted(List<BPXOnlineSearchResult> results)
         {
             if(results.Count == 0)
@@ -587,6 +595,27 @@ namespace BPX
             }
 
             BPXOnline.SearchQuery(query, OnSearchQueryCompleted);
+        }
+
+        private void FillExplorerWithLatest()
+        {
+            ResetFileSelectionInOnlineExplorer();
+            BPXOnline.GetLatest(Mathf.Max(1, BPXConfiguration.GetBPXOnlineResultsPerPage()), OnLatestRequestCompleted);
+        }
+
+        public void OnLatestRequestCompleted(List<BPXOnlineSearchResult> results)
+        {
+            if (results.Count == 0)
+            {
+                return;
+            }
+           
+            int onlineResultsPerPage = Mathf.Max(1, BPXConfiguration.GetBPXOnlineResultsPerPage());
+            currentOnlineSearchResults = results;
+            currentOnlineSearchResultPageCount = Mathf.CeilToInt(((float)results.Count) / ((float)onlineResultsPerPage));
+            currentOnlineSearchResultPage = 0;
+
+            RefreshOnlinePanel();
         }
 
         private void OnDownloadButton()
