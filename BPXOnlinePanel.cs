@@ -34,6 +34,19 @@ namespace BPX
             downloadDirectory = new DirectoryInfo(Plugin.Instance.blueprintPath);
         }
 
+        public void Update()
+        {
+            if (BPXManager.central.input.Escape.buttonDown)
+            {
+                if (currentState != BPXPanelState.Closed)
+                {
+                    confirmPanel.Disable();
+                    folderPanel.Disable();
+                    Close();
+                }
+            }
+        }
+
         private void GetPanelComponents()
         {
             panelComponents = new Dictionary<BPXPanelComponentName, BPXPanelComponent>();
@@ -584,22 +597,24 @@ namespace BPX
         }
 
         private void OnSearchButton()
-        {
-            ResetFileSelectionInOnlineExplorer();
-
-            string query = panelComponents[BPXPanelComponentName.SearchBar].GetText().Trim();
-
+        {           
+            string query = panelComponents[BPXPanelComponentName.SearchBar].GetText().Trim();            
+            
             if(string.IsNullOrEmpty(query))
             {
-                Plugin.Instance.LogScreenMessage("Search is empty...");
+                FillExplorerWithLatest();
             }
-
-            BPXOnline.SearchQuery(query, OnSearchQueryCompleted);
+            else
+            {
+                ResetFileSelectionInOnlineExplorer();
+                BPXOnline.SearchQuery(query, OnSearchQueryCompleted);
+            }            
         }
 
         private void FillExplorerWithLatest()
         {
             ResetFileSelectionInOnlineExplorer();
+            Plugin.Instance.LogScreenMessage("Getting latest blueprints...");
             BPXOnline.GetLatest(Mathf.Max(1, BPXConfiguration.GetBPXOnlineResultsPerPage()), OnLatestRequestCompleted);
         }
 
@@ -607,9 +622,12 @@ namespace BPX
         {
             if (results.Count == 0)
             {
+                Plugin.Instance.LogScreenMessage("Couldn't get latest blueprints... :S");
                 return;
             }
-           
+
+            Plugin.Instance.LogScreenMessage("Latest: " + results.Count + (results.Count > 1 ? " items." : " item."));
+
             int onlineResultsPerPage = Mathf.Max(1, BPXConfiguration.GetBPXOnlineResultsPerPage());
             currentOnlineSearchResults = results;
             currentOnlineSearchResultPageCount = Mathf.CeilToInt(((float)results.Count) / ((float)onlineResultsPerPage));

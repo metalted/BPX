@@ -39,11 +39,12 @@ namespace BPX
             {
                 if(currentState != BPXPanelState.Closed)
                 {
+                    confirmPanel.Disable();
+                    folderPanel.Disable();
                     Close();
                 }
             }
         }
-
 
         #region Initialization
         public void Initialize(LEV_LevelEditorCentral central)
