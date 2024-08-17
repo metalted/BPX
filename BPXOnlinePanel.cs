@@ -412,9 +412,10 @@ namespace BPX
             try
             {
                 ClearOnlineExplorerElements();
+                int pageNumber = currentOnlineSearchResultPageCount == 0 ? 1 : currentOnlineSearchResultPageCount;
 
                 //Set the page numbering
-                panelComponents[BPXPanelComponentName.PageCounter].SetText("" + (currentOnlineSearchResultPage + 1) + " / " + currentOnlineSearchResultPageCount);
+                panelComponents[BPXPanelComponentName.PageCounter].SetText("" + (currentOnlineSearchResultPage + 1) + " / " + pageNumber);
 
                 if (currentOnlineSearchResults.Count == 0)
                 {
