@@ -200,14 +200,21 @@ namespace BPX
             panelComponents[BPXPanelComponentName.SearchResultScrollView].SetGridLayoutColumns(6);
 
             //Add tooltips
-            ZeepSDK.UI.UIApi.AddTooltip(panelComponents[BPXPanelComponentName.Home].Rect.gameObject, "Navigate to the home directory");
-            ZeepSDK.UI.UIApi.AddTooltip(panelComponents[BPXPanelComponentName.UpOneLevel].Rect.gameObject, "Navigate to the parent directory");
-            ZeepSDK.UI.UIApi.AddTooltip(panelComponents[BPXPanelComponentName.NewFolder].Rect.gameObject, "Create a new folder");
-            ZeepSDK.UI.UIApi.AddTooltip(panelComponents[BPXPanelComponentName.OpenFolder].Rect.gameObject, "View the opened folder in windows explorer");
-            ZeepSDK.UI.UIApi.AddTooltip(panelComponents[BPXPanelComponentName.Search].Rect.gameObject, "Search");
-            ZeepSDK.UI.UIApi.AddTooltip(panelComponents[BPXPanelComponentName.Download].Rect.gameObject, "Download the selected blueprint");
-            ZeepSDK.UI.UIApi.AddTooltip(panelComponents[BPXPanelComponentName.PreviousPage].Rect.gameObject, "Go to the previous page");
-            ZeepSDK.UI.UIApi.AddTooltip(panelComponents[BPXPanelComponentName.NextPage].Rect.gameObject, "Go to the next page");
+            try
+            {
+                ZeepSDK.UI.UIApi.AddTooltip(panelComponents[BPXPanelComponentName.Home].Rect.gameObject, "Navigate to the home directory");
+                ZeepSDK.UI.UIApi.AddTooltip(panelComponents[BPXPanelComponentName.UpOneLevel].Rect.gameObject, "Navigate to the parent directory");
+                ZeepSDK.UI.UIApi.AddTooltip(panelComponents[BPXPanelComponentName.NewFolder].Rect.gameObject, "Create a new folder");
+                ZeepSDK.UI.UIApi.AddTooltip(panelComponents[BPXPanelComponentName.OpenFolder].Rect.gameObject, "View the opened folder in windows explorer");
+                ZeepSDK.UI.UIApi.AddTooltip(panelComponents[BPXPanelComponentName.Search].Rect.gameObject, "Search");
+                ZeepSDK.UI.UIApi.AddTooltip(panelComponents[BPXPanelComponentName.Download].Rect.gameObject, "Download the selected blueprint");
+                ZeepSDK.UI.UIApi.AddTooltip(panelComponents[BPXPanelComponentName.PreviousPage].Rect.gameObject, "Go to the previous page");
+                ZeepSDK.UI.UIApi.AddTooltip(panelComponents[BPXPanelComponentName.NextPage].Rect.gameObject, "Go to the next page");
+            }
+            catch
+            {
+                Plugin.Instance.LogMessage("Something went wrong while adding the tooltip. Probably wrong SDK version...");
+            }
         }
         #endregion
 

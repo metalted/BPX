@@ -100,6 +100,11 @@ namespace BPX
                 }
             }
 
+            if(Blocks.Count == 0)
+            {
+                return false;
+            }
+
             return true;
         }
 

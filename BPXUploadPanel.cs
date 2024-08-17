@@ -116,10 +116,16 @@ namespace BPX
             BPXUIManagement.UnbindButton(uploadButton);
             BPXUIManagement.StandardRecolorButton(uploadButton);
             BPXUIManagement.RebindButton(uploadButton, () => OnUploadButton());
-            
-            ZeepSDK.UI.UIApi.AddTooltip(uploadButton.gameObject, "Upload the blueprint");
 
-            BPXUIManagement.UnbindButton(imageButton);
+            try { 
+                ZeepSDK.UI.UIApi.AddTooltip(uploadButton.gameObject, "Upload the blueprint");
+            }
+            catch
+            {
+                Plugin.Instance.LogMessage("Something went wrong while adding the tooltip. Probably wrong SDK version...");
+            }
+
+    BPXUIManagement.UnbindButton(imageButton);
             BPXUIManagement.RecolorButton(imageButton, Color.black, Color.black, Color.black, true);
 
             SetImage(BPXSprites.blackPixelSprite);

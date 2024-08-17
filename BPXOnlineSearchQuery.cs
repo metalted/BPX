@@ -51,18 +51,6 @@ namespace BPX
             searchTerms = _searchTerms.ToArray();
             creator = _creator;
             tags = _tags.ToArray();
-
-            foreach (string s in searchTerms)
-            {
-                Plugin.Instance.LogMessage("SearchTerm:" + s);
-            }
-
-            Plugin.Instance.LogMessage("Creator:" + creator);
-
-            foreach (string s in tags)
-            {
-                Plugin.Instance.LogMessage("Tags:" + s);
-            }
         }
 
         private void ProcessTerm(string term, ref string creator, List<string> tags, List<string> searchTerms, ref string keyword)
