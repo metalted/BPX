@@ -529,7 +529,7 @@ namespace BPX
             {
                 if(!string.IsNullOrEmpty(downloadTargetPath))
                 {
-                    BPXOnline.DownloadSearchResultTo(selectedResult, downloadTargetPath, OnDownloadComplete);                    
+                    BPXOnline.DownloadSearchResultTo(selectedResult, downloadTargetPath, OnDownloadComplete).Forget();                    
                 }                
             }
             downloadTargetPath = "";
@@ -675,7 +675,7 @@ namespace BPX
             }
             else
             {
-                BPXOnline.DownloadSearchResultTo(selectedResult, targetPath, OnDownloadComplete);
+                BPXOnline.DownloadSearchResultTo(selectedResult, targetPath, OnDownloadComplete).Forget();
             }
         }
 
