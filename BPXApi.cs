@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
-using System.Threading;
 using BPX.Api;
 using BPX.Api.Request;
 using BPX.Api.Response;
@@ -18,7 +17,7 @@ namespace BPX
     public static class BPXApi
     {
         private static AuthenticationResponseData authenticationData;
-        private static AutoResetEvent autoResetEvent = new(true);
+        private static bool _isRefreshing;
 
         /// <summary>
         /// This will automatically login the current steam user to your backend
@@ -92,7 +91,12 @@ namespace BPX
 
         private static async UniTask RefreshIfExpired()
         {
-            autoResetEvent.WaitOne();
+            while (_isRefreshing)
+            {
+                await UniTask.Delay(100);
+            }
+
+            _isRefreshing = true;
 
             try
             {
@@ -125,9 +129,8 @@ namespace BPX
             }
             finally
             {
-                autoResetEvent.Set();
+                _isRefreshing = false;
             }
-
         }
 
         /// <summary>
