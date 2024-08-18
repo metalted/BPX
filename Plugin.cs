@@ -10,7 +10,7 @@ namespace BPX
     {
         public const string pluginGuid = "com.metalted.zeepkist.blueprintsX";
         public const string pluginName = "Blueprints X";
-        public const string pluginVersion = "2.1.6";
+        public const string pluginVersion = "2.1.7";
 
         public static Plugin Instance;
         public string pluginPath;

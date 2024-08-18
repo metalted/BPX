@@ -51,6 +51,18 @@ namespace BPX
             searchTerms = _searchTerms.ToArray();
             creator = _creator;
             tags = _tags.ToArray();
+
+            /*foreach (string s in searchTerms)
+            {
+                Plugin.Instance.LogMessage("Search:" + s);
+            }
+
+            Plugin.Instance.LogMessage("Creator: " + creator);
+
+            foreach (string s in tags)
+            {
+                Plugin.Instance.LogMessage("Tag:" + s);
+            }*/
         }
 
         private void ProcessTerm(string term, ref string creator, List<string> tags, List<string> searchTerms, ref string keyword)
@@ -68,7 +80,7 @@ namespace BPX
                 }
                 else if (keyword == "tags")
                 {
-                    string[] tagComponents = term.Split(",");
+                    /*string[] tagComponents = term.Split(",");
                     foreach (string t in tagComponents)
                     {
                         string tag = t.Trim();
@@ -76,7 +88,8 @@ namespace BPX
                         {
                             tags.Add(tag);
                         }
-                    }
+                    }*/
+                    searchTerms.Add(term);
                 }
 
                 keyword = ""; // Reset keyword after use
