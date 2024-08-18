@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Threading;
 using BPX.Api;
 using BPX.Api.Request;
 using BPX.Api.Response;
@@ -14,10 +15,10 @@ using ZeepSDK.External.Cysharp.Threading.Tasks;
 
 namespace BPX
 {
-
     public static class BPXApi
     {
         private static AuthenticationResponseData authenticationData;
+        private static AutoResetEvent autoResetEvent = new(true);
 
         /// <summary>
         /// This will automatically login the current steam user to your backend
@@ -91,31 +92,42 @@ namespace BPX
 
         private static async UniTask RefreshIfExpired()
         {
-            if (authenticationData == null || long.Parse(authenticationData.RefreshTokenExpiry) < DateTimeOffset.UtcNow.ToUnixTimeSeconds())
-            {
-                await Login();
-                return;
-            }
-
-            if (long.Parse(authenticationData.AccessTokenExpiry) >= DateTimeOffset.UtcNow.ToUnixTimeSeconds())
-            {
-                return;
-            }
+            autoResetEvent.WaitOne();
 
             try
             {
-                await Refresh();
-                return;
+                if (authenticationData == null || long.Parse(authenticationData.RefreshTokenExpiry) <
+                    DateTimeOffset.UtcNow.ToUnixTimeSeconds())
+                {
+                    await Login();
+                    return;
+                }
+
+                if (long.Parse(authenticationData.AccessTokenExpiry) >= DateTimeOffset.UtcNow.ToUnixTimeSeconds())
+                {
+                    return;
+                }
+
+                try
+                {
+                    await Refresh();
+                    return;
+                }
+                catch (Exception e)
+                {
+                    // Refreshing failed so we're just gonna try to login normally
+                    // Usually you would want to log this to figure out what is going on etc
+                    Debug.LogException(e);
+                    authenticationData = null;
+                }
+
+                await Login();
             }
-            catch (Exception e)
+            finally
             {
-                // Refreshing failed so we're just gonna try to login normally
-                // Usually you would want to log this to figure out what is going on etc
-                Debug.LogException(e);
-                authenticationData = null;
+                autoResetEvent.Set();
             }
 
-            await Login();
         }
 
         /// <summary>
