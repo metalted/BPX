@@ -269,11 +269,11 @@ namespace BPX
             allowedExtensions.Value = ".png,.obj,.jpg,.realm,.zeeplist,.zip,.customsoapbox";
 
             useCustomValues.Value = false;
-            customXZValues.Value = "0,0.2,0.8,1.6,4,8,16";
+            customXZValues.Value = "0;0.2;0.8;1.6;4;8;16";
             defaultCustomXZValue.Value = "16";
-            customYValues.Value = "0,0.2,0.8,1.6,4,8";
+            customYValues.Value = "0;0.2;0.8;1.6;4;8";
             defaultCustomYValue.Value = "8";
-            customRValues.Value = "0,1,5,10,30,45,90";
+            customRValues.Value = "0;1;5;10;30;45;90";
             defaultCustomRValue.Value = "45";
             ReloadToApplyMessage();
         }
