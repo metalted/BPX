@@ -66,6 +66,13 @@ namespace BPX
         private static ConfigEntry<KeyCode> fastTravelKey;
         private static ConfigEntry<bool> fastTravelRequiresEnableKey;
 
+        //Speed setting (Not technically a config, more of an temp setting)
+        public static float baseMoveSpeed = 20f;
+        public static float currentMoveSpeed = 20f;
+        public static float[] moveSpeedMultipliers = new float[] { 0.01f, 0.1f, 0.25f, 0.5f, 0.75f, 1.0f, 1.5f, 2f, 4f, 8f, 16f };
+        public static string[] moveSpeedMultiplierNames = new string[] { "1%", "10%", "25%", "50%", "75%", "Standard", "150%", "200%", "400%", "800%", "1600%" };
+        public static int currentMoveSpeedIndex = 5;
+
         //Shortcuts
         private static ConfigEntry<KeyCode> saveShortcutKey;
         private static ConfigEntry<KeyCode> loadShortcutKey;
@@ -92,8 +99,7 @@ namespace BPX
         //BPX Online
         private static ConfigEntry<string> bpxOnlineTestingDirectory;
         private static ConfigEntry<string> bpxOnlineApiUrl;
-        private static ConfigEntry<int> bpxOnlineResultsPerPage;
-        
+        private static ConfigEntry<int> bpxOnlineResultsPerPage;        
 
         public static void Initialize(ConfigFile cfg)
         {

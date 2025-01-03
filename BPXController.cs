@@ -66,6 +66,20 @@ namespace BPX
             }
         }
 
+        private bool GetKeyContinuouslyEnabled(KeyCode controlKey, bool enableKeyState, bool enableKeyRequired)
+        {
+            if (controlKey == KeyCode.None) { return false; }
+
+            if (enableKeyRequired)
+            {
+                return Input.GetKey(controlKey) && enableKeyState;
+            }
+            else
+            {
+                return Input.GetKey(controlKey);
+            }
+        }
+
         private int GetScrollDirection(bool enableKeyState, bool enableKeyRequired, bool invertScroll)
         {
             if (enableKeyRequired && !enableKeyState)
@@ -108,6 +122,11 @@ namespace BPX
             {
                 ResetController();
             }
+        }
+
+        public void Start()
+        {
+            BPXManager.central.cam.moveSpeed = BPXConfiguration.currentMoveSpeed;
         }
 
         public void Update()
@@ -223,8 +242,14 @@ namespace BPX
                 HandleFastTravel();
             }
 
+            //Move speed selection
+            if (GetKeyContinuouslyEnabled(BPXConfiguration.GetFastTravelKey(), enableKeyState, BPXConfiguration.FastTravelRequiresEnableKey()))
+            {
+                HandleMoveSpeedSelection();
+            }
+
             //Axis Cycle
-            if(GetKeyEnabled(BPXConfiguration.GetAxisCycleKey(), enableKeyState, BPXConfiguration.AxisCycleRequireEnableKey()))
+            if (GetKeyEnabled(BPXConfiguration.GetAxisCycleKey(), enableKeyState, BPXConfiguration.AxisCycleRequireEnableKey()))
             {
                 HandleAxisCycle(modifierKeyState);
             }
@@ -448,6 +473,43 @@ namespace BPX
 
             // Set the camera position to the new position with offset
             BPXManager.central.cam.transform.position = offsetPosition;
+        }
+
+        private void HandleMoveSpeedSelection()
+        {
+            if (BPXManager.AnyObjectsSelected()) { return; }
+
+            //1 if up, -1 if down.
+            int scroll = GetScrollDirection(true, false, false);
+            int index = BPXConfiguration.currentMoveSpeedIndex;
+            int i2 = index;
+
+            if (scroll < 0)
+            {
+                index--;
+                if(index < 0)
+                {
+                    index = 0;
+                }
+
+            }
+            else if(scroll > 0)
+            {
+                index++;
+                if(index >= BPXConfiguration.moveSpeedMultipliers.Length)
+                {
+                    index = BPXConfiguration.moveSpeedMultipliers.Length - 1;
+                }
+            }
+
+            //Has changed
+            if(i2 != index)
+            {
+                BPXConfiguration.currentMoveSpeedIndex = index;
+                BPXConfiguration.currentMoveSpeed = BPXConfiguration.baseMoveSpeed * BPXConfiguration.moveSpeedMultipliers[BPXConfiguration.currentMoveSpeedIndex];
+                BPXManager.central.cam.moveSpeed = BPXConfiguration.currentMoveSpeed;
+                PlayerManager.Instance.messenger.Log("Move speed: " + BPXConfiguration.moveSpeedMultiplierNames[BPXConfiguration.currentMoveSpeedIndex], 1f);
+            }            
         }
 
         private void HandleAxisCycle(bool modifierKeyState)
