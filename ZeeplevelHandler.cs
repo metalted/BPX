@@ -21,6 +21,16 @@ namespace BPX
 
         public static void InstantiateBlueprintIntoEditor(ZeeplevelFile zeeplevelFile, bool loadHere = true)
         {
+            if(TeamXMessaging.IsTeamXEditor())
+            {
+                int allowance = TeamXMessaging.GetBlockAllowance();
+                if(zeeplevelFile.Blocks.Count >= allowance)
+                {
+                    PlayerManager.Instance.messenger.Log("Blueprint exceeds blocks limit!", 2f);
+                    return;
+                }
+            }
+
             BPXManager.DeselectAllBlocks();
 
             BPXUndoRedoRegistration registration = new BPXUndoRedoRegistration();

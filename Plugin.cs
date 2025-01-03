@@ -6,6 +6,7 @@ using System.IO;
 namespace BPX
 {
     [BepInPlugin(pluginGuid, pluginName, pluginVersion)]
+    [BepInDependency("com.metalted.zeepkist.teamx", BepInDependency.DependencyFlags.SoftDependency)]
     public class Plugin : BaseUnityPlugin
     {
         public const string pluginGuid = "com.metalted.zeepkist.blueprintsX";
@@ -98,6 +99,14 @@ namespace BPX
             }
 
             return true;
+        }
+    }
+
+    [HarmonyPatch(typeof(MainMenuUI), "Awake")]
+    public class MainMenuUIAwake
+    {
+        public static void Postfix()
+        {
         }
     }
 }

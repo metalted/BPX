@@ -527,8 +527,10 @@ namespace BPX
         }
 
         private Dictionary<Vector3, BlockProperties> bpPositionMap = new Dictionary<Vector3, BlockProperties>();
+        private List<BlockProperties> selectionTargets = new List<BlockProperties>();
         private Vector2 dragStartPosition;
         private bool isDragging;
+        private bool isDraggingTeamX;
         private Rect dragBox;
         private List<string> beforeSelection;
         private Vector3 tempDragVector;
@@ -538,35 +540,73 @@ namespace BPX
         {
             if(isDragging)
             {
-                dragBox = BPXUtils.GetScreenRect(dragStartPosition, Input.mousePosition);
-
-                foreach (KeyValuePair<Vector3, BlockProperties> bp in bpPositionMap)
+                if(!isDraggingTeamX)
                 {
-                    if (dragBox.Contains((Vector2)bp.Key))
+                    dragBox = BPXUtils.GetScreenRect(dragStartPosition, Input.mousePosition);
+
+                    foreach (KeyValuePair<Vector3, BlockProperties> bp in bpPositionMap)
                     {
-                        if (!BPXManager.central.selection.list.Contains(bp.Value))
+                        if (dragBox.Contains((Vector2)bp.Key))
                         {
-                            BPXManager.central.selection.AddThisBlock(bp.Value);
+                            if (!BPXManager.central.selection.list.Contains(bp.Value))
+                            {
+                                BPXManager.central.selection.AddThisBlock(bp.Value);
+                            }
+                        }
+                        else
+                        {
+                            if (BPXManager.central.selection.list.Contains(bp.Value))
+                            {
+                                int index = BPXManager.central.selection.list.IndexOf(bp.Value);
+                                BPXManager.central.selection.RemoveBlockAt(index, false, false);
+                            }
                         }
                     }
-                    else
+                }     
+                else
+                {
+                    dragBox = BPXUtils.GetScreenRect(dragStartPosition, Input.mousePosition);
+
+                    foreach (KeyValuePair<Vector3, BlockProperties> bp in bpPositionMap)
                     {
-                        if (BPXManager.central.selection.list.Contains(bp.Value))
+                        if (dragBox.Contains((Vector2)bp.Key))
                         {
-                            int index = BPXManager.central.selection.list.IndexOf(bp.Value);
-                            BPXManager.central.selection.RemoveBlockAt(index, false, false);
+                            if (!selectionTargets.Contains(bp.Value))
+                            {
+                                selectionTargets.Add(bp.Value);
+
+                                //Set the selection color
+                                BPXManager.central.selection.SelectionPaint(bp.Value);
+                            }
+                        }
+                        else
+                        {
+                            if (selectionTargets.Contains(bp.Value))
+                            {
+                                int index = selectionTargets.IndexOf(bp.Value);
+                                selectionTargets.RemoveAt(index);
+
+                                //Reset to normal color
+                                BPXManager.central.selection.RestorePaint(bp.Value);
+                            }
                         }
                     }
                 }
             }
         }
+
         private void StartDragSelect()
         {
             FillDragPositionMap();
             dragStartPosition = Input.mousePosition;
             isDragging = true;
+            isDraggingTeamX = TeamXMessaging.IsTeamXEditor();
+
+            //Debug.LogWarning("TeamX dragging: " + isDraggingTeamX);
+
             BPXManager.DeselectAllBlocks();
             beforeSelection = BPXManager.central.undoRedo.ConvertSelectionToStringList(BPXManager.central.selection.list);
+            selectionTargets.Clear();
         }
 
         private void StopDragSelect()
@@ -574,6 +614,25 @@ namespace BPX
             isDragging = false;
             dragBox = new Rect();
             bpPositionMap.Clear();
+
+            if(isDraggingTeamX)
+            {
+                //Go over all the selection target, restore their paint back to normal. Then start selecting everything all at once.
+                foreach (BlockProperties bp in selectionTargets)
+                {
+                    BPXManager.central.selection.RestorePaint(bp);
+                }
+
+                foreach (BlockProperties bp in selectionTargets)
+                {
+                    if (!BPXManager.central.selection.list.Contains(bp))
+                    {
+                        BPXManager.central.selection.AddThisBlock(bp);
+                    }
+                }
+            }
+
+            isDraggingTeamX = false;
             List<string> afterSelection = BPXManager.central.undoRedo.ConvertSelectionToStringList(BPXManager.central.selection.list);
             BPXManager.central.selection.RegisterManualSelectionBreakLock(beforeSelection, afterSelection);
         }
