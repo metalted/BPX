@@ -99,11 +99,25 @@ namespace BPX
         //BPX Online
         private static ConfigEntry<string> bpxOnlineTestingDirectory;
         private static ConfigEntry<string> bpxOnlineApiUrl;
-        private static ConfigEntry<int> bpxOnlineResultsPerPage;        
+        private static ConfigEntry<int> bpxOnlineResultsPerPage;
+
+        //Property clipboard
+        private static ConfigEntry<KeyCode> copyPositionKey;
+        private static ConfigEntry<KeyCode> copyRotationKey;
+        private static ConfigEntry<KeyCode> copyScaleKey;
+        private static ConfigEntry<KeyCode> copyOptionsKey;
+        private static ConfigEntry<KeyCode> copyPaintsKey;
+        private static ConfigEntry<KeyCode> copyAllConfiguredKey;        
+        private static ConfigEntry<bool> includePositionInCopyAll;
+        private static ConfigEntry<bool> includeRotationInCopyAll;
+        private static ConfigEntry<bool> includeScaleInCopyAll;
+        private static ConfigEntry<bool> includeOptionsInCopyAll;
+        private static ConfigEntry<bool> includePaintsInCopyAll;
+        private static ConfigEntry<bool> propertyClipboardRequiresEnableKey;
 
         public static void Initialize(ConfigFile cfg)
         {
-            Config = cfg;
+            Config = cfg;            
 
             // General Settings
             applyBasicValues = Config.Bind("01.General Settings", "1.Apply Basic Values To Config", false, "[Button] Apply Basic Values to Config");
@@ -186,6 +200,20 @@ namespace BPX
             //bpxOnlineTestingDirectory = Config.Bind("13.BPXOnline", "2. Testing Directory", "D:/BPXOnline", "");
             bpxOnlineApiUrl = Config.Bind("13.BPXOnline", "1.API URL", "http://195.201.16.152:5204/", "");
             bpxOnlineResultsPerPage = Config.Bind("13.BPXOnline", "2.Results Per Page", 20, "The amount of files displayed on a single page");
+
+            //Property clipboard
+            copyPositionKey = Config.Bind("14. Property Clipboard", "1. Copy Paste Position Key", KeyCode.None, "Key to copy the position (and paste when combined with modifier key) of the first selected object.");
+            copyRotationKey = Config.Bind("14. Property Clipboard", "2. Copy Paste Rotation Key", KeyCode.None, "Key to copy the rotation (and paste when combined with modifier key) of the first selected object.");
+            copyScaleKey = Config.Bind("14. Property Clipboard", "3. Copy Paste Scale Key", KeyCode.None, "Key to copy the scale (and paste when combined with modifier key) of the first selected object.");
+            copyOptionsKey = Config.Bind("14. Property Clipboard", "4. Copy Paste Options Key", KeyCode.None, "Key to copy the options (and paste when combined with modifier key) of the first selected object.");
+            copyPaintsKey = Config.Bind("14. Property Clipboard", "5. Copy Paste Paints Key", KeyCode.None, "Key to copy the paints (and paste when combined with modifier key) of the first selected object.");
+            copyAllConfiguredKey = Config.Bind("14. Property Clipboard", "6. Copy Paste All Configured Key", KeyCode.None, "Key to copy all the configured options (and paste when combined with modifier key) of the first selected object.");
+            includePositionInCopyAll = Config.Bind("14. Property Clipboard", "7. Include Position In Copy All", false, "When using the copy all configured key, should the position be part of the properties being copied?");
+            includeRotationInCopyAll = Config.Bind("14. Property Clipboard", "8. Include Rotation In Copy All", false, "When using the copy all configured key, should the rotation be part of the properties being copied?");
+            includeScaleInCopyAll = Config.Bind("14. Property Clipboard", "9. Include Scale In Copy All", false, "When using the copy all configured key, should the scale be part of the properties being copied?");
+            includeOptionsInCopyAll = Config.Bind("14. Property Clipboard", "10. Include Options In Copy All", false, "When using the copy all configured key, should the options be part of the properties being copied?");
+            includePaintsInCopyAll = Config.Bind("14. Property Clipboard", "11. Include Paints In Copy All", false, "When using the copy all configured key, should the paints be part of the properties being copied?");
+            propertyClipboardRequiresEnableKey = Config.Bind("14. Property Clipboard", "12. Property Clipboard Requires Enable Key", false, "Requires enable key for property clipboard operations");
 
             Config.SettingChanged += ConfigChanged;
         }
@@ -586,6 +614,67 @@ namespace BPX
         public static int GetBPXOnlineResultsPerPage()
         {
             return bpxOnlineResultsPerPage.Value;
+        }
+
+        //Property Clipboard
+        public static KeyCode GetPropertyClipboardPositionKey()
+        {
+            return copyPositionKey.Value;
+        }
+
+        public static KeyCode GetPropertyClipboardRotationKey()
+        {
+            return copyRotationKey.Value;
+        }
+
+        public static KeyCode GetPropertyClipboardScaleKey()
+        {
+            return copyScaleKey.Value;
+        }
+
+        public static KeyCode GetPropertyClipboardOptionsKey()
+        {
+            return copyOptionsKey.Value;
+        }
+
+        public static KeyCode GetPropertyClipboardPaintsKey()
+        {
+            return copyPaintsKey.Value;
+        }
+
+        public static KeyCode GetPropertyClipboardCopyAllKey()
+        {
+            return copyAllConfiguredKey.Value;
+        }
+
+        public static bool IsPropertyClipboardPositionIncluded()
+        {
+            return includePositionInCopyAll.Value;
+        }
+
+        public static bool IsPropertyClipboardRotationIncluded()
+        {
+            return includeRotationInCopyAll.Value;
+        }
+
+        public static bool IsPropertyClipboardScaleIncluded()
+        {
+            return includeScaleInCopyAll.Value;
+        }
+
+        public static bool IsPropertyClipboardOptionsIncluded()
+        {
+            return includeOptionsInCopyAll.Value;
+        }
+
+        public static bool IsPropertyClipboardPaintsIncluded()
+        {
+            return includePaintsInCopyAll.Value;
+        }
+
+        public static bool PropertyClipboardRequiresEnableKey()
+        {
+            return propertyClipboardRequiresEnableKey.Value;
         }
     }
 }

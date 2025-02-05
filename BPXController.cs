@@ -236,6 +236,32 @@ namespace BPX
                 HandleClipboard(false);
             }
 
+            //Property Clipboard
+            if(GetKeyEnabled(BPXConfiguration.GetPropertyClipboardPositionKey(), enableKeyState, BPXConfiguration.PropertyClipboardRequiresEnableKey()))
+            {
+                HandlePropertyClipboard("position", modifierKeyState);
+            }
+            if (GetKeyEnabled(BPXConfiguration.GetPropertyClipboardRotationKey(), enableKeyState, BPXConfiguration.PropertyClipboardRequiresEnableKey()))
+            {
+                HandlePropertyClipboard("rotation", modifierKeyState);
+            }
+            if (GetKeyEnabled(BPXConfiguration.GetPropertyClipboardScaleKey(), enableKeyState, BPXConfiguration.PropertyClipboardRequiresEnableKey()))
+            {
+                HandlePropertyClipboard("scale", modifierKeyState);
+            }
+            if (GetKeyEnabled(BPXConfiguration.GetPropertyClipboardOptionsKey(), enableKeyState, BPXConfiguration.PropertyClipboardRequiresEnableKey()))
+            {
+                HandlePropertyClipboard("options", modifierKeyState);
+            }
+            if (GetKeyEnabled(BPXConfiguration.GetPropertyClipboardPaintsKey(), enableKeyState, BPXConfiguration.PropertyClipboardRequiresEnableKey()))
+            {
+                HandlePropertyClipboard("paints", modifierKeyState);
+            }
+            if (GetKeyEnabled(BPXConfiguration.GetPropertyClipboardCopyAllKey(), enableKeyState, BPXConfiguration.PropertyClipboardRequiresEnableKey()))
+            {
+                HandlePropertyClipboard("all", modifierKeyState);
+            }
+
             //Fast Travel
             if (GetKeyEnabled(BPXConfiguration.GetFastTravelKey(), enableKeyState, BPXConfiguration.FastTravelRequiresEnableKey()))
             {
@@ -461,6 +487,168 @@ namespace BPX
                     Plugin.Instance.LogScreenMessage("No objects in clipboard");
                 }
             }           
+        }
+
+        private void HandlePropertyClipboard(string propertyName, bool modifierKeyState)
+        {
+            //Debug.LogWarning($"Property: {propertyName}");
+            //Debug.LogWarning($"Mod: {modifierKeyState}");
+
+            //If nothing is selected abort early.
+            if (!BPXManager.AnyObjectsSelected()) { return; }
+
+            bool isCopy = !modifierKeyState;
+            bool pos = propertyName == "position" || (propertyName == "all" && BPXConfiguration.IsPropertyClipboardPositionIncluded());
+            bool rot = propertyName == "rotation" || (propertyName == "all" && BPXConfiguration.IsPropertyClipboardRotationIncluded());
+            bool scale = propertyName == "scale" || (propertyName == "all" && BPXConfiguration.IsPropertyClipboardScaleIncluded());
+            bool options = propertyName == "options" || (propertyName == "all" && BPXConfiguration.IsPropertyClipboardOptionsIncluded());
+            bool paints = propertyName == "paints" || (propertyName == "all" && BPXConfiguration.IsPropertyClipboardPaintsIncluded());
+
+            List<string> messageList = new List<string>();
+
+            if (isCopy)
+            {
+                //Debug.LogWarning($"isCopy:{isCopy}; pos: {pos}; rot: {rot}; scale: {scale}; options: {options}; paints: {paints}");
+                
+                //Get the first object in the selection
+                BlockProperties firstObject = BPXManager.central.selection.list[0];
+                if (pos)
+                {
+                    messageList.Add("Position");
+                    BPXManager.positionClipboard = firstObject.transform.position;
+                }
+
+                if (rot)
+                {
+                    messageList.Add("Rotation");
+                    BPXManager.rotationClipboard = firstObject.transform.eulerAngles;
+                }
+
+                if (scale)
+                {
+                    messageList.Add("Scale");
+                    BPXManager.scaleClipboard = firstObject.transform.localScale;
+                }
+
+                if (options)
+                {
+                    messageList.Add("Options");
+                    BPXManager.optionsClipboard = firstObject.properties.Skip(Math.Max(0, firstObject.properties.Count - 11)).ToList();
+                }
+
+                if (paints)
+                {
+                    messageList.Add("Paints");
+                    BPXManager.paintsClipboard = firstObject.properties.Skip(9).Take(17).ToList();
+                }
+
+                if(messageList.Count > 0)
+                {
+                    PlayerManager.Instance.messenger.Log($"Copied: {string.Join(", ", messageList)}", 2f);
+                }
+                
+            }
+            //Paste
+            else
+            {
+                pos = (pos && BPXManager.positionClipboard != null);
+                rot = (rot && BPXManager.rotationClipboard != null);
+                scale = (scale && BPXManager.scaleClipboard != null);
+                options = (options && BPXManager.optionsClipboard != null);
+                paints = (paints && BPXManager.paintsClipboard != null);
+
+                //Debug.LogWarning($"isCopy:{isCopy}; pos: {pos}; rot: {rot}; scale: {scale}; options: {options}; paints: {paints}");
+
+                //Go over all the blocks in the selection and apply the desired properties.
+                List<BlockProperties> blockList = BPXManager.GetSelectedBlocks();
+                BPXUndoRedoRegistration registration = new BPXUndoRedoRegistration();
+                registration.SetBefore(blockList);
+
+                //Apply changes to each block.
+                foreach (BlockProperties bp in blockList)
+                {
+                    if(pos)
+                    {
+                        bp.transform.position = BPXManager.positionClipboard;
+                    }
+
+                    if(rot)
+                    {
+                        bp.transform.eulerAngles = BPXManager.rotationClipboard;
+                    }
+
+                    if(scale)
+                    {
+                        bp.transform.localScale = BPXManager.scaleClipboard;
+                    }
+
+                    if(options)
+                    {
+                        // Set the last 11 values from options
+                        for (int i = 0; i < 11; i++)
+                        {
+                            bp.properties[bp.properties.Count - 11 + i] = BPXManager.optionsClipboard[i];
+                        }
+                    }
+
+                    if(paints)
+                    {
+                        // Set 17 values starting from index 9
+                        for (int i = 0; i < 17; i++)
+                        {
+                            bp.properties[9 + i] = BPXManager.paintsClipboard[i];
+                        }
+                    }
+
+                    if (pos || rot || scale)
+                    {
+                        bp.SomethingChanged();
+                    }   
+                    
+                    if(options || paints)
+                    {
+                        bp.SpreadProperties();                        
+                    }
+
+                    bp.LoadProperties();
+                    BPXManager.central.selection.SelectionPaint(bp);
+                }
+
+                registration.GenerateAfter();
+
+                Change_Collection collection = registration.CreateCollection();
+                BPXManager.central.validation.BreakLock(collection, "Gizmo1");
+
+                if (pos)
+                {
+                    messageList.Add("Position");
+                }
+
+                if (rot)
+                {
+                    messageList.Add("Rotation");
+                }
+
+                if (scale)
+                {
+                    messageList.Add("Scale");
+                }
+
+                if (options)
+                {
+                    messageList.Add("Options");
+                }
+
+                if (paints)
+                {
+                    messageList.Add("Paints");
+                }
+
+                if (messageList.Count > 0)
+                {
+                    PlayerManager.Instance.messenger.Log($"Pasted: {string.Join(", ", messageList)}", 2f);
+                }
+            }            
         }
 
         private void HandleFastTravel()

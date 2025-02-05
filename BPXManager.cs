@@ -13,6 +13,11 @@ namespace BPX
         public static LEV_LevelEditorCentral central;
         private static BPXImagingObject imager;
         private static ZeeplevelFile clipboardContent;
+        public static Vector3 positionClipboard;
+        public static Vector3 rotationClipboard;
+        public static Vector3 scaleClipboard;
+        public static List<float> optionsClipboard;
+        public static List<float> paintsClipboard;
 
         public static void DeselectAllBlocks()
         {
