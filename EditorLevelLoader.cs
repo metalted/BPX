@@ -37,19 +37,28 @@ namespace BPX
             BPXManager.DeselectAllBlocks();
 
             List<BlockProperties> blockList = new List<BlockProperties>();
+            string loadType = "";
 
             if (data.json != null)
             {
                 blockList = LoadV15Blocks(data.json);
+                loadType = "v15";
             }
             else if (data.csv != null)
             {
                 blockList = LoadV14Blocks(data.csv);
+                loadType = "v14";
             }
             else
             {
                 Debug.LogError("EditorLevelLoader: No block data found.");
                 return;
+            }
+
+            //Add all loaded blocks to the tracker
+            foreach(BlockProperties bp in blockList)
+            {
+                StaticConnectorTracker.AddBlockToTracker(bp, "BPX_EditorLevelLoader_" + loadType);
             }            
 
             BPXUndoRedoRegistration registration = new BPXUndoRedoRegistration();
@@ -87,6 +96,7 @@ namespace BPX
                 instance.CreateBlock();
                 instance.properties.Clear();
                 instance.LoadProperties_v15(blockJson, true);
+                instance.UID = PlayerManager.Instance.GenerateUniqueIDforBlocks(instance.blockID.ToString());
                 blocks.Add(instance);
             }
 
