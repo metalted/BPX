@@ -58,7 +58,7 @@ namespace BPX
             init = true;
         }
 
-        public void CaptureSubject(int imageSize, ZeeplevelFile zeeplevelFile, UnityAction<List<Texture2D>> callback)
+        public void CaptureSubject(int imageSize, ZeeplevelData zeeplevelData, UnityAction<List<Texture2D>> callback)
         {
             Enable();
 
@@ -67,13 +67,13 @@ namespace BPX
             renderTexture.height = imageSize;
             renderTexture.Create();
 
-            StartCoroutine(CaptureRoutine(zeeplevelFile, callback));
+            StartCoroutine(CaptureRoutine(zeeplevelData, callback));
         }
 
-        private IEnumerator CaptureRoutine(ZeeplevelFile zeeplevelFile, UnityAction<List<Texture2D>> callback)
+        private IEnumerator CaptureRoutine(ZeeplevelData zeeplevelData, UnityAction<List<Texture2D>> callback)
         {
             Reset();
-            LoadSubject(zeeplevelFile);
+            LoadSubject(zeeplevelData);
 
             yield return new WaitForEndOfFrame();
 
@@ -114,31 +114,36 @@ namespace BPX
             transform.gameObject.SetActive(false);
         }
 
-        private void LoadSubject(ZeeplevelFile zeeplevelFile)
+        private void LoadSubject(ZeeplevelData data)
         {
-            for (int i = 0; i < zeeplevelFile.Blocks.Count; i++)
+            objects.Clear();
+
+            List<BlockProperties> spawnedBlocks = new List<BlockProperties>();
+
+            if (data.json != null)
             {
-                int id = zeeplevelFile.Blocks[i].BlockID;
-
-                if (id < 0 || id >= PlayerManager.Instance.loader.globalBlockList.blocks.Count)
-                {
-                    continue;
-                }
-
-                BlockPropertyJSON blockPropertyJSON = BPXUtils.ZeeplevelBlockToBlockPropertyJSON(zeeplevelFile.Blocks[i]);
-
-                BlockProperties bp = GameObject.Instantiate<BlockProperties>(BPXManager.central.manager.loader.globalBlockList.blocks[id]);
-                bp.CreateBlock();
-                bp.properties.Clear();
-                bp.isEditor = true;
-                bp.LoadProperties_v15(blockPropertyJSON, false);
-                bp.isLoading = false;
-
-                GameObject bpObj = bp.gameObject;
-                bpObj.transform.parent = subjectHolder;
-                GameObject.Destroy(bp);
-                objects.Add(bpObj);
+                spawnedBlocks = EditorLevelLoader.LoadV15Blocks(data.json);
             }
+            else if (data.csv != null)
+            {
+                spawnedBlocks = EditorLevelLoader.LoadV14Blocks(data.csv);
+            }
+            else
+            {
+                Debug.LogWarning("LoadSubject: No valid v14 or v15 data in ZeeplevelData.");
+                return;
+            }
+
+            foreach (var bp in spawnedBlocks)
+            {
+                GameObject go = bp.gameObject;
+                go.transform.SetParent(subjectHolder, false);
+                GameObject.Destroy(bp); // Keep only mesh for preview
+                objects.Add(go);
+            }
+
+            if (objects.Count == 0)
+                return;
 
             Bounds bounds = BPXUtils.CalculateBounds(objects);
 
@@ -150,6 +155,7 @@ namespace BPX
 
             captureCamera.orthographicSize = bounds.size.magnitude * 0.5f * scaleFactor;
         }
+
 
         public List<Texture2D> Capture()
         {

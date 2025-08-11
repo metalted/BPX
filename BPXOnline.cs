@@ -5,12 +5,13 @@ using System.Text;
 using BPX.Api.Response;
 using UnityEngine;
 using UnityEngine.Events;
-using ZeepSDK.External.Cysharp.Threading.Tasks;
+//using ZeepSDK.External.Cysharp.Threading.Tasks;
 
 namespace BPX
 {
     public static class BPXOnline
     {
+        /*
         private static BPXOnlineUploadFile fileToUpload;
 
         public static void SetFileToUpload(BPXOnlineUploadFile file)
@@ -150,6 +151,6 @@ namespace BPX
             {
                 Plugin.Instance.LogScreenMessage("Something went wrong :S");
             }
-        }
+        }*/
     }
 }

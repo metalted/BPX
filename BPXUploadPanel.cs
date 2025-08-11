@@ -8,7 +8,7 @@ using UnityEngine;
 using System.IO;
 using UnityEngine.UI;
 using I2.Loc;
-using ZeepSDK.External.Cysharp.Threading.Tasks;
+//using ZeepSDK.External.Cysharp.Threading.Tasks;
 
 namespace BPX
 {
@@ -118,7 +118,7 @@ namespace BPX
             BPXUIManagement.RebindButton(uploadButton, () => OnUploadButton());
 
             try { 
-                ZeepSDK.UI.UIApi.AddTooltip(uploadButton.gameObject, "Upload the blueprint");
+                //ZeepSDK.UI.UIApi.AddTooltip(uploadButton.gameObject, "Upload the blueprint");
             }
             catch
             {
@@ -224,8 +224,8 @@ namespace BPX
             toUpload.thumbnail = fileImage;
 
             waitingForServer = true;
-            BPXOnline.SetFileToUpload(toUpload);
-            BPXOnline.CheckForOverwrite(OnServerOverwriteCheck).Forget();            
+            //V17//BPXOnline.SetFileToUpload(toUpload);
+            //V17//BPXOnline.CheckForOverwrite(OnServerOverwriteCheck).Forget();            
         }
 
         private void OnServerOverwriteCheck(bool isOverwrite)
@@ -234,7 +234,7 @@ namespace BPX
 
             if (!isOverwrite)
             {
-                BPXOnline.Upload().Forget();
+                //BPXOnline.Upload().Forget();
                 Exit();
             }
             else
@@ -255,7 +255,7 @@ namespace BPX
 
         public void OnConfirmSaveButton()
         {
-            BPXOnline.Upload().Forget();            
+            //BPXOnline.Upload().Forget();            
             CloseConfirmPanel();
             Exit();
         }
@@ -265,18 +265,17 @@ namespace BPX
             CloseConfirmPanel();
         }
 
-        private ZeeplevelFile fileToUpload;
+        private ZeeplevelData fileToUpload;
         private Texture2D fileImage;
 
-        public void SetFileToUpload(ZeeplevelFile file)
+        public void SetFileToUpload(ZeeplevelData file)
         {
             fileToUpload = file;
             SetImage(BPXSprites.blackPixelSprite);
-            nameInput.text = Path.GetFileNameWithoutExtension(file.FileName);
+            nameInput.text = Path.GetFileNameWithoutExtension(file.level.Name);
             tagsInput.text = "";
 
             BPXManager.GenerateImage(fileToUpload, 256, OnThumbnailCreated);
-
         }
 
         public void SetImage(Sprite img)

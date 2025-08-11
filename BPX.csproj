@@ -1,10 +1,10 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
     <AssemblyName>BPX</AssemblyName>
     <Description>Blueprints and tools for the Zeepkist level editor</Description>
-    <Version>2.4</Version>
+    <Version>3.1</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
@@ -18,7 +18,8 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="ZeepSDK" Version="1.36.3" />
+    <PackageReference Include="Zeepkist.GameLibs" Version="17.5.1800" />
+    <!--<PackageReference Include="ZeepSDK" Version="1.36.3" />-->
   </ItemGroup>
   
   <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">

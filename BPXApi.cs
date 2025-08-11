@@ -10,7 +10,7 @@ using RestEase;
 using Steamworks;
 using Steamworks.Data;
 using UnityEngine;
-using ZeepSDK.External.Cysharp.Threading.Tasks;
+//using ZeepSDK.External.Cysharp.Threading.Tasks;
 
 namespace BPX
 {
@@ -22,7 +22,7 @@ namespace BPX
         /// <summary>
         /// This will automatically login the current steam user to your backend
         /// </summary>
-        public static async UniTask Login()
+        /*public static async UniTask Login()
         {
             IAuthApi authApi = RestClient.For<IAuthApi>(BPXConfiguration.GetBPXOnlineApiUrl());
             Response<AuthenticationResponseData> response = await authApi.Login(
@@ -290,6 +290,6 @@ namespace BPX
             }
 
             return await response.Content.ReadAsByteArrayAsync();
-        }
+        }*/
     }
 }

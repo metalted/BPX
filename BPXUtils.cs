@@ -10,6 +10,7 @@ namespace BPX
     public static class BPXUtils
     {
         #region Maths
+        /* V16
         public static BlockPropertyJSON ZeeplevelBlockToBlockPropertyJSON(ZeeplevelBlock block)
         {
             BlockPropertyJSON blockPropertyJSON = new BlockPropertyJSON();
@@ -25,6 +26,19 @@ namespace BPX
 
             return blockPropertyJSON;
         }
+        */
+
+        //V17
+        /*public static BlockPropertyJSON ZeeplevelBlockToBlockPropertyJSON(ZeeplevelBlock block)
+        {
+            BlockPropertyJSON blockPropertyJSON = new BlockPropertyJSON();
+            blockPropertyJSON.i = block.BlockID;
+            blockPropertyJSON.p = new CV3(block.Position.x, block.Position.y, block.Position.z);
+            blockPropertyJSON.r = new CV3(block.Rotation.x, block.Rotation.y, block.Rotation.z);
+            blockPropertyJSON.s = new CV3(block.Scale.x, block.Scale.y, block.Scale.z);
+            blockPropertyJSON.SetPropertyList(new List<float>(block.Properties));
+            return blockPropertyJSON;
+        }*/
 
         public static Vector3 ClosestGridPosition(Vector3 position)
         {

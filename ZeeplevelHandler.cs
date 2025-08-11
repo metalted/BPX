@@ -2,11 +2,13 @@
 using System.IO;
 using System.Collections.Generic;
 using UnityEngine;
+using Newtonsoft.Json;
 
 namespace BPX
 {
     public static class ZeeplevelHandler
     {
+        /*
         public static ZeeplevelFile LoadFromFile(string path)
         {
             if (!File.Exists(path))
@@ -97,6 +99,6 @@ namespace BPX
             ZeeplevelFile zeeplevel = new ZeeplevelFile();
             zeeplevel.ImportBlockProperties(blockProperties);
             return zeeplevel;
-        }
+        }*/
     }
 }

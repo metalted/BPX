@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Text;
 
 namespace BPX
-{
+{/*
     public class ZeeplevelHeader
     {
         public string SceneName { get; private set; }
@@ -139,5 +139,5 @@ namespace BPX
             // Return an array of strings
             return new string[] { firstLine, secondLine, thirdLine };
         }
-    }
+    }*/
 }

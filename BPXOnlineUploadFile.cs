@@ -10,7 +10,7 @@ namespace BPX
     public class BPXOnlineUploadFile
     {
         public string name;
-        public ZeeplevelFile file;
+        public ZeeplevelData file;
         public string creator;
         public long steamID;
         public string[] tags;

@@ -12,7 +12,7 @@ namespace BPX
     {
         public static LEV_LevelEditorCentral central;
         private static BPXImagingObject imager;
-        private static ZeeplevelFile clipboardContent;
+        private static ZeeplevelData clipboardContent;
         public static Vector3 positionClipboard;
         public static Vector3 rotationClipboard;
         public static Vector3 scaleClipboard;
@@ -77,13 +77,13 @@ namespace BPX
             }
         }
 
-        public static void GenerateImage(ZeeplevelFile zeeplevelFile, int imageSize, UnityAction<List<Texture2D>> callback)
+        public static void GenerateImage(ZeeplevelData zeeplevelData, int imageSize, UnityAction<List<Texture2D>> callback)
         {
             // Ensure the imager is initialized
             InitializeImager();
 
             // Call CaptureSubject on the imager with the specified parameters
-            imager.CaptureSubject(imageSize, zeeplevelFile, callback);
+            imager.CaptureSubject(imageSize, zeeplevelData, callback);
         }
 
         public static bool InMovementMode()
@@ -116,12 +116,12 @@ namespace BPX
             return false;
         }
 
-        public static void SetClipboard(ZeeplevelFile content)
+        public static void SetClipboard(ZeeplevelData content)
         {
             clipboardContent = content;
         }
 
-        public static ZeeplevelFile GetClipboard()
+        public static ZeeplevelData GetClipboard()
         {
             return clipboardContent;
         }

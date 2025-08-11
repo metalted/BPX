@@ -9,7 +9,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
-using ZeepSDK.External.Cysharp.Threading.Tasks;
+//using ZeepSDK.External.Cysharp.Threading.Tasks;
 using Debug = UnityEngine.Debug;
 
 namespace BPX
@@ -202,14 +202,14 @@ namespace BPX
             //Add tooltips
             try
             {
-                ZeepSDK.UI.UIApi.AddTooltip(panelComponents[BPXPanelComponentName.Home].Rect.gameObject, "Navigate to the home directory");
+                /*ZeepSDK.UI.UIApi.AddTooltip(panelComponents[BPXPanelComponentName.Home].Rect.gameObject, "Navigate to the home directory");
                 ZeepSDK.UI.UIApi.AddTooltip(panelComponents[BPXPanelComponentName.UpOneLevel].Rect.gameObject, "Navigate to the parent directory");
                 ZeepSDK.UI.UIApi.AddTooltip(panelComponents[BPXPanelComponentName.NewFolder].Rect.gameObject, "Create a new folder");
                 ZeepSDK.UI.UIApi.AddTooltip(panelComponents[BPXPanelComponentName.OpenFolder].Rect.gameObject, "View the opened folder in windows explorer");
                 ZeepSDK.UI.UIApi.AddTooltip(panelComponents[BPXPanelComponentName.Search].Rect.gameObject, "Search");
                 ZeepSDK.UI.UIApi.AddTooltip(panelComponents[BPXPanelComponentName.Download].Rect.gameObject, "Download the selected blueprint");
                 ZeepSDK.UI.UIApi.AddTooltip(panelComponents[BPXPanelComponentName.PreviousPage].Rect.gameObject, "Go to the previous page");
-                ZeepSDK.UI.UIApi.AddTooltip(panelComponents[BPXPanelComponentName.NextPage].Rect.gameObject, "Go to the next page");
+                ZeepSDK.UI.UIApi.AddTooltip(panelComponents[BPXPanelComponentName.NextPage].Rect.gameObject, "Go to the next page");*/
             }
             catch
             {
@@ -475,7 +475,7 @@ namespace BPX
                         element.fileNameText.text = pageResults[currentButtonIndex].name;
                         element.fileType = 2;
                         element.button.onClick.AddListener(() => OnFileSelectedInOnlineExplorer(pageResults[currentButtonIndex]));
-                        LoadThumbnail(element, pageResults[currentButtonIndex]).Forget();
+                        //V17 - Online Disabled //LoadThumbnail(element, pageResults[currentButtonIndex]).Forget();
 
                         //Positioning
                         element.transform.SetParent(panelComponents[BPXPanelComponentName.SearchResultScrollView].ScrollRect.content, false);
@@ -503,6 +503,7 @@ namespace BPX
             }
         }
 
+        /*V17 - Online Disabled
         private async UniTaskVoid LoadThumbnail(LEV_FileContent element, BPXOnlineSearchResult result)
         {
             byte[] bytes = await BPXApi.DownloadImage((int)result.steamID, result.path);
@@ -510,7 +511,7 @@ namespace BPX
             textured.LoadImage(bytes);
             if (element != null)
                 element.thumbnail.sprite = BPXSprites.Texture2DToSprite(textured);
-        }
+        }*/
 
         #endregion
 
@@ -529,8 +530,8 @@ namespace BPX
             {
                 if(!string.IsNullOrEmpty(downloadTargetPath))
                 {
-                    BPXOnline.DownloadSearchResultTo(selectedResult, downloadTargetPath, OnDownloadComplete).Forget();                    
-                }                
+                    //V17//BPXOnline.DownloadSearchResultTo(selectedResult, downloadTargetPath, OnDownloadComplete).Forget();                    
+                }
             }
             downloadTargetPath = "";
         }
@@ -615,15 +616,15 @@ namespace BPX
             else
             {
                 ResetFileSelectionInOnlineExplorer();
-                BPXOnline.SearchQuery(query, OnSearchQueryCompleted);
-            }            
+                //V17//BPXOnline.SearchQuery(query, OnSearchQueryCompleted);
+            }
         }
 
         private void FillExplorerWithLatest()
         {
             ResetFileSelectionInOnlineExplorer();
             Plugin.Instance.LogScreenMessage("Getting latest blueprints...");
-            BPXOnline.GetLatest(Mathf.Max(1, BPXConfiguration.GetBPXOnlineResultsPerPage()), OnLatestRequestCompleted);
+            //V17//BPXOnline.GetLatest(Mathf.Max(1, BPXConfiguration.GetBPXOnlineResultsPerPage()), OnLatestRequestCompleted);
         }
 
         public void OnLatestRequestCompleted(List<BPXOnlineSearchResult> results)
@@ -675,7 +676,7 @@ namespace BPX
             }
             else
             {
-                BPXOnline.DownloadSearchResultTo(selectedResult, targetPath, OnDownloadComplete).Forget();
+                //V17//BPXOnline.DownloadSearchResultTo(selectedResult, targetPath, OnDownloadComplete).Forget();
             }
         }
 

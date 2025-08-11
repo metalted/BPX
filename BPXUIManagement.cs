@@ -53,11 +53,12 @@ namespace BPX
             panel = panelCopy.gameObject.AddComponent<BPXSaveLoadPanel>();
             panel.Initialize(central);
 
+            /*V17 - Online is disabled.
             Transform onlinePanelCopy = GameObject.Instantiate<Transform>(central.saveload.transform, central.saveload.transform.parent);
             onlinePanelCopy.gameObject.name = "BPXOnlinePanel";
             GameObject.Destroy(onlinePanelCopy.GetComponent<LEV_SaveLoad>());
             onlinePanel = onlinePanelCopy.gameObject.AddComponent<BPXOnlinePanel>();
-            onlinePanel.Initialize(central);
+            onlinePanel.Initialize(central);*/
         }
 
         private static void InitializeToolbar(LEV_LevelEditorCentral central)
@@ -72,11 +73,12 @@ namespace BPX
             UnbindButton(toolbarLoadButton);
             RebindButton(toolbarLoadButton, () => OnToolbarLoadButton());
 
+            /*V17 - Online is disabled.
             toolbarOnlineButton = SplitLEVCustomButton(central.tool.button_settings);
             StandardRecolorButton(toolbarOnlineButton);
             UnbindButton(toolbarOnlineButton);
             RebindButton(toolbarOnlineButton, () => OnToolbarOnlineButton());
-            toolbarOnlineButton.transform.GetChild(0).GetComponent<Image>().sprite = BPXSprites.onlineSprite;
+            toolbarOnlineButton.transform.GetChild(0).GetComponent<Image>().sprite = BPXSprites.onlineSprite;*/
         }
 
         private static void InitializeGizmoButton(LEV_LevelEditorCentral central)
@@ -126,8 +128,8 @@ namespace BPX
                 return;
             }
 
-            ZeeplevelFile toSave = ZeeplevelHandler.FromBlockProperties(BPXManager.central.selection.list);
-            toSave.SetPlayerName(BPXManager.GetPlayerName());
+            ZeeplevelData toSave = ZeeplevelFactory.FromEditor(BPXManager.central.selection.list, "BlueprintFromSelection", BPXManager.central, BPXManager.central.skybox);
+            toSave.level.Author = BPXManager.GetPlayerName();
 
             BPXManager.DeselectAllBlocks();
 

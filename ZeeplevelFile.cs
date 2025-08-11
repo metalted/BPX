@@ -7,6 +7,7 @@ using System.Threading;
 
 namespace BPX
 {
+    /*
     public class ZeeplevelFile
     {
         public ZeeplevelHeader Header { get; private set; }
@@ -163,5 +164,5 @@ namespace BPX
 
             return csvLines.ToArray();
         }
-    }
+    }*/
 }

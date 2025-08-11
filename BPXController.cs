@@ -470,17 +470,17 @@ namespace BPX
                     return; 
                 }
 
-                ZeeplevelFile copy = ZeeplevelHandler.FromBlockProperties(BPXManager.GetSelectedBlocks());
+                ZeeplevelData copy = ZeeplevelFactory.FromEditor(BPXManager.GetSelectedBlocks(), "clipboard", BPXManager.central, BPXManager.central.skybox);
                 Plugin.Instance.LogScreenMessage("Copied to clipboard");
                 BPXManager.SetClipboard(copy);
             }
             else
             {
-                ZeeplevelFile clipboard = BPXManager.GetClipboard();
+                ZeeplevelData clipboard = BPXManager.GetClipboard();
 
                 if(clipboard != null)
                 {
-                    ZeeplevelHandler.InstantiateBlueprintIntoEditor(clipboard, BPXConfiguration.PasteClipboardToCamera());
+                    EditorLevelLoader.LoadToEditor(clipboard, BPXConfiguration.PasteClipboardToCamera());
                 }
                 else
                 {

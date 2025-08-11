@@ -5,7 +5,7 @@ using System.Text;
 using UnityEngine;
 
 public class ZeeplevelBlock
-{
+{/*
     public int BlockID { get; private set; }
     public Vector3 Position { get; private set; }
     public Vector3 Rotation { get; private set; }
@@ -107,5 +107,5 @@ public class ZeeplevelBlock
         }
 
         return csvBuilder.ToString();
-    }
+    }*/
 }
