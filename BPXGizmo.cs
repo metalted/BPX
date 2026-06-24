@@ -1,12 +1,12 @@
 ﻿using System;
 using UnityEngine;
+using Toolkist;
 
 namespace BPX
 {
     public class BPXGizmo : MonoBehaviour
     {
-        public enum Axes { All, X, Y, Z, XY, YZ, XZ };
-        public Axes currentAxes = Axes.All;
+        public Axis currentAxes = Axis.XYZ;
 
         public GameObject Xgizmo, Ygizmo, Zgizmo;
 
@@ -22,29 +22,13 @@ namespace BPX
 
         public void Reset()
         {
-            currentAxes = Axes.All;
+            currentAxes = Axis.XYZ;
             SetGizmoState(currentAxes);
         }
 
-        public Vector3 GetCurrentAxes()
+        public Axis GetCurrent()
         {
-            switch (currentAxes)
-            {
-                case Axes.X:
-                    return Vector3.right;
-                case Axes.Y:
-                    return Vector3.up;
-                case Axes.Z:
-                    return Vector3.forward;
-                case Axes.XY:
-                    return Vector3.right + Vector3.up;
-                case Axes.YZ:
-                    return Vector3.up + Vector3.forward;
-                case Axes.XZ:
-                    return Vector3.right + Vector3.forward;
-                default:
-                    return Vector3.one;
-            }
+            return currentAxes;
         }
 
         public void Cycle(bool forward, bool extended)
@@ -61,28 +45,28 @@ namespace BPX
                 currentIndex = (currentIndex - 1 + cycleLength) % cycleLength;
             }
 
-            currentAxes = (Axes)currentIndex;
+            currentAxes = (Axis)currentIndex;
             SetGizmoState(currentAxes);
         }
 
-        private void SetGizmoState(Axes selection)
+        private void SetGizmoState(Axis selection)
         {
-            SetArrow(Xgizmo, IsAxisSelected(selection, Axes.X));
-            SetArrow(Ygizmo, IsAxisSelected(selection, Axes.Y));
-            SetArrow(Zgizmo, IsAxisSelected(selection, Axes.Z));
+            SetArrow(Xgizmo, IsAxisSelected(selection, Axis.X));
+            SetArrow(Ygizmo, IsAxisSelected(selection, Axis.Y));
+            SetArrow(Zgizmo, IsAxisSelected(selection, Axis.Z));
         }
 
-        private bool IsAxisSelected(Axes selection, Axes axis)
+        private bool IsAxisSelected(Axis selection, Axis axis)
         {
-            if(axis == Axes.All)
+            if(axis == Axis.XYZ)
             {
                 return false;
             }
 
             return selection == axis || 
-                   (axis == Axes.X && (selection == Axes.XY || selection == Axes.XZ)) ||
-                   (axis == Axes.Y && (selection == Axes.XY || selection == Axes.YZ)) ||
-                   (axis == Axes.Z && (selection == Axes.XZ || selection == Axes.YZ));
+                   (axis == Axis.X && (selection == Axis.XY || selection == Axis.XZ)) ||
+                   (axis == Axis.Y && (selection == Axis.XY || selection == Axis.YZ)) ||
+                   (axis == Axis.Z && (selection == Axis.XZ || selection == Axis.YZ));
         }
 
         private void SetArrow(GameObject gizmo, bool active)

@@ -4,8 +4,9 @@ using UnityEngine.UI;
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using Toolkist;
 
-namespace BPX
+namespace BPX.UI
 {
     public struct GizmoValues
     {
@@ -23,14 +24,17 @@ namespace BPX
         public static Color darkBlue = new Color(0, 0.371f, 0.547f, 1f);
         public static Color darkestBlue = new Color(0, 0.238f, 0.348f, 1f);
         public static Color grey = new Color(0.3f, 0.3f, 0.3f, 1f);
+        public static Color lightestRed = new Color(1f, 0.70f, 0.70f);   //255,179,179
+        public static Color lightRed = new Color(1f, 0.45f, 0.45f);   //255,115,115
+        public static Color red = new Color(0.82f, 0.25f, 0.25f); //210,64,64
+
         private static LEV_CustomButton toolbarSaveButton;
         private static LEV_CustomButton toolbarLoadButton;
-        private static LEV_CustomButton toolbarOnlineButton;
         private static BPXScaleButton scaleButton;
         private static BPXGizmo gizmo;
         private static BPXSaveLoadPanel panel;
-        private static BPXOnlinePanel onlinePanel;
         private static bool panelIsOpen = false;
+        private static LEV_LevelEditorCentral central;
         
         public static void InitializeLevelEditor(LEV_LevelEditorCentral central)
         {
@@ -42,7 +46,9 @@ namespace BPX
             SaveOriginalGridButtonInfo();
             UpdateGridButtons();
 
-            central.gameObject.AddComponent<BPXController>();
+            BPXController controller = central.gameObject.AddComponent<BPXController>();
+            controller.Initialize(central);
+            BPXUIManagement.central = central;
         }
 
         private static void InitializePanels(LEV_LevelEditorCentral central)
@@ -52,13 +58,6 @@ namespace BPX
             GameObject.Destroy(panelCopy.GetComponent<LEV_SaveLoad>());
             panel = panelCopy.gameObject.AddComponent<BPXSaveLoadPanel>();
             panel.Initialize(central);
-
-            /*V17 - Online is disabled.
-            Transform onlinePanelCopy = GameObject.Instantiate<Transform>(central.saveload.transform, central.saveload.transform.parent);
-            onlinePanelCopy.gameObject.name = "BPXOnlinePanel";
-            GameObject.Destroy(onlinePanelCopy.GetComponent<LEV_SaveLoad>());
-            onlinePanel = onlinePanelCopy.gameObject.AddComponent<BPXOnlinePanel>();
-            onlinePanel.Initialize(central);*/
         }
 
         private static void InitializeToolbar(LEV_LevelEditorCentral central)
@@ -72,13 +71,6 @@ namespace BPX
             StandardRecolorButton(toolbarLoadButton);
             UnbindButton(toolbarLoadButton);
             RebindButton(toolbarLoadButton, () => OnToolbarLoadButton());
-
-            /*V17 - Online is disabled.
-            toolbarOnlineButton = SplitLEVCustomButton(central.tool.button_settings);
-            StandardRecolorButton(toolbarOnlineButton);
-            UnbindButton(toolbarOnlineButton);
-            RebindButton(toolbarOnlineButton, () => OnToolbarOnlineButton());
-            toolbarOnlineButton.transform.GetChild(0).GetComponent<Image>().sprite = BPXSprites.onlineSprite;*/
         }
 
         private static void InitializeGizmoButton(LEV_LevelEditorCentral central)
@@ -113,6 +105,8 @@ namespace BPX
 
             //Assign the click to the function in the behaviour.
             RebindButton(gizmoScaleButton, () => scaleButton.OnClick());
+
+            ColorGizmoButton();
         }        
 
         private static void InitializeGizmo(LEV_LevelEditorCentral central)
@@ -122,20 +116,20 @@ namespace BPX
 
         private static void OnToolbarSaveButton()
         {
-            if(!BPXManager.AnyObjectsSelected())
+            if(!EditorOperations.AnyObjectsSelected(central))
             {
-                PlayerManager.Instance.messenger.Log("No selection!", 2f);
+                Plugin.Instance.LogScreenErrorMessage("No selection!");
                 return;
             }
 
-            ZeeplevelData toSave = ZeeplevelFactory.FromEditor(BPXManager.central.selection.list, "BlueprintFromSelection", BPXManager.central, BPXManager.central.skybox);
-            toSave.level.Author = BPXManager.GetPlayerName();
+            ZeeplevelData data = ZeeplevelHandler.FromEditor(central.selection.list, "BlueprintFromSelection", central, central.skybox);
+            data.level.Author = ToolkitUtils.GetPlayerName();
 
-            BPXManager.DeselectAllBlocks();
+            EditorOperations.DeselectAllBlocks(central);
 
             if (panel != null)
             {
-                panel.SetBlueprintToSave(toSave);
+                panel.SetBlueprintToSave(data);
                 panel.Open(BPXPanelState.Save);
                 toolbarSaveButton.isSelected = true;
             }
@@ -143,21 +137,12 @@ namespace BPX
 
         private static void OnToolbarLoadButton()
         {
-            BPXManager.DeselectAllBlocks();
-            if(panel != null)
+            EditorOperations.DeselectAllBlocks(central);
+
+            if (panel != null)
             {
                 panel.Open(BPXPanelState.Load);
                 toolbarLoadButton.isSelected = true;
-            }
-        }
-
-        private static void OnToolbarOnlineButton()
-        {
-            BPXManager.DeselectAllBlocks();
-            if (onlinePanel != null)
-            {
-                onlinePanel.Open(BPXPanelState.Open);
-                toolbarOnlineButton.isSelected = true;
             }
         }
 
@@ -176,26 +161,6 @@ namespace BPX
 
             toolbarLoadButton.isSelected = false;
             toolbarSaveButton.isSelected = false;
-
-            BPXManager.central.tool.EnableEditTool();
-            BPXManager.central.tool.RecolorButtons();
-            BPXManager.central.cam.OverrideOutsideGameView(false);
-        }
-
-        public static void OnOnlinePanelOpen()
-        {
-            panelIsOpen = true;
-            BPXManager.central.tool.DisableAllTools();
-            BPXManager.central.tool.RecolorButtons();
-            BPXManager.central.tool.currentTool = 3;
-            BPXManager.central.tool.inspectorTitle.text = "";
-        }
-
-        public static void OnOnlinePanelClose()
-        {
-            panelIsOpen = false;
-
-            toolbarOnlineButton.isSelected = false;
 
             BPXManager.central.tool.EnableEditTool();
             BPXManager.central.tool.RecolorButtons();
@@ -285,6 +250,30 @@ namespace BPX
                 R = BPXManager.central.gizmos.list_gridR[BPXManager.central.gizmos.index_gridR],
                 S = scaleButton.GetCurrentValue()
             };
+        }
+
+        public static void ColorGizmoButton()
+        {
+            if (scaleButton == null)
+            {
+                return;
+            }
+
+            LEV_CustomButton gizmoScaleButton = scaleButton.GetComponent<LEV_CustomButton>();
+
+            if (gizmoScaleButton == null)
+            {
+                return;
+            }
+
+            if (BPXConfiguration.ScaleUnitBased())
+            {
+                RecolorButton(gizmoScaleButton, red, lightRed, lightestRed, false);
+            }
+            else
+            {
+                StandardRecolorButton(gizmoScaleButton);
+            }
         }
 
         public static bool IsPanelOpen()

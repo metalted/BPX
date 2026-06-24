@@ -7,7 +7,7 @@ using UnityEngine;
 using TMPro;
 using System.Globalization;
 
-namespace BPX
+namespace BPX.UI
 {
     public class BPXScaleButton : MonoBehaviour
     {

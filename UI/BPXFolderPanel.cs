@@ -7,7 +7,7 @@ using TMPro;
 using UnityEngine;
 using System.IO;
 
-namespace BPX
+namespace BPX.UI
 {
     public class BPXFolderPanel
     {
@@ -67,7 +67,7 @@ namespace BPX
         {
             if(input.text.Trim() == "")
             {
-                Plugin.Instance.LogScreenMessage("Invalid Folder Name");
+                Plugin.Instance.LogScreenErrorMessage("Invalid Folder Name");
                 return;
             }
 
@@ -81,7 +81,7 @@ namespace BPX
             }
             else
             {
-                Plugin.Instance.LogScreenMessage("Folder already exists");
+                Plugin.Instance.LogScreenErrorMessage("Folder already exists");
             }
 
             Exit();

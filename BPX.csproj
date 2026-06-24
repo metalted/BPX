@@ -4,7 +4,7 @@
     <TargetFramework>net472</TargetFramework>
     <AssemblyName>BPX</AssemblyName>
     <Description>Blueprints and tools for the Zeepkist level editor</Description>
-    <Version>3.2</Version>
+    <Version>4.0</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
@@ -13,16 +13,16 @@
     <PackageReference Include="BepInEx.Analyzers" Version="1.0.8" PrivateAssets="all" />
     <PackageReference Include="BepInEx.Core" Version="5.4.21" />
     <PackageReference Include="BepInEx.PluginInfoProps" Version="2.1.0" />
-    <PackageReference Include="RestEase" Version="1.6.4" />
-    <PackageReference Include="RestEase.SourceGenerator" Version="1.6.4">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Zeepkist.GameLibs" Version="17.15.1867" />
-    <!--<PackageReference Include="ZeepSDK" Version="1.36.3" />-->
+    <PackageReference Include="Zeepkist.GameLibs" Version="18.0.1933-beta" />
   </ItemGroup>
   
   <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Reference Include="Toolkist">
+      <HintPath>..\Toolkist\bin\Debug\net472\Toolkist.dll</HintPath>
+    </Reference>
   </ItemGroup>
 </Project>

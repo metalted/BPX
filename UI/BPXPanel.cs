@@ -6,9 +6,9 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace BPX
+namespace BPX.UI
 {
-    public enum BPXPanelComponentName { Background, Save, Load, LoadHere, LoadFile, Home, SwitchDir, LoadPreview, SavePreview, UpOneLevel, NewFolder, Upload, OpenFolder, Exit, ScrollView, URL, FileName, TypeText, SearchBar, Download, Search, PreviousPage, NextPage, PageCounter, SelectedName, SearchResultScrollView };
+    public enum BPXPanelComponentName { Background, Save, Load, LoadHere, LoadFile, Home, SwitchDir, LoadPreview, SavePreview, UpOneLevel, NewFolder, OpenFolder, Exit, ScrollView, URL, FileName, TypeText, SearchBar, Download, Search, PreviousPage, NextPage, PageCounter, SelectedName, SearchResultScrollView, TreeGun };
     public enum BPXPanelComponentType { Button, Image, Text, ScrollView, TextInput };
     public enum BPXPanelState { Closed, Save, Load, Open };
     public enum BPXPanelMode { Blueprint, Level };

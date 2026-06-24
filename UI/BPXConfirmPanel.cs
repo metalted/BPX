@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 
-namespace BPX
+namespace BPX.UI
 {
     public class BPXConfirmPanel
     {

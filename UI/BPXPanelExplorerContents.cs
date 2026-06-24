@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace BPX
+namespace BPX.UI
 {
     public class BPXPanelExplorerDirectory
     {

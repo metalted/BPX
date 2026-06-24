@@ -5,13 +5,13 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Events;
+using Toolkist;
 
 namespace BPX
 {
     public static class BPXManager
     {
         public static LEV_LevelEditorCentral central;
-        private static BPXImagingObject imager;
         private static ZeeplevelData clipboardContent;
         public static Vector3 positionClipboard;
         public static Vector3 rotationClipboard;
@@ -19,102 +19,9 @@ namespace BPX
         public static List<float> optionsClipboard;
         public static List<float> paintsClipboard;
 
-        public static void DeselectAllBlocks()
-        {
-            if(central == null)
-            {
-                return;
-            }
-
-            central.selection.DeselectAllBlocks(true, nameof(central.selection.ClickNothing));
-        }
-
-        public static bool AnyObjectsSelected()
-        {
-            if(central == null)
-            {
-                return false;
-            }
-
-            return central.selection.list.Count > 0;
-        }
-
-        public static List<BlockProperties> GetSelectedBlocks()
-        {
-            if(central == null)
-            {
-                return new List<BlockProperties>();
-            }
-            else
-            {
-                return central.selection.list;
-            }
-        }
-
-        public static string GetPlayerName()
-        {
-            string playerName = "Bouwerman";
-
-            try
-            {
-                playerName = PlayerManager.Instance.steamAchiever.GetPlayerNameNoTag(true);
-                return playerName;
-            }
-            catch
-            {
-                return playerName;
-            }
-        }       
-
-        private static void InitializeImager()
-        {
-            if (imager == null)
-            {
-                GameObject imagerObj = new GameObject("BPXImager");
-                GameObject.DontDestroyOnLoad(imagerObj);
-                imager = imagerObj.AddComponent<BPXImagingObject>();
-                imager.Initialize();
-            }
-        }
-
-        public static void GenerateImage(ZeeplevelData zeeplevelData, int imageSize, UnityAction<List<Texture2D>> callback)
-        {
-            // Ensure the imager is initialized
-            InitializeImager();
-
-            // Call CaptureSubject on the imager with the specified parameters
-            imager.CaptureSubject(imageSize, zeeplevelData, callback);
-        }
-
-        public static bool InMovementMode()
-        {
-            if (central == null)
-            {
-                return false;
-            }
-
-            if (central.gizmos.dragButton.isSelected)
-            {
-                return true;
-            }
-
-            return false;
-        }
-
-        public static bool InRotateMode()
-        {
-            if (central == null)
-            {
-                return false;
-            }
-
-            if (central.gizmos.rotateButton.isSelected)
-            {
-                return true;
-            }
-
-            return false;
-        }
+        public static ZeeplevelData treegunBlueprint;
+        public static Sprite treegunBlueprintSprite;
+        public static bool isUsingTreegunBlueprint;
 
         public static void SetClipboard(ZeeplevelData content)
         {
@@ -124,6 +31,90 @@ namespace BPX
         public static ZeeplevelData GetClipboard()
         {
             return clipboardContent;
+        }
+
+        public static void SetTreegunBlueprint(ZeeplevelData data, Sprite img)
+        {
+            treegunBlueprint = data;
+            treegunBlueprintSprite = ZeeplevelImager.MakeImagerBackgroundTransparent(img);
+        }
+
+        public static void OnTreeGunBlueprintButton()
+        {
+            if (treegunBlueprint == null)
+            {
+                Plugin.Instance.LogMessage("[BPX] Tried to select treegun blueprint, but treegunBlueprint is null.");
+                return;
+            }
+
+            isUsingTreegunBlueprint = true;
+
+            if (central == null || central.TREEGUNNNN == null)
+            {
+                Plugin.Instance.LogMessage("[BPX] Could not update treegun display because central or TREEGUNNNN is null.");
+                return;
+            }
+
+            ApplyTreeGunBlueprintTexture(central.TREEGUNNNN);
+        }
+
+        public static void ApplyTreeGunBlueprintTexture(LEV_TREEGUNNN treeGun)
+        {
+            if (!isUsingTreegunBlueprint)
+                return;
+
+            if (treeGun == null)
+                return;
+
+            if (treeGun.display == null)
+                return;
+
+            if (treegunBlueprintSprite == null)
+                return;
+
+            Texture texture = treegunBlueprintSprite.texture;
+
+            if (treeGun.display.material.mainTexture != texture)
+                treeGun.display.material.mainTexture = texture;
+        }
+
+        public static void PlaceTreegunBlueprint(Vector3 point, Vector3 hitNormal, float size)
+        {
+            if (treegunBlueprint == null)
+                return;
+
+            if (central == null)
+                return;
+
+            if (hitNormal == Vector3.zero)
+                return;
+
+            List<BlockProperties> blocks = ZeeplevelHandler.LoadIntoEditor(treegunBlueprint, central);
+
+            if (blocks == null || blocks.Count == 0)
+                return;
+
+            float angle = 0f;
+            if(BPXConfiguration.UseRandomTreegunRotation())
+            {
+                angle = UnityEngine.Random.Range(0f, 360f);
+            }
+            else
+            {
+                angle = Mathf.Repeat(BPXConfiguration.GetTreegunObjectRotation(), 360f);
+            }
+
+            EditorOperations.PlaceBlueprint(
+                central,
+                blocks,
+                point,
+                !central.TREEGUNNNN.normalUp ? Vector3.up : hitNormal,
+                size,
+                BPXConfiguration.GetTreegunLiftFactor(),
+                angle
+            );
+
+            EditorOperations.DeselectAllBlocks(central);
         }
     }
 }

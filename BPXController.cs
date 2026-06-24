@@ -5,53 +5,73 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using BPX.UI;
+using Toolkist;
 
 namespace BPX
 {
     public class BPXController : MonoBehaviour
     {
         private enum Direction { Up, Down, Left, Right };
+        private enum ClipboardAction { Copy, Paste };
+
+        private LEV_LevelEditorCentral central;
+        private bool init = false;
+
+        //Drag Selection
+        private Dictionary<Vector3, BlockProperties> bpPositionMap = new Dictionary<Vector3, BlockProperties>();
+        private List<BlockProperties> selectionTargets = new List<BlockProperties>();
+        private Vector2 dragStartPosition;
+        private bool isDragging;
+        private bool isDraggingTeamX;
+        private Rect dragBox;
+        private List<string> beforeSelection;
+        private Vector3 tempDragVector;
+        private int tempCounter;
+
+        public void Initialize(LEV_LevelEditorCentral central)
+        {
+            this.central = central;
+            init = true;
+        }
+
+        public void Start()
+        {
+            BPXManager.central.cam.moveSpeed = BPXConfiguration.currentMoveSpeed;
+        }
         
         private bool AllowRun()
         {
-            if(BPXManager.central == null)
-            {
-                return false;
-            }
+            if(!init) { return false; }
 
-            //Not in building mode.
-            if (BPXManager.central.tool.currentTool != 0)
-            {
-                return false;
-            }
-
-            //If we are currently dragging an object.
-            if (BPXManager.central.gizmos.isDragging)
-            {
-                return false;
-            }
-
-            //If we are currently in GMode
-            if (BPXManager.central.gizmos.isGrabbing)
-            {
-                return false;
-            }
-
-            //If the regular save panel is open we don't want to process any inputs.
-            if (BPXManager.central.saveload.gameObject.activeSelf)
-            {
-                return false;
-            }            
-
-            //Blueprint panel is open.
-            if (BPXUIManagement.IsPanelOpen())
-            {
-                return false;
-            }            
+            if (EditorOperations.IsInputBlocked(central)) { return false; }
+            if (EditorOperations.IsDragging(central)) { return false; }
+            if (EditorOperations.IsInGMode(central)) { return false; }
+            if (EditorOperations.InUIPanelMode(central)) { return false; }
+            if (BPXUIManagement.IsPanelOpen()) { return false; }
 
             return true;
         }
+        public void ResetController()
+        {
+            if (isDragging)
+            {
+                EditorOperations.DeselectAllBlocks(central);
+                bpPositionMap.Clear();
+                dragStartPosition = Vector3.zero;
+                isDragging = false;
+                dragBox = new Rect();
+            }
+        }
+        public void OnApplicationFocus(bool hasFocus)
+        {
+            if (!hasFocus)
+            {
+                ResetController();
+            }
+        }
 
+        //Inputs
         private bool GetKeyEnabled(KeyCode controlKey, bool enableKeyState, bool enableKeyRequired)
         {
             if(controlKey == KeyCode.None) { return false; }
@@ -65,7 +85,6 @@ namespace BPX
                 return Input.GetKeyDown(controlKey);
             }
         }
-
         private bool GetKeyContinuouslyEnabled(KeyCode controlKey, bool enableKeyState, bool enableKeyRequired)
         {
             if (controlKey == KeyCode.None) { return false; }
@@ -79,7 +98,6 @@ namespace BPX
                 return Input.GetKey(controlKey);
             }
         }
-
         private int GetScrollDirection(bool enableKeyState, bool enableKeyRequired, bool invertScroll)
         {
             if (enableKeyRequired && !enableKeyState)
@@ -104,31 +122,7 @@ namespace BPX
             }
         }
 
-        public void ResetController()
-        {
-            if(isDragging)
-            {
-                BPXManager.DeselectAllBlocks();
-                bpPositionMap.Clear();
-                dragStartPosition = Vector3.zero;
-                isDragging = false;
-                dragBox = new Rect();
-            }
-        }
-
-        public void OnApplicationFocus(bool hasFocus)
-        {
-            if (!hasFocus)
-            {
-                ResetController();
-            }
-        }
-
-        public void Start()
-        {
-            BPXManager.central.cam.moveSpeed = BPXConfiguration.currentMoveSpeed;
-        }
-
+        //Controls
         public void Update()
         {
             if (!AllowRun()) { return; }
@@ -136,148 +130,162 @@ namespace BPX
             bool enableKeyState = Input.GetKey(BPXConfiguration.GetEnableKey());
             bool modifierKeyState = Input.GetKey(BPXConfiguration.GetModifierKey());
 
+            GeneralControls(enableKeyState, modifierKeyState);
+
+            if (EditorOperations.InEditMode(central))
+            {
+                EditModeControls(enableKeyState, modifierKeyState);
+            }
+        }
+
+        private void GeneralControls(bool enable, bool modifier)
+        {
             //Save shortcut
-            if (GetKeyEnabled(BPXConfiguration.GetSaveShortcutKey(), enableKeyState, BPXConfiguration.ShortcutRequiresEnableKey()))
+            if (GetKeyEnabled(BPXConfiguration.GetSaveShortcutKey(), enable, BPXConfiguration.ShortcutRequiresEnableKey()))
             {
                 BPXUIManagement.PressButtonByName("Save");
             }
 
             //Load shortcut
-            if (GetKeyEnabled(BPXConfiguration.GetLoadShortcutKey(), enableKeyState, BPXConfiguration.ShortcutRequiresEnableKey()))
+            if (GetKeyEnabled(BPXConfiguration.GetLoadShortcutKey(), enable, BPXConfiguration.ShortcutRequiresEnableKey()))
             {
                 BPXUIManagement.PressButtonByName("Load");
             }
 
-            //Scale down with key
-            if (GetKeyEnabled(BPXConfiguration.GetNegativeScalingKey(), enableKeyState, BPXConfiguration.ScalingRequiresEnableKey()))
+            //Move speed selection
+            if (GetKeyContinuouslyEnabled(BPXConfiguration.GetFastTravelKey(), enable, BPXConfiguration.FastTravelRequiresEnableKey()))
             {
-                HandleScaling(false, modifierKeyState);
+                HandleMoveSpeedSelection();
             }
-            //Scale up with key
-            if (GetKeyEnabled(BPXConfiguration.GetPositiveScalingKey(), enableKeyState, BPXConfiguration.ScalingRequiresEnableKey()))
-            {
-                HandleScaling(true, modifierKeyState);
-            }
-            //Scale with scroll
-            if (BPXConfiguration.DoScrollScaling())
-            {
-                int scrollDirection = GetScrollDirection(enableKeyState, BPXConfiguration.ScalingRequiresEnableKey(), BPXConfiguration.InvertScrollScaling());
-                if (scrollDirection != 0)
-                {
-                    HandleScaling(scrollDirection > 0, modifierKeyState);
-                }
-            }
+        }
 
+        private void EditModeControls(bool enable, bool modifier)
+        {
             //Move with keys
             if (
-                (BPXManager.InMovementMode()) ||
-                (BPXManager.InRotateMode() && !BPXConfiguration.KeyRotationIsEnabled() && BPXConfiguration.MovementIfRotationIsDisabled())) {
+                (EditorOperations.InBlockMovementMode(central)) ||
+                (EditorOperations.InBlockRotationMode(central) && !BPXConfiguration.KeyRotationIsEnabled() && BPXConfiguration.MovementIfRotationIsDisabled()))
+            {
 
                 //Key movement (up)
-                if (GetKeyEnabled(BPXConfiguration.GetForwardUpMovementKey(), enableKeyState, BPXConfiguration.MovementRequiresEnableKey()))
+                if (GetKeyEnabled(BPXConfiguration.GetForwardUpMovementKey(), enable, BPXConfiguration.MovementRequiresEnableKey()))
                 {
-                    HandleMovement(Direction.Up, modifierKeyState);
+                    HandleMovement(Direction.Up, modifier);
                 }
                 //Key movement (down)
-                if (GetKeyEnabled(BPXConfiguration.GetBackDownMovementKey(), enableKeyState, BPXConfiguration.MovementRequiresEnableKey()))
+                if (GetKeyEnabled(BPXConfiguration.GetBackDownMovementKey(), enable, BPXConfiguration.MovementRequiresEnableKey()))
                 {
-                    HandleMovement(Direction.Down, modifierKeyState);
+                    HandleMovement(Direction.Down, modifier);
                 }
                 //Key movement (left)
-                if (GetKeyEnabled(BPXConfiguration.GetLeftMovementKey(), enableKeyState, BPXConfiguration.MovementRequiresEnableKey()))
+                if (GetKeyEnabled(BPXConfiguration.GetLeftMovementKey(), enable, BPXConfiguration.MovementRequiresEnableKey()))
                 {
-                    HandleMovement(Direction.Left, modifierKeyState);
+                    HandleMovement(Direction.Left, modifier);
                 }
                 //Key movement (right)
-                if (GetKeyEnabled(BPXConfiguration.GetRightMovementKey(), enableKeyState, BPXConfiguration.MovementRequiresEnableKey()))
+                if (GetKeyEnabled(BPXConfiguration.GetRightMovementKey(), enable, BPXConfiguration.MovementRequiresEnableKey()))
                 {
-                    HandleMovement(Direction.Right, modifierKeyState);
+                    HandleMovement(Direction.Right, modifier);
                 }
             }
 
             //Rotate with key
-            if (BPXManager.InRotateMode())
+            if (EditorOperations.InBlockRotationMode(central) && BPXConfiguration.KeyRotationIsEnabled())
             {
                 //Key rotation (up)
-                if (GetKeyEnabled(BPXConfiguration.GetXPositiveRotationKey(), enableKeyState, BPXConfiguration.RotationRequiresEnableKey()))
+                if (GetKeyEnabled(BPXConfiguration.GetXPositiveRotationKey(), enable, BPXConfiguration.RotationRequiresEnableKey()))
                 {
-                    HandleRotation(Direction.Up, modifierKeyState);
+                    HandleRotation(Direction.Up, modifier);
                 }
                 //Key rotation (down)
-                if (GetKeyEnabled(BPXConfiguration.GetXNegativeRotationKey(), enableKeyState, BPXConfiguration.RotationRequiresEnableKey()))
+                if (GetKeyEnabled(BPXConfiguration.GetXNegativeRotationKey(), enable, BPXConfiguration.RotationRequiresEnableKey()))
                 {
-                    HandleRotation(Direction.Down, modifierKeyState);
+                    HandleRotation(Direction.Down, modifier);
                 }
                 //Key rotation (left)
-                if (GetKeyEnabled(BPXConfiguration.GetYZNegativeRotationKey(), enableKeyState, BPXConfiguration.RotationRequiresEnableKey()))
+                if (GetKeyEnabled(BPXConfiguration.GetYZNegativeRotationKey(), enable, BPXConfiguration.RotationRequiresEnableKey()))
                 {
-                    HandleRotation(Direction.Left, modifierKeyState);
+                    HandleRotation(Direction.Left, modifier);
                 }
                 //Key rotation (right)
-                if (GetKeyEnabled(BPXConfiguration.GetYZPositiveRotationKey(), enableKeyState, BPXConfiguration.RotationRequiresEnableKey()))
+                if (GetKeyEnabled(BPXConfiguration.GetYZPositiveRotationKey(), enable, BPXConfiguration.RotationRequiresEnableKey()))
                 {
-                    HandleRotation(Direction.Right, modifierKeyState);
+                    HandleRotation(Direction.Right, modifier);
                 }
             }
 
+            //Scale down with key
+            if (GetKeyEnabled(BPXConfiguration.GetNegativeScalingKey(), enable, BPXConfiguration.ScalingRequiresEnableKey()))
+            {
+                HandleScaling(false, modifier);
+            }
+            //Scale up with key
+            if (GetKeyEnabled(BPXConfiguration.GetPositiveScalingKey(), enable, BPXConfiguration.ScalingRequiresEnableKey()))
+            {
+                HandleScaling(true, modifier);
+            }
+            //Scale with scroll
+            if (BPXConfiguration.DoScrollScaling())
+            {
+                int scrollDirection = GetScrollDirection(enable, BPXConfiguration.ScalingRequiresEnableKey(), BPXConfiguration.InvertScrollScaling());
+                if (scrollDirection != 0)
+                {
+                    HandleScaling(scrollDirection > 0, modifier);
+                }
+            }            
+
             //Mirror with key
-            if (GetKeyEnabled(BPXConfiguration.GetMirrorKey(), enableKeyState, BPXConfiguration.MirrorRequiresEnableKey()))
+            if (GetKeyEnabled(BPXConfiguration.GetMirrorKey(), enable, BPXConfiguration.MirrorRequiresEnableKey()))
             {
                 HandleMirroring();
             }
 
             //Clipboard
-            if (GetKeyEnabled(BPXConfiguration.GetClipboardCopyKey(), enableKeyState, BPXConfiguration.ClipboardRequiresEnableKey()))
+            if (GetKeyEnabled(BPXConfiguration.GetClipboardCopyKey(), enable, BPXConfiguration.ClipboardRequiresEnableKey()))
             {
-                HandleClipboard(true);
+                HandleClipboard(ClipboardAction.Copy);
             }
-            if (GetKeyEnabled(BPXConfiguration.GetClipboardPasteKey(), enableKeyState, BPXConfiguration.ClipboardRequiresEnableKey()))
+            if (GetKeyEnabled(BPXConfiguration.GetClipboardPasteKey(), enable, BPXConfiguration.ClipboardRequiresEnableKey()))
             {
-                HandleClipboard(false);
+                HandleClipboard(ClipboardAction.Paste);
             }
 
-            //Property Clipboard
-            if(GetKeyEnabled(BPXConfiguration.GetPropertyClipboardPositionKey(), enableKeyState, BPXConfiguration.PropertyClipboardRequiresEnableKey()))
+            //Property Clipboard (This should be ui based or something.
+            if(GetKeyEnabled(BPXConfiguration.GetPropertyClipboardPositionKey(), enable, BPXConfiguration.PropertyClipboardRequiresEnableKey()))
             {
-                HandlePropertyClipboard("position", modifierKeyState);
+                HandlePropertyClipboard("position", modifier);
             }
-            if (GetKeyEnabled(BPXConfiguration.GetPropertyClipboardRotationKey(), enableKeyState, BPXConfiguration.PropertyClipboardRequiresEnableKey()))
+            if (GetKeyEnabled(BPXConfiguration.GetPropertyClipboardRotationKey(), enable, BPXConfiguration.PropertyClipboardRequiresEnableKey()))
             {
-                HandlePropertyClipboard("rotation", modifierKeyState);
+                HandlePropertyClipboard("rotation", modifier);
             }
-            if (GetKeyEnabled(BPXConfiguration.GetPropertyClipboardScaleKey(), enableKeyState, BPXConfiguration.PropertyClipboardRequiresEnableKey()))
+            if (GetKeyEnabled(BPXConfiguration.GetPropertyClipboardScaleKey(), enable, BPXConfiguration.PropertyClipboardRequiresEnableKey()))
             {
-                HandlePropertyClipboard("scale", modifierKeyState);
+                HandlePropertyClipboard("scale", modifier);
             }
-            if (GetKeyEnabled(BPXConfiguration.GetPropertyClipboardOptionsKey(), enableKeyState, BPXConfiguration.PropertyClipboardRequiresEnableKey()))
+            if (GetKeyEnabled(BPXConfiguration.GetPropertyClipboardOptionsKey(), enable, BPXConfiguration.PropertyClipboardRequiresEnableKey()))
             {
-                HandlePropertyClipboard("options", modifierKeyState);
+                HandlePropertyClipboard("options", modifier);
             }
-            if (GetKeyEnabled(BPXConfiguration.GetPropertyClipboardPaintsKey(), enableKeyState, BPXConfiguration.PropertyClipboardRequiresEnableKey()))
+            if (GetKeyEnabled(BPXConfiguration.GetPropertyClipboardPaintsKey(), enable, BPXConfiguration.PropertyClipboardRequiresEnableKey()))
             {
-                HandlePropertyClipboard("paints", modifierKeyState);
+                HandlePropertyClipboard("paints", modifier);
             }
-            if (GetKeyEnabled(BPXConfiguration.GetPropertyClipboardCopyAllKey(), enableKeyState, BPXConfiguration.PropertyClipboardRequiresEnableKey()))
+            if (GetKeyEnabled(BPXConfiguration.GetPropertyClipboardCopyAllKey(), enable, BPXConfiguration.PropertyClipboardRequiresEnableKey()))
             {
-                HandlePropertyClipboard("all", modifierKeyState);
+                HandlePropertyClipboard("all", modifier);
             }
 
             //Fast Travel
-            if (GetKeyEnabled(BPXConfiguration.GetFastTravelKey(), enableKeyState, BPXConfiguration.FastTravelRequiresEnableKey()))
+            if (GetKeyEnabled(BPXConfiguration.GetFastTravelKey(), enable, BPXConfiguration.FastTravelRequiresEnableKey()))
             {
                 HandleFastTravel();
-            }
-
-            //Move speed selection
-            if (GetKeyContinuouslyEnabled(BPXConfiguration.GetFastTravelKey(), enableKeyState, BPXConfiguration.FastTravelRequiresEnableKey()))
-            {
-                HandleMoveSpeedSelection();
-            }
+            }            
 
             //Axis Cycle
-            if (GetKeyEnabled(BPXConfiguration.GetAxisCycleKey(), enableKeyState, BPXConfiguration.AxisCycleRequireEnableKey()))
+            if (GetKeyEnabled(BPXConfiguration.GetAxisCycleKey(), enable, BPXConfiguration.AxisCycleRequireEnableKey()))
             {
-                HandleAxisCycle(modifierKeyState);
+                HandleAxisCycle(modifier);
             }
 
             //Drag Selection
@@ -285,7 +293,7 @@ namespace BPX
             {
                 if(BPXConfiguration.DragSelectionRequiresEnableKey())
                 {
-                    if(enableKeyState)
+                    if(enable)
                     {
                         StartDragSelect();
                     }
@@ -302,46 +310,24 @@ namespace BPX
             }
 
             HandleDragSelection();
-        }        
 
-        private void HandleScaling(bool scaleUp, bool modifierKeyState)
-        {
-            if (!BPXManager.AnyObjectsSelected()) { return; }
-            
-            float amount = BPXUIManagement.GetGizmoValues().S;
-
-            if(scaleUp)
+            //Mode toggle
+            if (Input.GetKeyDown(BPXConfiguration.ScaleUnitBasedToggleKey()))
             {
-                amount = amount / 100f + 1f;
+                BPXConfiguration.ToggleScaleUnitBased();
             }
-            else
-            {
-                amount = 1f / (1f + amount / 100f);
-            }
-
-            Vector3 axis = BPXUIManagement.GetGizmo().GetCurrentAxes();
-
-            if(modifierKeyState)
-            {
-                BPXOperations.ScaleInPlace(BPXManager.GetSelectedBlocks(), axis, amount);
-            }
-            else
-            {
-                BPXOperations.Scale(BPXManager.GetSelectedBlocks(), axis, amount);
-            }
-            
         }
 
         private void HandleMovement(Direction direction, bool modifierKeyState)
         {
-            if (!BPXManager.AnyObjectsSelected()) { return; }
+            if (!EditorOperations.AnyObjectsSelected(central)) { return; }
 
             GizmoValues gizmoValues = BPXUIManagement.GetGizmoValues();
             Vector3 moveAxis = Vector3.zero;
-            
+
             if (modifierKeyState)
             {
-                switch(direction)
+                switch (direction)
                 {
                     case Direction.Left:
                     case Direction.Right:
@@ -358,7 +344,7 @@ namespace BPX
             }
             else
             {
-                switch(direction)
+                switch (direction)
                 {
                     case Direction.Left:
                         moveAxis = Vector3.left;
@@ -379,13 +365,11 @@ namespace BPX
 
             Vector3 camDirection = BPXManager.central.cam.cameraTransform.forward;
             Vector3 moveDirection = BPXUtils.WorldSpaceRelativeMovement(camDirection, moveAxis);
-
-            BPXOperations.Move(BPXManager.GetSelectedBlocks(), moveDirection);            
+            EditorOperations.MoveSelection(central, moveDirection);
         }
-
         private void HandleRotation(Direction direction, bool modifierKeyState)
         {
-            if (!BPXManager.AnyObjectsSelected()) { return; }
+            if (!EditorOperations.AnyObjectsSelected(central)) { return; }
 
             GizmoValues gizmoValues = BPXUIManagement.GetGizmoValues();
             Vector3 rotationAxis = Vector3.zero;
@@ -431,71 +415,95 @@ namespace BPX
                 }
             }
 
-            BPXOperations.RotateSelection(rotationAxis, amount);
+            EditorOperations.RotateSelection(central, rotationAxis, amount);
         }
-
-        private void HandleMirroring()
+        private void HandleScaling(bool scaleUp, bool modifierKeyState)
         {
-            if (!BPXManager.AnyObjectsSelected()) { return; }
+            if (!EditorOperations.AnyObjectsSelected(central)) { return; }
 
-            Vector3 axis = BPXUIManagement.GetGizmo().GetCurrentAxes();
+            float gizmoS = BPXUIManagement.GetGizmoValues().S;
 
-            if(axis[0] != 0)
+            if (BPXConfiguration.ScaleUnitBased())
             {
-                axis = Vector3.right;
-            }
-            else if(axis[1] != 0)
-            {
-                axis = Vector3.up;
-            }
-            else if(axis[2] != 0)
-            {
-                axis = Vector3.forward;
-            }
-            else
-            {
-                axis = Vector3.right;
-            }
-
-            BPXOperations.Mirror(BPXManager.GetSelectedBlocks(), axis);
-        }
-
-        private void HandleClipboard(bool isCopyNotPaste)
-        {
-            if(isCopyNotPaste)
-            {
-                if (!BPXManager.AnyObjectsSelected()) {
-
-                    Plugin.Instance.LogScreenMessage("No objects selected to copy to clipboard");
-                    return; 
+                float amount = gizmoS;
+                if (!scaleUp)
+                {
+                    amount *= -1;
                 }
 
-                ZeeplevelData copy = ZeeplevelFactory.FromEditor(BPXManager.GetSelectedBlocks(), "clipboard", BPXManager.central, BPXManager.central.skybox);
-                Plugin.Instance.LogScreenMessage("Copied to clipboard");
-                BPXManager.SetClipboard(copy);
-            }
-            else
-            {
-                ZeeplevelData clipboard = BPXManager.GetClipboard();
+                Axis axis = BPXUIManagement.GetGizmo().GetCurrent();
 
-                if(clipboard != null)
+                if (modifierKeyState)
                 {
-                    EditorLevelLoader.LoadToEditor(clipboard, BPXConfiguration.PasteClipboardToCamera());
+                    EditorOperations.ScaleSelection(central, axis, amount, ScalingStyle.UnitInPlace);
                 }
                 else
                 {
-                    Plugin.Instance.LogScreenMessage("No objects in clipboard");
+                    EditorOperations.ScaleSelection(central, axis, amount, ScalingStyle.Unit);
+                }
+            }
+            else
+            {
+                float amount = gizmoS;
+
+                if (scaleUp)
+                {
+                    amount = amount / 100f + 1f;
+                }
+                else
+                {
+                    amount = 1f / (1f + amount / 100f);
+                }
+
+                Axis axis = BPXUIManagement.GetGizmo().GetCurrent();
+
+                if (modifierKeyState)
+                {
+                    EditorOperations.ScaleSelection(central, axis, amount, ScalingStyle.PercentageInPlace);
+                }
+                else
+                {
+                    EditorOperations.ScaleSelection(central, axis, amount, ScalingStyle.Percentage);
+                }
+            }
+        }
+        private void HandleMirroring()
+        {
+            if (!EditorOperations.AnyObjectsSelected(central)) { return; }
+            Axis axis = BPXUIManagement.GetGizmo().GetCurrent();
+            EditorOperations.MirrorSelection(central, axis);
+        }
+        private void HandleClipboard(ClipboardAction action)
+        {
+            if(action == ClipboardAction.Copy)
+            {
+                if (!EditorOperations.AnyObjectsSelected(central)) { Plugin.Instance.LogScreenErrorMessage("No objects selected to copy to clipboard"); return; }
+                List<BlockProperties> selected = EditorOperations.GetSelectedBlocks(central);
+                BPXManager.SetClipboard(ZeeplevelHandler.FromEditor(selected, "clipboard", central, central.skybox));
+                Plugin.Instance.LogScreenMessage("Copied " + selected.Count + " blocks to clipboard!");
+            }
+            else if(action == ClipboardAction.Paste)
+            {
+                ZeeplevelData clipboard = BPXManager.GetClipboard();
+                if (clipboard == null)
+                {
+                    Plugin.Instance.LogScreenErrorMessage("No objects in clipboard");
+                    return;
+                }
+
+                List<BlockProperties> pasted = ZeeplevelHandler.LoadIntoEditor(clipboard, central, true);
+                Plugin.Instance.LogScreenMessage("Pasted " + pasted.Count + " blocks!");
+                if (BPXConfiguration.PasteClipboardToCamera())
+                {
+                    Vector3 requiredMove = ToolkitUtils.BlocksAtCameraGridMovement(central, pasted);
+                    EditorOperations.Move(central, pasted, requiredMove);
                 }
             }           
         }
 
         private void HandlePropertyClipboard(string propertyName, bool modifierKeyState)
         {
-            //Debug.LogWarning($"Property: {propertyName}");
-            //Debug.LogWarning($"Mod: {modifierKeyState}");
-
-            //If nothing is selected abort early.
-            if (!BPXManager.AnyObjectsSelected()) { return; }
+            if (!EditorOperations.AnyObjectsSelected(central)) { return; }
 
             bool isCopy = !modifierKeyState;
             bool pos = propertyName == "position" || (propertyName == "all" && BPXConfiguration.IsPropertyClipboardPositionIncluded());
@@ -508,10 +516,8 @@ namespace BPX
 
             if (isCopy)
             {
-                //Debug.LogWarning($"isCopy:{isCopy}; pos: {pos}; rot: {rot}; scale: {scale}; options: {options}; paints: {paints}");
-                
                 //Get the first object in the selection
-                BlockProperties firstObject = BPXManager.central.selection.list[0];
+                BlockProperties firstObject = central.selection.list[0];
                 if (pos)
                 {
                     messageList.Add("Position");
@@ -544,7 +550,7 @@ namespace BPX
 
                 if(messageList.Count > 0)
                 {
-                    PlayerManager.Instance.messenger.Log($"Copied: {string.Join(", ", messageList)}", 2f);
+                    Plugin.Instance.LogScreenMessage($"Copied: {string.Join(", ", messageList)}");
                 }
                 
             }
@@ -557,11 +563,9 @@ namespace BPX
                 options = (options && BPXManager.optionsClipboard != null);
                 paints = (paints && BPXManager.paintsClipboard != null);
 
-                //Debug.LogWarning($"isCopy:{isCopy}; pos: {pos}; rot: {rot}; scale: {scale}; options: {options}; paints: {paints}");
-
                 //Go over all the blocks in the selection and apply the desired properties.
-                List<BlockProperties> blockList = BPXManager.GetSelectedBlocks();
-                BPXUndoRedoRegistration registration = new BPXUndoRedoRegistration();
+                List<BlockProperties> blockList = EditorOperations.GetSelectedBlocks(central);
+                UndoRedoRegistration registration = new UndoRedoRegistration(central);
                 registration.SetBefore(blockList);
 
                 //Apply changes to each block.
@@ -611,13 +615,13 @@ namespace BPX
                     }
 
                     bp.LoadProperties();
-                    BPXManager.central.selection.SelectionPaint(bp);
+                    central.selection.SelectionPaint(bp);
                 }
 
                 registration.GenerateAfter();
 
                 Change_Collection collection = registration.CreateCollection();
-                BPXManager.central.validation.BreakLock(collection, "Gizmo1");
+                central.validation.BreakLock(collection, "Gizmo1");
 
                 if (pos)
                 {
@@ -646,26 +650,26 @@ namespace BPX
 
                 if (messageList.Count > 0)
                 {
-                    PlayerManager.Instance.messenger.Log($"Pasted: {string.Join(", ", messageList)}", 2f);
+                    Plugin.Instance.LogScreenMessage($"Pasted: {string.Join(", ", messageList)}");
                 }
             }            
         }
 
         private void HandleFastTravel()
         {
-            if (!BPXManager.AnyObjectsSelected()) { return; }
+            if (!EditorOperations.AnyObjectsSelected(central)) { return; }
 
             // Calculate the new position with the offset
-            Vector3 offsetPosition = BPXManager.central.gizmos.motherGizmo.transform.position
-                                     - BPXManager.central.cam.cameraTransform.forward * 16;
+            Vector3 offsetPosition = central.gizmos.motherGizmo.transform.position
+                                     - central.cam.cameraTransform.forward * 16;
 
             // Set the camera position to the new position with offset
-            BPXManager.central.cam.transform.position = offsetPosition;
+            central.cam.transform.position = offsetPosition;
         }
 
         private void HandleMoveSpeedSelection()
         {
-            if (BPXManager.AnyObjectsSelected()) { return; }
+            if (EditorOperations.AnyObjectsSelected(central)) { return; }
 
             //1 if up, -1 if down.
             int scroll = GetScrollDirection(true, false, false);
@@ -695,8 +699,8 @@ namespace BPX
             {
                 BPXConfiguration.currentMoveSpeedIndex = index;
                 BPXConfiguration.currentMoveSpeed = BPXConfiguration.baseMoveSpeed * BPXConfiguration.moveSpeedMultipliers[BPXConfiguration.currentMoveSpeedIndex];
-                BPXManager.central.cam.moveSpeed = BPXConfiguration.currentMoveSpeed;
-                PlayerManager.Instance.messenger.Log("Move speed: " + BPXConfiguration.moveSpeedMultiplierNames[BPXConfiguration.currentMoveSpeedIndex], 1f);
+                central.cam.moveSpeed = BPXConfiguration.currentMoveSpeed;
+                Plugin.Instance.LogScreenMessage("Move speed: " + BPXConfiguration.moveSpeedMultiplierNames[BPXConfiguration.currentMoveSpeedIndex]);
             }            
         }
 
@@ -713,16 +717,6 @@ namespace BPX
                 BPXUtils.DrawScreenRectBorder(dragBox, 1, new Color(1.0f, 0.568f, 0f));
             }
         }
-
-        private Dictionary<Vector3, BlockProperties> bpPositionMap = new Dictionary<Vector3, BlockProperties>();
-        private List<BlockProperties> selectionTargets = new List<BlockProperties>();
-        private Vector2 dragStartPosition;
-        private bool isDragging;
-        private bool isDraggingTeamX;
-        private Rect dragBox;
-        private List<string> beforeSelection;
-        private Vector3 tempDragVector;
-        private int tempCounter;
 
         private void HandleDragSelection()
         {
@@ -792,7 +786,7 @@ namespace BPX
 
             //Debug.LogWarning("TeamX dragging: " + isDraggingTeamX);
 
-            BPXManager.DeselectAllBlocks();
+            EditorOperations.DeselectAllBlocks(central);
             beforeSelection = BPXManager.central.undoRedo.ConvertSelectionToStringList(BPXManager.central.selection.list);
             selectionTargets.Clear();
         }

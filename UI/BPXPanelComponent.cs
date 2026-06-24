@@ -9,7 +9,7 @@ using UnityEngine.UI;
 using UnityEngine;
 using I2.Loc;
 
-namespace BPX
+namespace BPX.UI
 {
     public class BPXPanelComponent
     {

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using BepInEx.Configuration;
 using System.Globalization;
+using BPX.UI;
 
 namespace BPX
 {
@@ -36,6 +37,8 @@ namespace BPX
         private static ConfigEntry<string> scalingValues;
         private static ConfigEntry<string> defaultScalingValue;
         private static ConfigEntry<bool> resetScalingValues;
+        private static ConfigEntry<bool> unitBasedScaling;
+        private static ConfigEntry<KeyCode> unitBasedScalingToggleKey;
 
         //Key Movement
         private static ConfigEntry<KeyCode> forwardUpMovement;
@@ -96,11 +99,6 @@ namespace BPX
         //Functions 
         private static ConfigEntry<bool> applyBasicValues;
 
-        //BPX Online
-        private static ConfigEntry<string> bpxOnlineTestingDirectory;
-        private static ConfigEntry<string> bpxOnlineApiUrl;
-        private static ConfigEntry<int> bpxOnlineResultsPerPage;
-
         //Property clipboard
         private static ConfigEntry<KeyCode> copyPositionKey;
         private static ConfigEntry<KeyCode> copyRotationKey;
@@ -114,6 +112,11 @@ namespace BPX
         private static ConfigEntry<bool> includeOptionsInCopyAll;
         private static ConfigEntry<bool> includePaintsInCopyAll;
         private static ConfigEntry<bool> propertyClipboardRequiresEnableKey;
+
+        //Tree gun
+        private static ConfigEntry<float> treegunLiftFactor;
+        private static ConfigEntry<bool> treegunUseRandomRotation;
+        private static ConfigEntry<float> treegunObjectRotation;
 
         public static void Initialize(ConfigFile cfg)
         {
@@ -145,6 +148,9 @@ namespace BPX
             defaultScalingValue = Config.Bind("04.Scaling", "7.Default Scaling Value", "10", "Default scaling value");
             resetScalingValues = Config.Bind("04.Scaling", "8.Reset Values To Default", false, "[Button] Reset the values in the text fields to their default values.");
             resetScalingValues.SettingChanged += ResetScalingValues;
+            unitBasedScaling = Config.Bind("04.Scaling", "9.Unit Based Scaling", false, "True: Scale by unit, False: Scale by percentage.");
+            unitBasedScalingToggleKey = Config.Bind("04.Scaling", "10.Unit Based Scaling Toggle Key", KeyCode.None, "Toggle between unit and percentage based scaling.");
+            unitBasedScaling.SettingChanged += ColorGizmoButton;
 
             // Key Movement
             forwardUpMovement = Config.Bind("05.Key Movement", "1.Forward/Up Movement Key", KeyCode.None, "Key for forward/up movement");
@@ -196,11 +202,6 @@ namespace BPX
             resetCustomValues = Config.Bind("12.Gizmo", "8.Reset Values To Default", false, "[Button] Reset the values in the text fields to their default values.");
             resetCustomValues.SettingChanged += ResetCustomGridValues;
 
-            //BPXOnline
-            //bpxOnlineTestingDirectory = Config.Bind("13.BPXOnline", "2. Testing Directory", "D:/BPXOnline", "");
-            bpxOnlineApiUrl = Config.Bind("13.BPXOnline", "1.API URL", "http://195.201.16.152:5204/", "");
-            bpxOnlineResultsPerPage = Config.Bind("13.BPXOnline", "2.Results Per Page", 20, "The amount of files displayed on a single page");
-
             //Property clipboard
             copyPositionKey = Config.Bind("14. Property Clipboard", "1. Copy Paste Position Key", KeyCode.None, "Key to copy the position (and paste when combined with modifier key) of the first selected object.");
             copyRotationKey = Config.Bind("14. Property Clipboard", "2. Copy Paste Rotation Key", KeyCode.None, "Key to copy the rotation (and paste when combined with modifier key) of the first selected object.");
@@ -215,6 +216,10 @@ namespace BPX
             includePaintsInCopyAll = Config.Bind("14. Property Clipboard", "11. Include Paints In Copy All", false, "When using the copy all configured key, should the paints be part of the properties being copied?");
             propertyClipboardRequiresEnableKey = Config.Bind("14. Property Clipboard", "12. Property Clipboard Requires Enable Key", false, "Requires enable key for property clipboard operations");
 
+            //Treegun
+            treegunLiftFactor = Config.Bind("15. Treegun", "1. Lift Factor", 0.8f, "Tune the height to the surface of a blueprint shot with the tree gun.");
+            treegunUseRandomRotation = Config.Bind("15. Treegun", "2. Use Random Rotation", true, "If true, creates a random rotation around the hit normal, otherwise uses the rotation set below.");
+            treegunObjectRotation = Config.Bind("15. Treegun", "3. Non Random Object Rotation", 0f, "Use this rotation value when use random rotation is false.");
             Config.SettingChanged += ConfigChanged;
         }
 
@@ -228,6 +233,11 @@ namespace BPX
             scalingValues.Value = (string)scalingValues.DefaultValue;
             defaultScalingValue.Value = (string)defaultScalingValue.DefaultValue;
             ReloadToApplyMessage();
+        }
+
+        private static void ColorGizmoButton(object sender, EventArgs e)
+        {
+            BPXUIManagement.ColorGizmoButton();
         }
 
         private static void ResetCustomGridValues(object sender, EventArgs e)
@@ -391,6 +401,21 @@ namespace BPX
             return ParseFloatValue(defaultScalingValue.Value);
         }
 
+        public static bool ScaleUnitBased()
+        {
+            return unitBasedScaling.Value;
+        }
+
+        public static KeyCode ScaleUnitBasedToggleKey()
+        {
+            return unitBasedScalingToggleKey.Value;
+        }
+
+        public static void ToggleScaleUnitBased()
+        {
+            unitBasedScaling.Value = !unitBasedScaling.Value;
+        }
+
         // Key Movement
         public static KeyCode GetForwardUpMovementKey()
         {
@@ -524,7 +549,7 @@ namespace BPX
 
         public static bool IsAllowedExtension(string ext)
         {
-            return GetAllowedExtensions().Contains(ext);
+            return ext == ".zeeplevel" || ext == ".jpg" || ext == ".zeeplevel" || GetAllowedExtensions().Contains(ext);
         }
 
         public static string[] GetAllowedExtensions()
@@ -600,22 +625,6 @@ namespace BPX
             }
         }
 
-        //BPXOnline
-        public static string GetBPXOnlineTestingDirectory()
-        {
-            return bpxOnlineTestingDirectory.Value;
-        }
-        
-        public static string GetBPXOnlineApiUrl()
-        {
-            return bpxOnlineApiUrl.Value;
-        }
-
-        public static int GetBPXOnlineResultsPerPage()
-        {
-            return bpxOnlineResultsPerPage.Value;
-        }
-
         //Property Clipboard
         public static KeyCode GetPropertyClipboardPositionKey()
         {
@@ -675,6 +684,21 @@ namespace BPX
         public static bool PropertyClipboardRequiresEnableKey()
         {
             return propertyClipboardRequiresEnableKey.Value;
+        }
+
+        public static float GetTreegunLiftFactor()
+        {
+            return treegunLiftFactor.Value;
+        }
+
+        public static bool UseRandomTreegunRotation()
+        {
+            return treegunUseRandomRotation.Value;
+        }
+
+        public static float GetTreegunObjectRotation()
+        {
+            return treegunObjectRotation.Value;
         }
     }
 }
