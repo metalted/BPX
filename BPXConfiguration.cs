@@ -7,6 +7,8 @@ using UnityEngine;
 using BepInEx.Configuration;
 using System.Globalization;
 using BPX.UI;
+using ZeepSDK.Settings;
+using ZeepSDK.Settings.Drawers;
 
 namespace BPX
 {
@@ -15,59 +17,59 @@ namespace BPX
         private static ConfigFile Config;
 
         //General Settings
-        private static ConfigEntry<KeyCode> enableKey;
-        private static ConfigEntry<KeyCode> modifierKey;
+        public static ConfigEntry<KeyCode> enableKey;
+        public static ConfigEntry<KeyCode> modifierKey;
 
         //Axis Cycling
-        private static ConfigEntry<KeyCode> axisCycleKey;
-        private static ConfigEntry<bool> axisCycleRequiresEnableKey;
-        private static ConfigEntry<bool> includePlanesInCycle;        
+        public static ConfigEntry<KeyCode> axisCycleKey;
+        public static ConfigEntry<bool> axisCycleRequiresEnableKey;
+        public static ConfigEntry<bool> includePlanesInCycle;        
 
         //Drag Selection
-        private static ConfigEntry<KeyCode> dragSelectionKey;
-        private static ConfigEntry<bool> mmbSelection;
-        private static ConfigEntry<bool> dragSelectionRequiresEnableKey;
+        public static ConfigEntry<KeyCode> dragSelectionKey;
+        public static ConfigEntry<bool> mmbSelection;
+        public static ConfigEntry<bool> dragSelectionRequiresEnableKey;
 
         //Scaling
-        private static ConfigEntry<bool> scrollScaling;
-        private static ConfigEntry<bool> invertScrollScaling;
-        private static ConfigEntry<KeyCode> negativeScalingKey;
-        private static ConfigEntry<KeyCode> positiveScalingKey;
-        private static ConfigEntry<bool> scalingRequiresEnableKey;
-        private static ConfigEntry<string> scalingValues;
-        private static ConfigEntry<string> defaultScalingValue;
-        private static ConfigEntry<bool> resetScalingValues;
-        private static ConfigEntry<bool> unitBasedScaling;
-        private static ConfigEntry<KeyCode> unitBasedScalingToggleKey;
+        public static ConfigEntry<bool> scrollScaling;
+        public static ConfigEntry<bool> invertScrollScaling;
+        public static ConfigEntry<KeyCode> negativeScalingKey;
+        public static ConfigEntry<KeyCode> positiveScalingKey;
+        public static ConfigEntry<bool> scalingRequiresEnableKey;
+        public static ConfigEntry<string> scalingValues;
+        public static ConfigEntry<string> defaultScalingValue;
+        public static ConfigEntry<bool> resetScalingValues;
+        public static ConfigEntry<bool> unitBasedScaling;
+        public static ConfigEntry<KeyCode> unitBasedScalingToggleKey;
 
         //Key Movement
-        private static ConfigEntry<KeyCode> forwardUpMovement;
-        private static ConfigEntry<KeyCode> backDownMovement;
-        private static ConfigEntry<KeyCode> leftMovement;
-        private static ConfigEntry<KeyCode> rightMovement;
-        private static ConfigEntry<bool> movementRequiresEnableKey;
-        private static ConfigEntry<bool> movementIfRotationIsDisabled;
+        public static ConfigEntry<KeyCode> forwardUpMovement;
+        public static ConfigEntry<KeyCode> backDownMovement;
+        public static ConfigEntry<KeyCode> leftMovement;
+        public static ConfigEntry<KeyCode> rightMovement;
+        public static ConfigEntry<bool> movementRequiresEnableKey;
+        public static ConfigEntry<bool> movementIfRotationIsDisabled;
 
         //Key Rotation
-        private static ConfigEntry<KeyCode> xPositiveRotation;
-        private static ConfigEntry<KeyCode> xNegativeRotation;
-        private static ConfigEntry<KeyCode> yzPositiveRotation;
-        private static ConfigEntry<KeyCode> yzNegativeRotation;
-        private static ConfigEntry<bool> rotationRequiresEnableKey;
+        public static ConfigEntry<KeyCode> xPositiveRotation;
+        public static ConfigEntry<KeyCode> xNegativeRotation;
+        public static ConfigEntry<KeyCode> yzPositiveRotation;
+        public static ConfigEntry<KeyCode> yzNegativeRotation;
+        public static ConfigEntry<bool> rotationRequiresEnableKey;
 
         //Mirroring
-        private static ConfigEntry<KeyCode> mirrorKey;
-        private static ConfigEntry<bool> mirrorRequiresEnableKey;
+        public static ConfigEntry<KeyCode> mirrorKey;
+        public static ConfigEntry<bool> mirrorRequiresEnableKey;
 
         //Clipboard
-        private static ConfigEntry<KeyCode> clipboardCopy;
-        private static ConfigEntry<KeyCode> clipboardPaste;
-        private static ConfigEntry<bool> clipboardRequiresEnableKey;
-        private static ConfigEntry<bool> pasteClipboardToCamera;
+        public static ConfigEntry<KeyCode> clipboardCopy;
+        public static ConfigEntry<KeyCode> clipboardPaste;
+        public static ConfigEntry<bool> clipboardRequiresEnableKey;
+        public static ConfigEntry<bool> pasteClipboardToCamera;
 
         //Fast Travel
-        private static ConfigEntry<KeyCode> fastTravelKey;
-        private static ConfigEntry<bool> fastTravelRequiresEnableKey;
+        public static ConfigEntry<KeyCode> fastTravelKey;
+        public static ConfigEntry<bool> fastTravelRequiresEnableKey;
 
         //Speed setting (Not technically a config, more of an temp setting)
         public static float baseMoveSpeed = 20f;
@@ -77,54 +79,59 @@ namespace BPX
         public static int currentMoveSpeedIndex = 5;
 
         //Shortcuts
-        private static ConfigEntry<KeyCode> saveShortcutKey;
-        private static ConfigEntry<KeyCode> loadShortcutKey;
-        private static ConfigEntry<bool> shortcutRequiresEnableKey;
+        public static ConfigEntry<KeyCode> saveShortcutKey;
+        public static ConfigEntry<KeyCode> loadShortcutKey;
+        public static ConfigEntry<bool> shortcutRequiresEnableKey;
 
         //Panel
-        private static ConfigEntry<bool> clearSearchOnExit;
-        private static ConfigEntry<bool> doubleLoadButtons;
-        private static ConfigEntry<string> allowedExtensions;
+        public static ConfigEntry<bool> clearSearchOnExit;
+        public static ConfigEntry<bool> doubleLoadButtons;
+        public static ConfigEntry<string> allowedExtensions;
 
         //Gizmo
-        private static ConfigEntry<bool> useCustomValues;
-        private static ConfigEntry<string> customXZValues;
-        private static ConfigEntry<string> defaultCustomXZValue;
-        private static ConfigEntry<string> customYValues;
-        private static ConfigEntry<string> defaultCustomYValue;
-        private static ConfigEntry<string> customRValues;
-        private static ConfigEntry<string> defaultCustomRValue;
-        private static ConfigEntry<bool> resetCustomValues;
+        public static ConfigEntry<bool> useCustomValues;
+        public static ConfigEntry<string> customXZValues;
+        public static ConfigEntry<string> defaultCustomXZValue;
+        public static ConfigEntry<string> customYValues;
+        public static ConfigEntry<string> defaultCustomYValue;
+        public static ConfigEntry<string> customRValues;
+        public static ConfigEntry<string> defaultCustomRValue;
+        public static ConfigEntry<bool> resetCustomValues;
 
         //Functions 
-        private static ConfigEntry<bool> applyBasicValues;
+        //public static ConfigEntry<bool> applyBasicValues;
 
         //Property clipboard
-        private static ConfigEntry<KeyCode> copyPositionKey;
-        private static ConfigEntry<KeyCode> copyRotationKey;
-        private static ConfigEntry<KeyCode> copyScaleKey;
-        private static ConfigEntry<KeyCode> copyOptionsKey;
-        private static ConfigEntry<KeyCode> copyPaintsKey;
-        private static ConfigEntry<KeyCode> copyAllConfiguredKey;        
-        private static ConfigEntry<bool> includePositionInCopyAll;
-        private static ConfigEntry<bool> includeRotationInCopyAll;
-        private static ConfigEntry<bool> includeScaleInCopyAll;
-        private static ConfigEntry<bool> includeOptionsInCopyAll;
-        private static ConfigEntry<bool> includePaintsInCopyAll;
-        private static ConfigEntry<bool> propertyClipboardRequiresEnableKey;
+        public static ConfigEntry<KeyCode> copyPositionKey;
+        public static ConfigEntry<KeyCode> copyRotationKey;
+        public static ConfigEntry<KeyCode> copyScaleKey;
+        public static ConfigEntry<KeyCode> copyOptionsKey;
+        public static ConfigEntry<KeyCode> copyPaintsKey;
+        public static ConfigEntry<KeyCode> copyAllConfiguredKey;        
+        public static ConfigEntry<bool> includePositionInCopyAll;
+        public static ConfigEntry<bool> includeRotationInCopyAll;
+        public static ConfigEntry<bool> includeScaleInCopyAll;
+        public static ConfigEntry<bool> includeOptionsInCopyAll;
+        public static ConfigEntry<bool> includePaintsInCopyAll;
+        public static ConfigEntry<bool> propertyClipboardRequiresEnableKey;
 
         //Tree gun
-        private static ConfigEntry<float> treegunLiftFactor;
-        private static ConfigEntry<bool> treegunUseRandomRotation;
-        private static ConfigEntry<float> treegunObjectRotation;
+        public static ConfigEntry<float> treegunLiftFactor;
+        public static ConfigEntry<bool> treegunUseRandomRotation;
+        public static ConfigEntry<float> treegunObjectRotation;
 
         public static void Initialize(ConfigFile cfg)
         {
-            Config = cfg;            
+            Config = cfg;
+            SettingsApi.RegisterModSettingsDrawers(Plugin.Instance, BuildSettingsDrawers);
+            BindConfig();
+        }
 
+        private static void BindConfig()
+        { 
             // General Settings
-            applyBasicValues = Config.Bind("01.General Settings", "1.Apply Basic Values To Config", false, "[Button] Apply Basic Values to Config");
-            applyBasicValues.SettingChanged += ApplyBasicValues;
+            //applyBasicValues = Config.Bind("01.General Settings", "1.Apply Basic Values To Config", false, "[Button] Apply Basic Values to Config");
+            //applyBasicValues.SettingChanged += ApplyBasicValues;
             enableKey = Config.Bind("01.General Settings", "2.Enable Key", KeyCode.None, "Key to enable functionality");
             modifierKey = Config.Bind("01.General Settings", "3.Modifier Key", KeyCode.LeftShift, "Modifier key for additional controls");
 
@@ -218,10 +225,16 @@ namespace BPX
 
             //Treegun
             treegunLiftFactor = Config.Bind("15. Treegun", "1. Lift Factor", 0.8f, "Tune the height to the surface of a blueprint shot with the tree gun.");
-            treegunUseRandomRotation = Config.Bind("15. Treegun", "2. Use Random Rotation", true, "If true, creates a random rotation around the hit normal, otherwise uses the rotation set below.");
+            treegunUseRandomRotation = Config.Bind("15. Treegun", "2. Use Random Rotation", true, "True:\nCreate a random rotation around the hit normal.\n\nFalse:\nUse rotation defined below.");
             treegunObjectRotation = Config.Bind("15. Treegun", "3. Non Random Object Rotation", 0f, "Use this rotation value when use random rotation is false.");
             Config.SettingChanged += ConfigChanged;
         }
+
+        private static IEnumerable<IZeepSettingsDrawer> BuildSettingsDrawers(ModSettingsDrawerBuildContext context)
+        {
+            yield return new BPXSettingsDrawer();
+        }
+
 
         private static void ReloadToApplyMessage()
         {
@@ -259,7 +272,7 @@ namespace BPX
             }
         }
 
-        private static void ApplyBasicValues(object sender, EventArgs e)
+        public static void ApplyBasicValues()
         {
             enableKey.Value = KeyCode.LeftControl;
             modifierKey.Value = KeyCode.LeftShift;
@@ -322,6 +335,7 @@ namespace BPX
             ReloadToApplyMessage();
         }
 
+        #region GetSet
         // General Settings
         public static KeyCode GetEnableKey()
         {
@@ -700,5 +714,7 @@ namespace BPX
         {
             return treegunObjectRotation.Value;
         }
+
+        #endregion
     }
 }
