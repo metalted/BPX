@@ -10,13 +10,14 @@ using FMODSyntax;
 namespace BPX
 {
     [BepInPlugin(pluginGuid, pluginName, pluginVersion)]
+    [BepInDependency("ZeepSDK", BepInDependency.DependencyFlags.HardDependency)]
     [BepInDependency("com.metalted.zeepkist.toolkist", BepInDependency.DependencyFlags.HardDependency)]
     [BepInDependency("com.metalted.zeepkist.teamx", BepInDependency.DependencyFlags.SoftDependency)]
     public class Plugin : BaseUnityPlugin
     {
         public const string pluginGuid = "com.metalted.zeepkist.blueprintsX";
         public const string pluginName = "Blueprints X";
-        public const string pluginVersion = "4.0";
+        public const string pluginVersion = "4.1";
 
         private bool logging_enabled = false;
 

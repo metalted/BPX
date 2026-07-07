@@ -102,7 +102,7 @@ namespace BPX
         //public static ConfigEntry<bool> applyBasicValues;
 
         //Property clipboard
-        public static ConfigEntry<KeyCode> copyPositionKey;
+        /*public static ConfigEntry<KeyCode> copyPositionKey;
         public static ConfigEntry<KeyCode> copyRotationKey;
         public static ConfigEntry<KeyCode> copyScaleKey;
         public static ConfigEntry<KeyCode> copyOptionsKey;
@@ -113,7 +113,7 @@ namespace BPX
         public static ConfigEntry<bool> includeScaleInCopyAll;
         public static ConfigEntry<bool> includeOptionsInCopyAll;
         public static ConfigEntry<bool> includePaintsInCopyAll;
-        public static ConfigEntry<bool> propertyClipboardRequiresEnableKey;
+        public static ConfigEntry<bool> propertyClipboardRequiresEnableKey;*/
 
         //Tree gun
         public static ConfigEntry<float> treegunLiftFactor;
@@ -132,25 +132,25 @@ namespace BPX
             // General Settings
             //applyBasicValues = Config.Bind("01.General Settings", "1.Apply Basic Values To Config", false, "[Button] Apply Basic Values to Config");
             //applyBasicValues.SettingChanged += ApplyBasicValues;
-            enableKey = Config.Bind("01.General Settings", "2.Enable Key", KeyCode.None, "Key to enable functionality");
-            modifierKey = Config.Bind("01.General Settings", "3.Modifier Key", KeyCode.LeftShift, "Modifier key for additional controls");
+            enableKey = Config.Bind("01.General Settings", "2.Enable Key", KeyCode.None, "Optional key that must be held before another key can trigger,\nallowing combinations like CTRL + S instead of S.");
+            modifierKey = Config.Bind("01.General Settings", "3.Modifier Key", KeyCode.LeftShift, "A function-shift key that changes behaviour,\nsuch as moving on the Y axis instead of the Z axis while held.");
 
             // Axis Cycling
-            axisCycleKey = Config.Bind("02.Axis Cycling", "1.Axis Cycle Key", KeyCode.None, "Key to cycle through axes");
-            axisCycleRequiresEnableKey = Config.Bind("02.Axis Cycling", "2.Axis Cycle Requires Enable Key", false, "Requires enable key to cycle through axes");
-            includePlanesInCycle = Config.Bind("02.Axis Cycling", "3.Include Planes In Cycle", false, "Include planes in the axis cycling");
+            axisCycleKey = Config.Bind("02.Axis Cycling", "1.Axis Cycle Key", KeyCode.None, "Cycle through the gizmo arrows to select different axis while scaling or mirroring.");
+            axisCycleRequiresEnableKey = Config.Bind("02.Axis Cycling", "2.Axis Cycle Requires Enable Key", false, "Require the enable key to cycle through axes.");
+            includePlanesInCycle = Config.Bind("02.Axis Cycling", "3.Include Planes In Cycle", false, "Include XY, YZ and XZ planes in the axis cycling.");
 
             // Drag Selection
-            dragSelectionKey = Config.Bind("03.Drag Selection", "1.Drag Selection Key", KeyCode.None, "Key for drag selection");
-            mmbSelection = Config.Bind("03.Drag Selection", "2.MMB Selection", false, "Use middle mouse button for selection");
-            dragSelectionRequiresEnableKey = Config.Bind("03.Drag Selection", "3.Drag Selection Requires Enable Key", false, "Requires enable key for drag selection");
+            dragSelectionKey = Config.Bind("03.Drag Selection", "1.Drag Selection Key", KeyCode.None, "Hold this key to start drawing a selection box.");
+            mmbSelection = Config.Bind("03.Drag Selection", "2.MMB Selection", false, "Use middle mouse button for selection.");
+            dragSelectionRequiresEnableKey = Config.Bind("03.Drag Selection", "3.Drag Selection Requires Enable Key", false, "Requires enable key for drag selection.");
 
             // Scaling
-            scrollScaling = Config.Bind("04.Scaling", "1.Scroll Scaling", false, "Enable scaling with scroll");
+            scrollScaling = Config.Bind("04.Scaling", "1.Scroll Scaling", false, "Scale blocks when using scroll wheel.");
             invertScrollScaling = Config.Bind("04.Scaling", "2.Invert Scroll Scaling", false, "Invert scroll scaling direction");
-            negativeScalingKey = Config.Bind("04.Scaling", "3.Negative Scaling Key", KeyCode.None, "Key for negative scaling");
-            positiveScalingKey = Config.Bind("04.Scaling", "4.Positive Scaling Key", KeyCode.None, "Key for positive scaling");
-            scalingRequiresEnableKey = Config.Bind("04.Scaling", "5.Scaling Requires Enable Key", false, "Requires enable key for scaling");
+            negativeScalingKey = Config.Bind("04.Scaling", "3.Negative Scaling Key", KeyCode.None, "Press this key to scale blocks down.");
+            positiveScalingKey = Config.Bind("04.Scaling", "4.Positive Scaling Key", KeyCode.None, "Press this key to scale blocks up.");
+            scalingRequiresEnableKey = Config.Bind("04.Scaling", "5.Scaling Requires Enable Key", false, "Require enable key for scaling.");
             scalingValues = Config.Bind("04.Scaling", "6.Scaling Values", "0.05;0.1;0.5;1;5;10;20", "Custom scaling values");
             defaultScalingValue = Config.Bind("04.Scaling", "7.Default Scaling Value", "10", "Default scaling value");
             resetScalingValues = Config.Bind("04.Scaling", "8.Reset Values To Default", false, "[Button] Reset the values in the text fields to their default values.");
@@ -160,46 +160,46 @@ namespace BPX
             unitBasedScaling.SettingChanged += ColorGizmoButton;
 
             // Key Movement
-            forwardUpMovement = Config.Bind("05.Key Movement", "1.Forward/Up Movement Key", KeyCode.None, "Key for forward/up movement");
-            backDownMovement = Config.Bind("05.Key Movement", "2.Back/Down Movement Key", KeyCode.None, "Key for back/down movement");
-            leftMovement = Config.Bind("05.Key Movement", "3.Left Movement Key", KeyCode.None, "Key for left movement");
-            rightMovement = Config.Bind("05.Key Movement", "4.Right Movement Key", KeyCode.None, "Key for right movement");
-            movementRequiresEnableKey = Config.Bind("05.Key Movement", "5.Movement Requires Enable Key", false, "Requires enable key for movement");
-            movementIfRotationIsDisabled = Config.Bind("05.Key Movement", "6.Movement If Rotation Is Disabled", false, "Allow movement if rotation is disabled");
+            forwardUpMovement = Config.Bind("05.Key Movement", "1.Forward/Up Movement Key", KeyCode.None, "Key to move blocks forward, or up when modifier is held.");
+            backDownMovement = Config.Bind("05.Key Movement", "2.Back/Down Movement Key", KeyCode.None, "Key to move blocks backwards or down when modifier is held.");
+            leftMovement = Config.Bind("05.Key Movement", "3.Left Movement Key", KeyCode.None, "Key to move blocks left.");
+            rightMovement = Config.Bind("05.Key Movement", "4.Right Movement Key", KeyCode.None, "Key to move blocks right.");
+            movementRequiresEnableKey = Config.Bind("05.Key Movement", "5.Movement Requires Enable Key", false, "Require enable key for keyboard movement.");
+            movementIfRotationIsDisabled = Config.Bind("05.Key Movement", "6.Movement If Rotation Is Disabled", false, "If key rotation is disabled, move the block when in rotation mode and pressing keys.");
 
             // Key Rotation
-            xPositiveRotation = Config.Bind("06.Key Rotation", "1.X Positive Rotation Key", KeyCode.None, "Key for positive rotation around the X axis");
-            xNegativeRotation = Config.Bind("06.Key Rotation", "2.X Negative Rotation Key", KeyCode.None, "Key for negative rotation around the X axis");
-            yzPositiveRotation = Config.Bind("06.Key Rotation", "3.YZ Positive Rotation Key", KeyCode.None, "Key for positive rotation around the Y and Z axes");
-            yzNegativeRotation = Config.Bind("06.Key Rotation", "4.YZ Negative Rotation Key", KeyCode.None, "Key for negative rotation around the Y and Z axes");
-            rotationRequiresEnableKey = Config.Bind("06.Key Rotation", "5.Rotation Requires Enable Key", false, "Requires enable key for rotation");
+            xPositiveRotation = Config.Bind("06.Key Rotation", "1.X Positive Rotation Key", KeyCode.None, "Key for positive rotation around the X axis.");
+            xNegativeRotation = Config.Bind("06.Key Rotation", "2.X Negative Rotation Key", KeyCode.None, "Key for negative rotation around the X axis.");
+            yzPositiveRotation = Config.Bind("06.Key Rotation", "3.YZ Positive Rotation Key", KeyCode.None, "Key for positive rotation around the Z axis, or Y axis when modifier is held.");
+            yzNegativeRotation = Config.Bind("06.Key Rotation", "4.YZ Negative Rotation Key", KeyCode.None, "Key for negative rotation around the Z axis, or Y axis when modifier is held.");
+            rotationRequiresEnableKey = Config.Bind("06.Key Rotation", "5.Rotation Requires Enable Key", false, "Require enable key for rotation.");
 
             // Mirroring
-            mirrorKey = Config.Bind("07.Mirroring", "1.Mirror Key", KeyCode.None, "Key for mirroring");
-            mirrorRequiresEnableKey = Config.Bind("07.Mirroring", "2.Mirror Requires Enable Key", false, "Requires enable key for mirroring");
+            mirrorKey = Config.Bind("07.Mirroring", "1.Mirror Key", KeyCode.None, "Pressing this key will mirror the selected blocks.");
+            mirrorRequiresEnableKey = Config.Bind("07.Mirroring", "2.Mirror Requires Enable Key", false, "Require enable key for mirroring.");
 
             // Clipboard
-            clipboardCopy = Config.Bind("08.Clipboard", "1.Clipboard Copy Key", KeyCode.None, "Key for copying to clipboard");
-            clipboardPaste = Config.Bind("08.Clipboard", "2.Clipboard Paste Key", KeyCode.None, "Key for pasting from clipboard");
-            clipboardRequiresEnableKey = Config.Bind("08.Clipboard", "3.Clipboard Requires Enable Key", false, "Requires enable key for clipboard operations");
-            pasteClipboardToCamera = Config.Bind("08.Clipboard", "4.Paste Clipboard To Camera", false, "Paste clipboard content to camera");
+            clipboardCopy = Config.Bind("08.Clipboard", "1.Clipboard Copy Key", KeyCode.None, "Press this key to copy a selection to the clipboard.");
+            clipboardPaste = Config.Bind("08.Clipboard", "2.Clipboard Paste Key", KeyCode.None, "Press this key to paste a selection to the editor.");
+            clipboardRequiresEnableKey = Config.Bind("08.Clipboard", "3.Clipboard Requires Enable Key", false, "Require enable key for clipboard operations.");
+            pasteClipboardToCamera = Config.Bind("08.Clipboard", "4.Paste Clipboard To Camera", false, "Paste clipboard content to camera, or to the original copy position.");
 
             // Fast Travel
-            fastTravelKey = Config.Bind("09.Fast Travel", "1.Fast Travel Key", KeyCode.None, "Key for fast travel");
-            fastTravelRequiresEnableKey = Config.Bind("09.Fast Travel", "2.Fast Travel Requires Enable Key", false, "Requires enable key for fast travel");
+            fastTravelKey = Config.Bind("09.Fast Travel", "1.Fast Travel Key", KeyCode.None, "Pressing this key will move the camera to the position of the selected block.");
+            fastTravelRequiresEnableKey = Config.Bind("09.Fast Travel", "2.Fast Travel Requires Enable Key", false, "Require the enable key for fast traveling.");
 
             // Shortcuts
-            saveShortcutKey = Config.Bind("10.Shortcuts", "1.Save Shortcut Key", KeyCode.None, "Key for save shortcut");
-            loadShortcutKey = Config.Bind("10.Shortcuts", "2.Load Shortcut Key", KeyCode.None, "Key for load shortcut");
-            shortcutRequiresEnableKey = Config.Bind("10.Shortcuts", "3.Shortcut Requires Enable Key", false, "Requires enable key for shortcuts");
+            saveShortcutKey = Config.Bind("10.Shortcuts", "1.Save Shortcut Key", KeyCode.None, "Pressing this key with an active selection will open the Blueprint Save Panel.");
+            loadShortcutKey = Config.Bind("10.Shortcuts", "2.Load Shortcut Key", KeyCode.None, "Pressing this key will open the Blueprint Load Panel.");
+            shortcutRequiresEnableKey = Config.Bind("10.Shortcuts", "3.Shortcut Requires Enable Key", false, "Should the save and load shortcut require enable to be held?");
 
             // Panel
-            clearSearchOnExit = Config.Bind("11.Panel", "1.Clear Search On Exit", false, "Clear search field on exit");
-            doubleLoadButtons = Config.Bind("11.Panel", "2.Double Load Buttons", false, "Enable double load buttons");
+            clearSearchOnExit = Config.Bind("11.Panel", "1.Clear Search On Exit", false, "Clear the search field when the Blueprint Load Panel is closed.");
+            doubleLoadButtons = Config.Bind("11.Panel", "2.Double Load Buttons", false, "If true, the load panel will have an extra button that\nallows you to load the blueprint at the original location, instead of the grid position closest to you.");
             allowedExtensions = Config.Bind("11.Panel", "3.Allowed Extensions", ".png,.obj,.jpg,.realm,.zeeplist,.zip,.customsoapbox", "Allowed file extensions");
 
             // Gizmo
-            useCustomValues = Config.Bind("12.Gizmo", "1.Use Custom Values", false, "Use custom values for gizmo");
+            useCustomValues = Config.Bind("12.Gizmo", "1.Use Custom Values", false, "Enabling this will allow you to set custom values for the gizmo.");
             customXZValues = Config.Bind("12.Gizmo", "2.Custom XZ Values", "0;0.2;0.8;1.6;4;8;16", "Custom XZ values for gizmo");
             defaultCustomXZValue = Config.Bind("12.Gizmo", "3.Default Custom XZ Value", "16", "Default custom XZ value for gizmo");
             customYValues = Config.Bind("12.Gizmo", "4.Custom Y Values", "0;0.2;0.8;1.6;4;8", "Custom Y values for gizmo");
@@ -210,7 +210,7 @@ namespace BPX
             resetCustomValues.SettingChanged += ResetCustomGridValues;
 
             //Property clipboard
-            copyPositionKey = Config.Bind("14. Property Clipboard", "1. Copy Paste Position Key", KeyCode.None, "Key to copy the position (and paste when combined with modifier key) of the first selected object.");
+            /*copyPositionKey = Config.Bind("14. Property Clipboard", "1. Copy Paste Position Key", KeyCode.None, "Key to copy the position (and paste when combined with modifier key) of the first selected object.");
             copyRotationKey = Config.Bind("14. Property Clipboard", "2. Copy Paste Rotation Key", KeyCode.None, "Key to copy the rotation (and paste when combined with modifier key) of the first selected object.");
             copyScaleKey = Config.Bind("14. Property Clipboard", "3. Copy Paste Scale Key", KeyCode.None, "Key to copy the scale (and paste when combined with modifier key) of the first selected object.");
             copyOptionsKey = Config.Bind("14. Property Clipboard", "4. Copy Paste Options Key", KeyCode.None, "Key to copy the options (and paste when combined with modifier key) of the first selected object.");
@@ -221,12 +221,12 @@ namespace BPX
             includeScaleInCopyAll = Config.Bind("14. Property Clipboard", "9. Include Scale In Copy All", false, "When using the copy all configured key, should the scale be part of the properties being copied?");
             includeOptionsInCopyAll = Config.Bind("14. Property Clipboard", "10. Include Options In Copy All", false, "When using the copy all configured key, should the options be part of the properties being copied?");
             includePaintsInCopyAll = Config.Bind("14. Property Clipboard", "11. Include Paints In Copy All", false, "When using the copy all configured key, should the paints be part of the properties being copied?");
-            propertyClipboardRequiresEnableKey = Config.Bind("14. Property Clipboard", "12. Property Clipboard Requires Enable Key", false, "Requires enable key for property clipboard operations");
+            propertyClipboardRequiresEnableKey = Config.Bind("14. Property Clipboard", "12. Property Clipboard Requires Enable Key", false, "Requires enable key for property clipboard operations");*/
 
             //Treegun
             treegunLiftFactor = Config.Bind("15. Treegun", "1. Lift Factor", 0.8f, "Tune the height to the surface of a blueprint shot with the tree gun.");
-            treegunUseRandomRotation = Config.Bind("15. Treegun", "2. Use Random Rotation", true, "True:\nCreate a random rotation around the hit normal.\n\nFalse:\nUse rotation defined below.");
-            treegunObjectRotation = Config.Bind("15. Treegun", "3. Non Random Object Rotation", 0f, "Use this rotation value when use random rotation is false.");
+            treegunUseRandomRotation = Config.Bind("15. Treegun", "2. Use Random Rotation", true, "Use a random rotation when placing with the treegun, otherwise use the value below.");
+            treegunObjectRotation = Config.Bind("15. Treegun", "3. Non Random Object Rotation", 0f, "This value will be used for the Y rotation, when placing a blueprint with the treegun.");
             Config.SettingChanged += ConfigChanged;
         }
 
@@ -639,7 +639,7 @@ namespace BPX
             }
         }
 
-        //Property Clipboard
+        /*//Property Clipboard
         public static KeyCode GetPropertyClipboardPositionKey()
         {
             return copyPositionKey.Value;
@@ -698,7 +698,7 @@ namespace BPX
         public static bool PropertyClipboardRequiresEnableKey()
         {
             return propertyClipboardRequiresEnableKey.Value;
-        }
+        }*/
 
         public static float GetTreegunLiftFactor()
         {

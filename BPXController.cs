@@ -250,7 +250,7 @@ namespace BPX
                 HandleClipboard(ClipboardAction.Paste);
             }
 
-            //Property Clipboard (This should be ui based or something.
+            /*//Property Clipboard (This should be ui based or something.
             if(GetKeyEnabled(BPXConfiguration.GetPropertyClipboardPositionKey(), enable, BPXConfiguration.PropertyClipboardRequiresEnableKey()))
             {
                 HandlePropertyClipboard("position", modifier);
@@ -274,7 +274,7 @@ namespace BPX
             if (GetKeyEnabled(BPXConfiguration.GetPropertyClipboardCopyAllKey(), enable, BPXConfiguration.PropertyClipboardRequiresEnableKey()))
             {
                 HandlePropertyClipboard("all", modifier);
-            }
+            }*/
 
             //Fast Travel
             if (GetKeyEnabled(BPXConfiguration.GetFastTravelKey(), enable, BPXConfiguration.FastTravelRequiresEnableKey()))
@@ -501,7 +501,7 @@ namespace BPX
             }           
         }
 
-        private void HandlePropertyClipboard(string propertyName, bool modifierKeyState)
+        /*private void HandlePropertyClipboard(string propertyName, bool modifierKeyState)
         {
             if (!EditorOperations.AnyObjectsSelected(central)) { return; }
 
@@ -653,7 +653,7 @@ namespace BPX
                     Plugin.Instance.LogScreenMessage($"Pasted: {string.Join(", ", messageList)}");
                 }
             }            
-        }
+        }*/
 
         private void HandleFastTravel()
         {
