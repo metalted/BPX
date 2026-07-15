@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Events;
 using Toolkist;
+using Toolkist.EditorOperations;
 
 namespace BPX
 {
@@ -104,7 +105,7 @@ namespace BPX
                 angle = Mathf.Repeat(BPXConfiguration.GetTreegunObjectRotation(), 360f);
             }
 
-            EditorOperations.PlaceBlueprint(
+            BlueprintPlacementOperations.PlaceBlueprint(
                 central,
                 blocks,
                 point,
@@ -114,7 +115,7 @@ namespace BPX
                 angle
             );
 
-            EditorOperations.DeselectAllBlocks(central);
+            EditorSelectionOperations.DeselectAllBlocks(central);
         }
     }
 }

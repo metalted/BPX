@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using Toolkist;
+using Toolkist.EditorOperations;
 
 namespace BPX.UI
 {
@@ -116,7 +117,7 @@ namespace BPX.UI
 
         private static void OnToolbarSaveButton()
         {
-            if(!EditorOperations.AnyObjectsSelected(central))
+            if(!EditorSelectionOperations.AnyObjectsSelected(central))
             {
                 Plugin.Instance.LogScreenErrorMessage("No selection!");
                 return;
@@ -125,7 +126,7 @@ namespace BPX.UI
             ZeeplevelData data = ZeeplevelHandler.FromEditor(central.selection.list, "BlueprintFromSelection", central, central.skybox);
             data.level.Author = ToolkitUtils.GetPlayerName();
 
-            EditorOperations.DeselectAllBlocks(central);
+            EditorSelectionOperations.DeselectAllBlocks(central);
 
             if (panel != null)
             {
@@ -137,7 +138,7 @@ namespace BPX.UI
 
         private static void OnToolbarLoadButton()
         {
-            EditorOperations.DeselectAllBlocks(central);
+            EditorSelectionOperations.DeselectAllBlocks(central);
 
             if (panel != null)
             {

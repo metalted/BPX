@@ -5,6 +5,7 @@ using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
 using Toolkist;
+using Toolkist.EditorOperations;
 
 namespace BPX.UI
 {   
@@ -558,7 +559,7 @@ namespace BPX.UI
             if(loadHere)
             {
                 Vector3 requiredMove = ToolkitUtils.BlocksAtCameraGridMovement(BPXManager.central, blocks);
-                EditorOperations.Move(BPXManager.central, blocks, requiredMove);
+                EditorTransformOperations.Move(BPXManager.central, blocks, requiredMove);
             }       
         }
         private void OnTreeGunButton()
