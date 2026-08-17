@@ -17,7 +17,7 @@ namespace BPX
     {
         public const string pluginGuid = "com.metalted.zeepkist.blueprintsX";
         public const string pluginName = "Blueprints X";
-        public const string pluginVersion = "4.1";
+        public const string pluginVersion = "4.2";
 
         private bool logging_enabled = false;
 

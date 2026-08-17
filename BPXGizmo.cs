@@ -18,6 +18,8 @@ namespace BPX
             Xgizmo = BPXManager.central.gizmos.Xgizmo.gameObject;
             Ygizmo = BPXManager.central.gizmos.Ygizmo.gameObject;
             Zgizmo = BPXManager.central.gizmos.Zgizmo.gameObject;
+
+            SetGizmoState(currentAxes);
         }
 
         public void Reset()
@@ -33,19 +35,43 @@ namespace BPX
 
         public void Cycle(bool forward, bool extended)
         {
-            int cycleLength = extended ? 7 : 4;
-            int currentIndex = (int)currentAxes;
+            Axis[] cycle = extended
+                ? new Axis[]
+                {
+                    Axis.XYZ,
+                    Axis.X,
+                    Axis.Y,
+                    Axis.Z,
+                    Axis.XY,
+                    Axis.YZ,
+                    Axis.XZ
+                }
+                : new Axis[]
+                {
+                    Axis.XYZ,
+                    Axis.X,
+                    Axis.Y,
+                    Axis.Z
+                };
+
+            int currentIndex = Array.IndexOf(cycle, currentAxes);
+
+            if (currentIndex == -1)
+            {
+                currentIndex = 0;
+            }
 
             if (forward)
             {
-                currentIndex = (currentIndex + 1) % cycleLength;
+                currentIndex = (currentIndex + 1) % cycle.Length;
             }
             else
             {
-                currentIndex = (currentIndex - 1 + cycleLength) % cycleLength;
+                currentIndex = (currentIndex - 1 + cycle.Length) % cycle.Length;
             }
 
-            currentAxes = (Axis)currentIndex;
+            currentAxes = cycle[currentIndex];
+
             SetGizmoState(currentAxes);
         }
 
@@ -58,12 +84,7 @@ namespace BPX
 
         private bool IsAxisSelected(Axis selection, Axis axis)
         {
-            if(axis == Axis.XYZ)
-            {
-                return false;
-            }
-
-            return selection == axis || 
+            return selection == axis ||
                    (axis == Axis.X && (selection == Axis.XY || selection == Axis.XZ)) ||
                    (axis == Axis.Y && (selection == Axis.XY || selection == Axis.YZ)) ||
                    (axis == Axis.Z && (selection == Axis.XZ || selection == Axis.YZ));
@@ -71,8 +92,13 @@ namespace BPX
 
         private void SetArrow(GameObject gizmo, bool active)
         {
-            if (gizmo == null) return;
+            if (gizmo == null)
+            {
+                return;
+            }
+
             gizmo.transform.localScale = active ? fullScale : halfScale;
+
             gizmo.transform.localPosition = new Vector3(
                 gizmo.name.Contains("X") ? 8f : 0.0f,
                 gizmo.name.Contains("Y") ? 8f : 0.0f,
